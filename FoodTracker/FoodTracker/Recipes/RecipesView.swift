@@ -140,7 +140,7 @@ struct RecipesView: View {
             .listRowBackground(Color.clear)
         } footer: {
             if let remaining {
-                Text("今天还可以生成 \(remaining) 次（含「换一个」）。相同的条件会直接使用上次的结果，不占次数。")
+                Text("今天还可以生成 \(remaining) 次（含「换一个」）。短时间内用相同的条件重新生成，会直接使用上次的结果，不占次数。")
             }
         }
     }

@@ -51,7 +51,8 @@ enum APIClient {
 
     /// 根据目标和偏好生成食谱
     static func recipes(_ body: RecipeRequest) async throws -> RecipesResult {
-        var request = makeRequest(path: "recipes", method: "POST", timeout: 150)
+        // 服务器最坏情况约 145 秒（排队 25 秒 + 两次 AI 调用各 60 秒），App 要比它多等一会儿
+        var request = makeRequest(path: "recipes", method: "POST", timeout: 180)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase  // dailyCalories → daily_calories

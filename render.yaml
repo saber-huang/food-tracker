@@ -21,10 +21,13 @@ services:
     healthCheckPath: /health
     autoDeployTrigger: commit   # 每次推送到 GitHub 的 main 分支，自动重新部署
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.15"        # 和电脑上用的版本一致。必须写完整版本号，并且优先于 .python-version；Render 新服务默认用 3.14，而我们的依赖是按 3.13 锁定的
       - key: ANTHROPIC_API_KEY
         sync: false             # 创建服务时 Render 会让你在网页里填一次，之后可以在 Environment 里改
       - key: APP_SHARED_SECRET
-        generateValue: true     # Render 自动生成一串随机密钥；之后要把它填进 App（见 iOS 项目里的 Secrets.xcconfig）
+        sync: false             # 创建服务时填入：用 openssl rand -hex 32 生成的十六进制串，和 App 的 Secrets.xcconfig 里的 APP_KEY 一致
+                                # （不用 Render 自动生成的值：它可能含有 //，会被 Xcode 的配置文件当成注释截断）
       - key: FOOD_AI_MODEL
         value: claude-opus-5-5  # 想省钱可以改成 claude-haiku-4-5
       - key: FOOD_AI_EFFORT

@@ -14,9 +14,11 @@
 3. Gate：同时最多让 N 个请求去调用 AI，其余的排队；排太久就告诉用户「服务器忙」。
    这样不会因为一下子来很多请求，把只有 512 MB 内存的小服务器撑爆。
 4. ResultCache：相同的食谱请求直接返回上次的结果，不再花钱。
+5. Gatekeeper（门卫）：在最外层只看请求头，密钥不对或请求体太大就直接拒绝，不读请求体、不占内存。
 """
 
 import hashlib
+import hmac
 import json
 import math
 import threading
@@ -109,7 +111,8 @@ class Guard:
     - site：全站 24 小时总共最多几次（最后一道防线：不管来多少人，每天最多花这么多钱）
     """
 
-    _ORDER = ("burst", "device", "ip", "site")
+    # 先查每天的三道，再查每分钟的：几道同时用完时，提示和等待时间要按最长的那个说
+    _ORDER = ("device", "ip", "site", "burst")
     _DAILY = ("device", "ip", "site")
 
     def __init__(
@@ -218,3 +221,57 @@ class ResultCache:
             self._entries.move_to_end(key)
             while len(self._entries) > self.max_entries:
                 self._entries.popitem(last=False)  # 丢掉最早放进来的
+
+
+class Gatekeeper:
+    """最外层的门卫（ASGI 中间件）：在读取请求体之前，只看请求头就把明显有问题的请求挡回去。
+
+    1. App 密钥：设了 secret 时，除了 open_paths 之外的路径都要带正确的 X-App-Key
+    2. 请求体大小：按路径限制 Content-Length，超过就直接 413；POST 没有 Content-Length 的一律 411
+    因为只看请求头，再大的请求也不会被读进内存；密钥不对的人连服务器解析请求的机会都没有。
+    """
+
+    def __init__(self, app, *, secret: str, body_limits: dict[str, int], default_body_limit: int, open_paths=("/", "/health")):
+        self.app = app
+        self.secret = secret.encode("utf-8")
+        self.body_limits = body_limits
+        self.default_body_limit = default_body_limit
+        self.open_paths = set(open_paths)
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        headers = dict(scope.get("headers", []))  # 请求头的名字是小写的字节串
+        path = scope.get("path", "")
+
+        # 1. App 密钥：按字节比较，不会因为奇怪的字符出错；compare_digest 避免被人按耗时猜出密钥
+        if self.secret and path not in self.open_paths:
+            given = headers.get(b"x-app-key", b"")
+            if not given or not hmac.compare_digest(given, self.secret):
+                return await self._reject(send, 401, "请更新 App 到最新版本")
+
+        # 2. 请求体大小
+        if scope.get("method") in ("POST", "PUT", "PATCH"):
+            limit = self.body_limits.get(path, self.default_body_limit)
+            length = headers.get(b"content-length")
+            if length is None:
+                return await self._reject(send, 411, "请求缺少 Content-Length")
+            try:
+                declared = int(length)
+            except ValueError:
+                declared = limit + 1
+            if declared > limit:
+                return await self._reject(send, 413, "请求太大了")
+
+        await self.app(scope, receive, send)
+
+    @staticmethod
+    async def _reject(send, status: int, detail: str) -> None:
+        """直接回一个和 FastAPI 一样格式的错误：{"detail": "..."}"""
+        body = json.dumps({"detail": detail}, ensure_ascii=False).encode("utf-8")
+        await send({
+            "type": "http.response.start",
+            "status": status,
+            "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())],
+        })
+        await send({"type": "http.response.body", "body": body})

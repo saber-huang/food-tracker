@@ -50,9 +50,10 @@ MAX_IMAGE_PIXELS = 16_000_000
 MAX_IMAGE_SIDE = 1024  # 发给 AI 之前，把照片的长边缩小到 1024 像素：更快，也更省钱
 
 # 单次调用最多让 AI 输出多少 token（含思考）。这是「单次最高花费」的上限：
-# 正常识别只输出 130～430 token，食谱 380～1060 token，这里留了 5～9 倍的余量
-MAX_TOKENS_ANALYZE = 4000
-MAX_TOKENS_RECIPES = 6000
+# 正常识别只输出 130～430 token，食谱 300～1100 token，这里留了约 3 倍的余量
+# （识别最多约 3 美分、食谱最多约 6 美分；万一碰到上限会返回「回答被截断」，重试即可）
+MAX_TOKENS_ANALYZE = 1500
+MAX_TOKENS_RECIPES = 3000
 
 
 # ---------- 数据格式：AI 必须按这个结构返回 ----------
@@ -187,7 +188,9 @@ def get_client() -> anthropic.Anthropic:
             # 明确使用官方地址，不受电脑上其他程序设置的 ANTHROPIC_BASE_URL 影响
             base_url="https://api.anthropic.com",
             timeout=60.0,  # 最多等 60 秒
-            max_retries=1,  # 网络抖动时自动重试 1 次
+            # 本地开发时网络抖动自动重试 1 次；部署后不重试，让服务器比 App（120 秒超时）先放弃。
+            # 否则 App 显示超时、用户再点一次，而服务器还在替上一次请求花钱
+            max_retries=0 if ON_RENDER else 1,
         )
     return _client
 
@@ -263,7 +266,11 @@ def call_claude(*, system: str, content: list, output_format: type, max_tokens: 
         raise AIError(503, "连接不上 AI 服务，请稍后再试", billed=False)
     except anthropic.APIStatusError as e:
         logger.error("Claude 服务出错：%s %s", e.status_code, e.message)
-        raise AIError(502, f"AI 服务出错，请稍后再试")
+        raise AIError(502, "AI 服务出错，请稍后再试")
+    except anthropic.APIError as e:
+        # SDK 里其他没单独处理的错误（比如返回的内容不符合预期），也当作服务出错
+        logger.error("Claude 调用出错：%s", e)
+        raise AIError(502, "AI 服务出错，请稍后再试")
 
     # 在日志里打印这次的用时和 token 用量，方便你估算费用
     logger.info(
