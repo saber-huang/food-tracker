@@ -1,0 +1,39 @@
+# Render 部署配置（Blueprint）。Render 会读这个文件自动创建和更新后端服务。
+# 参考：https://render.com/docs/blueprint-spec
+#
+# 注意：这个文件会传到 GitHub，绝对不要把 API Key 或密钥写在这里。
+# 密钥都在 Render 后台的「Environment」里填。
+
+services:
+  - type: web
+    name: food-tracker-api
+    runtime: python
+    plan: free              # 一定要写。不写的话 Render 会创建付费的 0.5c-512mb 实例
+    region: oregon          # 服务器位置，创建后不能改（oregon 离美国西海岸最近）
+    branch: main
+    rootDir: backend        # 只部署 backend 文件夹；构建和启动命令都在这个文件夹里运行
+    buildCommand: uv sync --locked          # 安装依赖。有 uv.lock 时 Render 会自动准备好 uv
+    # 启动命令说明：
+    #   --workers 1           只开一个进程：次数限制和缓存都在内存里，多个进程会各算各的
+    #   --forwarded-allow-ips 只信任 Cloudflare 和 Render 内部地址转发来的「真实 IP」信息，
+    #                         来访者自己伪造的 X-Forwarded-For 会被忽略
+    startCommand: uv run --no-sync fastapi run main.py --host 0.0.0.0 --port $PORT --workers 1 --forwarded-allow-ips "$TRUSTED_PROXIES"
+    healthCheckPath: /health
+    autoDeployTrigger: commit   # 每次推送到 GitHub 的 main 分支，自动重新部署
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false             # 创建服务时 Render 会让你在网页里填一次，之后可以在 Environment 里改
+      - key: APP_SHARED_SECRET
+        generateValue: true     # Render 自动生成一串随机密钥；之后要把它填进 App（见 iOS 项目里的 Secrets.xcconfig）
+      - key: FOOD_AI_MODEL
+        value: claude-opus-5-5  # 想省钱可以改成 claude-haiku-4-5
+      - key: FOOD_AI_EFFORT
+        value: low
+      # 可以随时在 Render 后台调整的次数上限（每 24 小时）
+      - key: ANALYZE_PER_SITE
+        value: "100"
+      - key: RECIPES_PER_SITE
+        value: "40"
+      # 可信的代理地址：Render 内部网段 + Cloudflare 公布的地址段（https://www.cloudflare.com/ips/）
+      - key: TRUSTED_PROXIES
+        value: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,100.64.0.0/10,fc00::/7,127.0.0.1,::1,173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/13,104.24.0.0/14,172.64.0.0/13,131.0.72.0/22,2400:cb00::/32,2606:4700::/32,2803:f800::/32,2405:b500::/32,2405:8100::/32,2a06:98c0::/29,2c0f:f248::/32"

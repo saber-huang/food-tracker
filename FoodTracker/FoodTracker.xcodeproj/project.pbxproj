@@ -19,6 +19,9 @@
 /* Begin PBXFileReference section */
 		051BC0F1306B30C60090BEE3 /* FoodTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FoodTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA3E6FC35507497BBFB65842 /* FoodTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FoodTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		94076D335AC9424FA98D793B /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		77A059838C0D4414A314DB6E /* Secrets.example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.example.xcconfig; sourceTree = "<group>"; };
+		F67F58AD372145DF90DFFC01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -53,6 +56,7 @@
 			children = (
 				051BC0F3306B30C60090BEE3 /* FoodTracker */,
 				65B9B7BA6C814D6E89657A79 /* FoodTrackerTests */,
+				66206FCC24694217B3C447A4 /* Config */,
 				051BC0F2306B30C60090BEE3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -64,6 +68,16 @@
 				DA3E6FC35507497BBFB65842 /* FoodTrackerTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		66206FCC24694217B3C447A4 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				94076D335AC9424FA98D793B /* Base.xcconfig */,
+				77A059838C0D4414A314DB6E /* Secrets.example.xcconfig */,
+				F67F58AD372145DF90DFFC01 /* Info.plist */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -303,6 +317,7 @@
 		};
 		051BC0FD306B30C70090BEE3 /* Debug configuration for PBXNativeTarget "FoodTracker" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 94076D335AC9424FA98D793B /* Base.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -311,6 +326,7 @@
 				DEVELOPMENT_TEAM = YPCBJ9473X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "拍摄餐食照片，用来识别食物并估算热量和营养。";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "连接同一 Wi-Fi 下电脑上运行的后端服务（开发测试时使用）。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -338,6 +354,7 @@
 		};
 		051BC0FE306B30C70090BEE3 /* Release configuration for PBXNativeTarget "FoodTracker" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 94076D335AC9424FA98D793B /* Base.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -346,6 +363,7 @@
 				DEVELOPMENT_TEAM = YPCBJ9473X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "拍摄餐食照片，用来识别食物并估算热量和营养。";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "连接同一 Wi-Fi 下电脑上运行的后端服务（开发测试时使用）。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

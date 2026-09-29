@@ -36,5 +36,7 @@ struct MainTabView: View {
             ProfileView(profile: profile)
                 .tabItem { Label("我的", systemImage: "person.crop.circle") }
         }
+        // 一进主界面就悄悄叫醒云端服务器（免费服务器闲置会休眠），用户点识别时就不用等
+        .task { await APIClient.warmUp() }
     }
 }

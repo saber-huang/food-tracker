@@ -5,3 +5,6 @@
 xcuserdata/
 DerivedData/
 *.xcuserstate
+
+# App 的云端地址和密钥，每台电脑自己填，不上传
+FoodTracker/Config/Secrets.xcconfig

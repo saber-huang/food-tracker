@@ -1,0 +1,3 @@
+// 项目的基础配置。这一行会把 Secrets.xcconfig 里的值读进来；
+// 文件不存在时（#include? 的问号表示可选）也不会报错，两个值就当作空。
+#include? "Secrets.xcconfig"

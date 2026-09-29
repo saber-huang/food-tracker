@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- 这两个值来自 Config/Secrets.xcconfig，编译时由 Xcode 填进来；App 里用 AppConfig 读取 -->
+	<key>BackendURL</key>
+	<string>$(BACKEND_URL)</string>
+	<key>AppKey</key>
+	<string>$(APP_KEY)</string>
+</dict>
+</plist>

@@ -11,7 +11,7 @@ import Foundation
 enum APIError: LocalizedError {
     case offline  // 手机没联网
     case timeout  // 等太久没有回应
-    case cannotConnect(code: Int)  // 连不上后端（比如后端没启动）
+    case cannotConnect(code: Int)  // 连不上后端（比如后端没启动，或云端服务器还在唤醒）
     case server(String)  // 后端返回了错误说明
     case badResponse  // 返回的数据看不懂
 
@@ -20,9 +20,13 @@ enum APIError: LocalizedError {
         case .offline:
             "手机没有联网，请检查网络设置。"
         case .timeout:
-            "等待超时，请检查网络后重试。"
+            AppConfig.isCloud
+                ? "服务器没有及时响应。免费服务器闲置后会休眠，唤醒大约需要 1 分钟，请稍等一下再试。"
+                : "等待超时，请检查网络后重试。"
         case .cannotConnect(let code):
-            "连不上后端服务（错误码 \(code)）。请确认电脑上的后端正在运行。"
+            AppConfig.isCloud
+                ? "连不上服务器（错误码 \(code)）。请检查手机网络，或稍等 1 分钟再试。"
+                : "连不上后端服务（错误码 \(code)）。请确认电脑上的后端正在运行。"
         case .server(let message):
             message
         case .badResponse:
@@ -39,7 +43,7 @@ enum APIClient {
     static func analyze(jpegData: Data, lang: String) async throws -> AnalyzeResult {
         // 照片用 multipart/form-data 格式上传（网页上传文件用的就是这种格式）
         let boundary = "Boundary-\(UUID().uuidString)"
-        var request = makeRequest(path: "analyze", method: "POST", timeout: 90)
+        var request = makeRequest(path: "analyze", method: "POST", timeout: 120)
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.httpBody = multipartBody(jpegData: jpegData, lang: lang, boundary: boundary)
         return try await send(request)
@@ -47,7 +51,7 @@ enum APIClient {
 
     /// 根据目标和偏好生成食谱
     static func recipes(_ body: RecipeRequest) async throws -> RecipesResult {
-        var request = makeRequest(path: "recipes", method: "POST", timeout: 120)
+        var request = makeRequest(path: "recipes", method: "POST", timeout: 150)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase  // dailyCalories → daily_calories
@@ -57,17 +61,26 @@ enum APIClient {
 
     /// 今天还能识别几次、生成几次食谱
     static func quota() async throws -> Quota {
-        try await send(makeRequest(path: "quota", method: "GET", timeout: 15))
+        try await send(makeRequest(path: "quota", method: "GET", timeout: 90))
+    }
+
+    /// 叫醒服务器：App 启动时悄悄访问一次 /health。
+    /// 免费的云端服务器闲置 15 分钟就会休眠，提前叫醒，用户点识别时就不用等了。失败也没关系。
+    static func warmUp() async {
+        _ = try? await URLSession.shared.data(for: makeRequest(path: "health", method: "GET", timeout: 90))
     }
 
     // MARK: - 公共部分
 
-    /// 准备一个请求：拼上后端地址，带上设备 ID
+    /// 准备一个请求：拼上后端地址，带上设备 ID 和 App 密钥
     private static func makeRequest(path: String, method: String, timeout: TimeInterval) -> URLRequest {
         var request = URLRequest(url: AppConfig.backendURL.appending(path: path))
         request.httpMethod = method
         request.timeoutInterval = timeout
         request.setValue(DeviceID.current, forHTTPHeaderField: "X-Device-ID")
+        if !AppConfig.appKey.isEmpty {
+            request.setValue(AppConfig.appKey, forHTTPHeaderField: "X-App-Key")
+        }
         return request
     }
 
@@ -87,6 +100,10 @@ enum APIClient {
         guard http.statusCode == 200 else {
             if let body = try? JSONDecoder().decode(ErrorBody.self, from: data) {
                 throw APIError.server(body.detail)
+            }
+            // 云端服务器唤醒过程中，Render 可能先返回一个不含 JSON 的页面
+            if AppConfig.isCloud && (500...599).contains(http.statusCode) {
+                throw APIError.server("服务器正在启动，请稍等 1 分钟再试。")
             }
             throw APIError.server("服务器出错（错误码 \(http.statusCode)），请稍后再试。")
         }

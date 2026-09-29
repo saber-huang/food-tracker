@@ -8,14 +8,11 @@
 """
 
 import logging
-import time
 from typing import Literal
 
-import anthropic
-import pydantic
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, create_model, field_validator
 
-from food_ai import EFFORT, MODEL, AIError, get_client, model_options
+from food_ai import MAX_TOKENS_RECIPES, AIError, call_claude
 
 logger = logging.getLogger("recipes_ai")
 
@@ -107,8 +104,17 @@ class Recipe(BaseModel):
     fat_g: float = Field(description="脂肪（克）")
 
 
-class AIRecipes(BaseModel):
-    recipes: list[Recipe] = Field(description="每一餐一道菜（或一套搭配）")
+_plan_models: dict[tuple[str, ...], type[BaseModel]] = {}
+
+
+def plan_model(meals: list[Meal]) -> type[BaseModel]:
+    """按要求的餐次动态生成「返回格式」：每一餐都是必填字段。
+    结构化输出会强制 AI 把每个字段都填上，所以不会再出现只返回一餐、漏掉其他餐的情况。"""
+    key = tuple(meals)
+    if key not in _plan_models:
+        fields = {meal: (Recipe, Field(description=f"{MEAL_NAMES['zh'][meal]}的食谱")) for meal in meals}
+        _plan_models[key] = create_model("MealPlan", **fields)
+    return _plan_models[key]
 
 
 class RecipesResult(BaseModel):
@@ -203,47 +209,22 @@ def tidy(recipe: Recipe) -> Recipe:
 # ---------- 调用 Claude ----------
 
 
-def ask_claude(req: RecipeRequest, violation_note: str = "") -> tuple[AIRecipes, str]:
-    client = get_client()
-    started = time.monotonic()
-    try:
-        response = client.beta.messages.parse(
-            model=MODEL,
-            max_tokens=16000,
-            system=build_system_prompt(req.lang),
-            messages=[{"role": "user", "content": build_user_prompt(req, violation_note)}],
-            output_format=AIRecipes,
-            **model_options(MODEL),
-        )
-    except pydantic.ValidationError:
-        raise AIError(502, "AI 返回的食谱格式不对，请重试")
-    except anthropic.AuthenticationError:
-        raise AIError(500, "ANTHROPIC_API_KEY 无效，请检查 backend/.env 里的 Key")
-    except anthropic.RateLimitError:
-        raise AIError(429, "AI 服务太忙了，请稍后再试")
-    except anthropic.BadRequestError as e:
-        logger.error("Claude 拒绝了请求：%s", e.message)
-        raise AIError(502, f"AI 服务拒绝了请求：{e.message}")
-    except anthropic.APITimeoutError:
-        raise AIError(504, "生成食谱超时，请重试")
-    except anthropic.APIConnectionError:
-        raise AIError(503, "连接不上 AI 服务，请检查网络")
-    except anthropic.APIStatusError as e:
-        logger.error("Claude 服务出错：%s %s", e.status_code, e.message)
-        raise AIError(502, f"AI 服务出错（{e.status_code}），请稍后再试")
-
-    logger.info(
-        "食谱生成完成：模型 %s，用时 %.1f 秒，输入 %d token，输出 %d token，结束原因 %s",
-        response.model, time.monotonic() - started,
-        response.usage.input_tokens, response.usage.output_tokens, response.stop_reason,
+def ask_claude(req: RecipeRequest, violation_note: str = "") -> tuple[list[Recipe], str]:
+    """把目标和忌口发给 Claude，拿回按要求餐次排好的食谱列表，以及实际回答的模型名。
+    出错处理、用量日志和 token 上限都在 food_ai.call_claude 里统一处理。"""
+    plan, model = call_claude(
+        system=build_system_prompt(req.lang),
+        content=[{"type": "text", "text": build_user_prompt(req, violation_note)}],
+        output_format=plan_model(req.meals),
+        max_tokens=MAX_TOKENS_RECIPES,
+        what="生成食谱",
     )
-    if response.stop_reason == "refusal":
-        raise AIError(422, "AI 无法处理这个请求，请调整偏好后重试")
-    if response.stop_reason == "max_tokens":
-        raise AIError(502, "AI 的回答被截断了，请重试")
-    if response.parsed_output is None:
-        raise AIError(502, "AI 没有返回食谱，请重试")
-    return response.parsed_output, response.model
+    recipes = []
+    for meal in req.meals:
+        recipe: Recipe = getattr(plan, meal)
+        # 以字段名为准，防止 AI 把餐次标错
+        recipes.append(tidy(Recipe(**{**recipe.model_dump(), "meal": meal})))
+    return recipes, model
 
 
 def generate_recipes(req: RecipeRequest) -> RecipesResult:
@@ -251,30 +232,18 @@ def generate_recipes(req: RecipeRequest) -> RecipesResult:
     forbidden = req.allergies + req.dislikes
     violation_note = ""
     for attempt in range(2):  # 最多试两次
-        ai, model = ask_claude(req, violation_note)
-        recipes = [tidy(r) for r in ai.recipes if r.meal in req.meals]
-
-        # 每一餐只留第一份，并且每餐都得有
-        by_meal: dict[str, Recipe] = {}
-        for r in recipes:
-            by_meal.setdefault(r.meal, r)
-        missing = [m for m in req.meals if m not in by_meal]
+        recipes, model = ask_claude(req, violation_note)
 
         problems = []
-        for r in by_meal.values():
+        for r in recipes:
             found = find_forbidden(r, forbidden)
             if found:
                 problems.append(f"「{r.name}」用了 {'、'.join(found)}")
-        if not missing and not problems:
-            return RecipesResult(recipes=[by_meal[m] for m in req.meals], model=model)
+        if not problems:
+            return RecipesResult(recipes=recipes, model=model)
 
         # 有问题：把问题写进提示词再试一次
-        notes = []
-        if problems:
-            notes.append("上一次的方案违反了规则：" + "；".join(problems) + "。请重新设计，绝对不要使用这些食材及其制品。")
-        if missing:
-            notes.append("上一次缺少了这些餐：" + "、".join(MEAL_NAMES[req.lang][m] for m in missing) + "。")
-        violation_note = " ".join(notes)
+        violation_note = "上一次的方案违反了规则：" + "；".join(problems) + "。请重新设计，绝对不要使用这些食材及其制品。"
         logger.warning("食谱第 %d 次结果有问题，重试：%s", attempt + 1, violation_note)
 
     raise AIError(502, "AI 没能完全避开你的忌口，请稍后重试或调整忌口写法")
