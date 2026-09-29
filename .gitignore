@@ -1,0 +1,7 @@
+# macOS 自动生成的文件
+.DS_Store
+
+# Xcode 的个人设置和编译产物：每台电脑都不一样，不需要上传
+xcuserdata/
+DerivedData/
+*.xcuserstate

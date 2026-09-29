@@ -1,0 +1,10 @@
+# 本地配置，里面有 API Key，绝对不能上传
+.env
+
+# Python 虚拟环境和缓存（可以随时重新生成）
+.venv/
+__pycache__/
+*.pyc
+
+# macOS 自动生成的文件
+.DS_Store

@@ -1,0 +1,16 @@
+[project]
+name = "food-tracker-backend"
+version = "0.1.0"
+description = "健身饮食 App 的后端：接收餐食照片，调用 Claude 识别食物和营养"
+requires-python = ">=3.13"
+dependencies = [
+    "anthropic>=1.9.0",
+    "fastapi[standard]>=0.141.1",
+    "pillow>=12.3.0",
+    "pillow-heif>=1.8.0",
+    "python-dotenv>=1.2.3",
+]
+
+[tool.uv]
+# 这是一个直接运行的程序，不需要打包成 Python 库
+package = false
