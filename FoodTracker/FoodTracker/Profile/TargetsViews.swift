@@ -54,12 +54,26 @@ struct FloorNotice: View {
 
     var body: some View {
         if targets.isRaisedToFloor {
+            // 平静的说明，不用红色或橙色；也不显示公式算出来的那个更低的数
             Label(
-                "为了安全，每日热量没有设得太低：我们把它调到了 \(targets.calorieFloor.noDecimal) 千卡。减脂慢一点更健康，也更容易坚持。",
+                "为了让你吃够身体需要的营养，我们把每日目标保持在 \(targets.calorieFloor.noDecimal) 千卡，这是没有医生或营养师指导时通常建议的最低摄入量。想让进度快一点，可以在日常多活动一些，比如多走走路。",
                 systemImage: "heart.circle"
             )
             .font(.callout)
             .foregroundStyle(.secondary)
+        }
+    }
+}
+
+/// 针对这个人和这个目标的温和提示（可能有多条，也可能没有）
+struct GoalNotesView: View {
+    let bodyInfo: BodyInfo
+
+    var body: some View {
+        ForEach(ProfileValidator.goalNotes(for: bodyInfo), id: \.self) { note in
+            Label(note, systemImage: "info.circle")
+                .font(.callout)
+                .foregroundStyle(.secondary)
         }
     }
 }

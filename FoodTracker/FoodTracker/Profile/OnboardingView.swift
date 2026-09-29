@@ -143,7 +143,7 @@ private struct WelcomeStep: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("请先了解")
                         .font(.headline)
-                    Text("App 给出的热量和营养目标是根据公式估算的参考值，不是医疗建议。本 App 适用于 18 岁以上的成年人。如有疾病、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
+                    Text("App 给出的热量和营养目标是根据公式估算的参考值，不是医疗建议。本 App 适用于 18 岁以上的成年人。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
                         .font(.callout)
                     Toggle("我已了解以上说明", isOn: $hasAgreed)
                         .fontWeight(.medium)
@@ -167,6 +167,7 @@ private struct ResultStep: View {
             Section {
                 TargetsSummaryView(targets: targets)
                 FloorNotice(targets: targets)
+                GoalNotesView(bodyInfo: bodyInfo)
             } header: {
                 Text("根据你的资料，建议每天摄入")
             } footer: {

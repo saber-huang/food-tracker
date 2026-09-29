@@ -8,12 +8,14 @@
 //
 //  参数的依据（详细来源见 ExplanationView.swift 底部的参考资料）：
 //  - 基础代谢：Mifflin-St Jeor 公式（1990）
-//  - 减脂缺口：每天少吃 20%，最多 500 千卡（ACSM 建议 250～500 千卡；超过 500 会影响肌肉）
-//  - 增肌盈余：每天多吃 10%，最多 500 千卡（Iraki 等，2019：新手 10～20%）
+//  - 减脂缺口：每天少吃 20%，最多 500 千卡（ACSM 建议 250～500 千卡；超过 500 会影响肌肉），
+//    并且不超过体重每周下降约 0.7% 的速度，BMI 低于 22 时按 0.5%（ISSN：越瘦减得越慢）
+//  - 增肌盈余：每天多吃 10%，最多 500 千卡（Iraki 等，2019：新手 10～20%）；体重偏轻时至少 300 千卡（NHS）
 //  - 蛋白质：每公斤 1.6～2.0 克，在 ISSN（1.4～2.0）和 ACSM（1.2～2.0）的范围内
 //  - 脂肪：占热量 25%，不低于 20%（ACSM、美国国家科学院）
 //  - 碳水：不低于 130 克/天（美国国家科学院推荐量）
 //  - 热量下限：女性 1200、男性 1500 千卡（Harvard Health）
+//  - 不提供减脂的情况：BMI 低于 18.5（WHO 偏轻）；65 岁以上且 BMI 低于 30（ESPEN 老年营养指南）
 //
 //  类型前面的 nonisolated 表示：这些纯计算代码不需要限定在主线程运行，
 //  在任何地方（包括单元测试）都可以直接调用。
@@ -66,7 +68,7 @@ nonisolated enum ActivityLevel: String, CaseIterable, Codable {
         case .sedentary: "办公室工作，平时基本不运动"
         case .light: "每周运动 1～3 次"
         case .moderate: "每周运动 3～5 次"
-        case .active: "每周运动 6～7 次"
+        case .active: "每周运动 6～7 次，或需要长时间站立走动的工作"
         case .veryActive: "体力劳动，或每天训练两次"
         }
     }
@@ -76,7 +78,7 @@ nonisolated enum ActivityLevel: String, CaseIterable, Codable {
 nonisolated enum Goal: String, CaseIterable, Codable {
     case loseFat, maintain, gainMuscle
 
-    /// 热量调整比例：减脂少吃 20%，增肌多吃 10%（每天最多调整 500 千卡，见 maxDailyAdjustment）
+    /// 热量调整比例：减脂少吃 20%，增肌多吃 10%（还有每日上限，见 NutritionCalculator）
     var calorieAdjustmentShare: Double {
         switch self {
         case .loseFat: -0.20
@@ -121,6 +123,8 @@ nonisolated struct BodyInfo: Equatable {
     var weightKg: Double  // 公斤
     var activity: ActivityLevel
     var goal: Goal
+
+    var bmi: Double { NutritionCalculator.bmi(heightCm: heightCm, weightKg: weightKg) }
 }
 
 /// 计算结果。热量单位是千卡，营养素单位是克。
@@ -128,6 +132,7 @@ nonisolated struct DailyTargets: Equatable {
     let bmr: Double  // 基础代谢：躺着不动一天也要消耗的热量
     let tdee: Double  // 每日总消耗：基础代谢 × 活动系数
     let adjustment: Double  // 按目标调整的热量：减脂是负数，增肌是正数，维持是 0
+    let maxAdjustment: Double  // 这个人每天最多调整多少热量（减脂时和体重有关）
     let goalCalories: Double  // 调整后的热量（还没套用安全下限）
     let calorieFloor: Double  // 安全下限
     let calories: Double  // 最终的每日热量目标
@@ -140,14 +145,12 @@ nonisolated struct DailyTargets: Equatable {
     var isRaisedToFloor: Bool { calories > goalCalories }
 
     /// 蛋白质是否因为「不超过总热量 35%」被压低了
-    var isProteinCapped: Bool { proteinG * NutritionCalculator.kcalPerGramProtein >= calories * NutritionCalculator.maxProteinShare - 0.001 }
+    var isProteinCapped: Bool {
+        proteinG * NutritionCalculator.kcalPerGramProtein >= calories * NutritionCalculator.maxProteinShare - 0.001
+    }
 
     /// 脂肪实际占总热量的比例（通常是 25%，为了保住碳水可能降到 20%）
     var fatShare: Double { fatG * NutritionCalculator.kcalPerGramFat / calories }
-
-    /// 按这个热量目标，预计每周体重变化（公斤）：负数是减少，正数是增加。
-    /// 按 1 公斤脂肪约 7700 千卡估算，只是粗略参考。
-    var expectedWeeklyChangeKg: Double { (calories - tdee) * 7 / 7700 }
 }
 
 // MARK: - 计算
@@ -155,6 +158,12 @@ nonisolated struct DailyTargets: Equatable {
 nonisolated enum NutritionCalculator {
     /// 减脂或增肌时，每天最多调整多少热量
     static let maxDailyAdjustment = 500.0
+    /// 减脂缺口还不能超过「每公斤体重 7.7 千卡」（约每周减 0.7% 体重）；偏瘦的人（BMI 低于 22）按 5.5（约 0.5%）
+    static let maxDeficitPerKg = 7.7
+    static let leanMaxDeficitPerKg = 5.5
+    static let leanBMI = 22.0
+    /// 体重偏轻的人增肌时，每天至少多吃这么多
+    static let minSurplusWhenUnderweight = 300.0
     /// 脂肪占每日热量的目标比例，以及不能再低的比例
     static let fatShare = 0.25
     static let minFatShare = 0.20
@@ -201,17 +210,36 @@ nonisolated enum NutritionCalculator {
         return min(weightKg, proteinReferenceBMI * heightM * heightM)
     }
 
+    /// 减脂时每天最多少吃多少：不超过 500 千卡，也不超过按体重换算的量
+    static func maxDeficit(for body: BodyInfo) -> Double {
+        let perKg = body.bmi < leanBMI ? leanMaxDeficitPerKg : maxDeficitPerKg
+        return min(maxDailyAdjustment, perKg * body.weightKg)
+    }
+
     /// 算出每日热量和三大营养素目标
     static func targets(for body: BodyInfo) -> DailyTargets {
         // 1. 基础代谢
         let bmr = bmr(sex: body.sex, age: body.age, heightCm: body.heightCm, weightKg: body.weightKg)
         // 2. 每日总消耗 = 基础代谢 × 活动系数
         let tdee = bmr * body.activity.factor
-        // 3. 按目标调整：减脂少吃 20%、增肌多吃 10%，但每天最多调整 500 千卡
-        let share = body.goal.calorieAdjustmentShare
-        let adjustment = share.sign == .minus
-            ? -min(abs(share) * tdee, maxDailyAdjustment)
-            : min(share * tdee, maxDailyAdjustment)
+        // 3. 按目标调整
+        let share = abs(body.goal.calorieAdjustmentShare)
+        let maxAdjustment: Double
+        let adjustment: Double
+        switch body.goal {
+        case .maintain:
+            maxAdjustment = 0
+            adjustment = 0
+        case .loseFat:
+            // 少吃 20%，但不超过这个人的每日上限
+            maxAdjustment = maxDeficit(for: body)
+            adjustment = -min(share * tdee, maxAdjustment)
+        case .gainMuscle:
+            // 多吃 10%，最多 500 千卡；体重偏轻的人至少多吃 300 千卡
+            maxAdjustment = maxDailyAdjustment
+            let surplus = body.bmi < ProfileValidator.underweightBMI ? max(share * tdee, minSurplusWhenUnderweight) : share * tdee
+            adjustment = min(surplus, maxAdjustment)
+        }
         let goalCalories = tdee + adjustment
         // 4. 安全下限：不低于公认的最低热量
         let floor = minimumCalories(for: body.sex)
@@ -231,12 +259,13 @@ nonisolated enum NutritionCalculator {
         }
         let fat = fatCalories / kcalPerGramFat
         // 7. 碳水：剩下的热量都给碳水
-        let carbs = max(0, (calories - proteinCalories - fatCalories) / kcalPerGramCarbs)
+        let carbs = (calories - proteinCalories - fatCalories) / kcalPerGramCarbs
 
         return DailyTargets(
             bmr: bmr,
             tdee: tdee,
             adjustment: adjustment,
+            maxAdjustment: maxAdjustment,
             goalCalories: goalCalories,
             calorieFloor: floor,
             calories: calories,
@@ -248,16 +277,26 @@ nonisolated enum NutritionCalculator {
     }
 }
 
-// MARK: - 输入检查
+// MARK: - 输入检查和安全提示
 
-/// 检查用户填的数字是否在合理范围内。
-/// 每个函数返回 nil 表示没问题；否则返回一句给用户看的提示。
+/// 检查用户填的数字是否合理，以及哪些目标不适合这个人。
+/// 返回 nil 表示没问题；否则返回一句给用户看的说明。
 nonisolated enum ProfileValidator {
     static let ageRange = 18...80  // 计算公式来自对成年人的研究
     static let heightRange = 120.0...230.0  // 厘米
     static let weightRange = 30.0...250.0  // 公斤
     /// BMI 低于这个值属于体重过轻（世界卫生组织标准）
     static let underweightBMI = 18.5
+    /// BMI 达到这个值属于肥胖（世界卫生组织标准）
+    static let obesityBMI = 30.0
+    /// 这个年龄以上，减脂要更谨慎（欧洲临床营养学会老年营养指南以 65 岁为界）
+    static let seniorAge = 65
+    /// 这个年龄以上，提醒蛋白质和肾功能的关系
+    static let kidneyNoteAge = 60
+    /// BMI 达到这个值时，提醒确认体重单位（可能把「斤」当成了「公斤」）
+    static let unitCheckBMI = 40.0
+    /// BMI 超出这个范围，数字很可能填错了
+    static let plausibleBMIRange = 12.0...60.0
 
     static func ageError(_ age: Int?) -> String? {
         guard let age else { return "请输入年龄（整数）" }
@@ -283,15 +322,55 @@ nonisolated enum ProfileValidator {
         return nil
     }
 
+    /// 身高和体重的组合是否离谱（比如把「斤」当成了「公斤」）。有问题时不允许继续
+    static func plausibilityError(heightCm: Double, weightKg: Double) -> String? {
+        let bmi = NutritionCalculator.bmi(heightCm: heightCm, weightKg: weightKg)
+        guard plausibleBMIRange.contains(bmi) else {
+            return "身高和体重的组合不太合理（BMI 约 \(bmi.formatted(.number.precision(.fractionLength(0))))），请检查数字和单位：体重单位是公斤，1 公斤 = 2 斤"
+        }
+        return nil
+    }
+
+    /// BMI 很高时，温和地提醒确认单位（不阻止继续）
+    static func unitWarning(heightCm: Double, weightKg: Double) -> String? {
+        let bmi = NutritionCalculator.bmi(heightCm: heightCm, weightKg: weightKg)
+        guard bmi >= unitCheckBMI, plausibleBMIRange.contains(bmi) else { return nil }
+        return "请确认体重单位是公斤（1 公斤 = 2 斤）"
+    }
+
     /// 体重是否已经偏轻（BMI 低于 18.5）
     static func isUnderweight(heightCm: Double, weightKg: Double) -> Bool {
         NutritionCalculator.bmi(heightCm: heightCm, weightKg: weightKg) < underweightBMI
     }
 
-    /// 体重偏轻时不允许选「减脂」；返回给用户看的说明
-    static func underweightMessage(heightCm: Double, weightKg: Double) -> String? {
-        guard isUnderweight(heightCm: heightCm, weightKg: weightKg) else { return nil }
+    /// 什么情况下不提供「减脂」。返回 nil 表示可以选；否则返回给用户看的说明
+    static func fatLossRestriction(age: Int, heightCm: Double, weightKg: Double) -> String? {
         let bmi = NutritionCalculator.bmi(heightCm: heightCm, weightKg: weightKg)
-        return "你的 BMI 约为 \(bmi.formatted(.number.precision(.fractionLength(1))))，低于 \(underweightBMI)，属于偏轻范围，所以这里不提供减脂目标。可以选择「维持」或「增肌」；如果对体重有顾虑，建议咨询医生或营养师。"
+        if bmi < underweightBMI {
+            return "你的 BMI 约为 \(bmi.formatted(.number.precision(.fractionLength(1))))，低于 \(underweightBMI)，属于偏轻范围，所以这里不提供减脂目标。可以选择「维持」或「增肌」；如果对体重有顾虑，建议咨询医生或营养师。"
+        }
+        if age >= seniorAge && bmi < obesityBMI {
+            return "\(seniorAge) 岁以上、BMI 低于 \(Int(obesityBMI)) 时，不建议主动减重，因为容易连肌肉一起掉。建议选择「维持」并配合力量训练；如果有体重相关的健康问题，请咨询医生。"
+        }
+        return nil
+    }
+
+    /// 针对这个人和这个目标的温和提示（不阻止继续），可能有多条
+    static func goalNotes(for body: BodyInfo) -> [String] {
+        var notes: [String] = []
+        let bmi = body.bmi
+        if bmi < underweightBMI && body.goal != .loseFat {
+            notes.append("体重偏轻时，公式估算的消耗可能偏低。如果两周的平均体重还在下降，每天多吃 200～300 千卡，或咨询医生、营养师。")
+        }
+        if body.age >= seniorAge && body.goal == .loseFat {
+            notes.append("\(seniorAge) 岁以上减脂要格外注意保住肌肉：配合力量训练，开始前先和医生确认。")
+        }
+        if bmi >= obesityBMI && body.goal == .gainMuscle {
+            notes.append("体重基数较大时，配合力量训练、按维持热量吃也能长肌肉，同时不额外增加体脂。可以考虑选择「维持」。")
+        }
+        if body.age >= kidneyNoteAge {
+            notes.append("\(kidneyNoteAge) 岁以上、有高血压或糖尿病，或近一年没查过肾功能的话，按这个蛋白质目标吃之前先问问医生。")
+        }
+        return notes
     }
 }

@@ -89,7 +89,7 @@ class AnalyzeResult(BaseModel):
     model: str  # 这次用的是哪个模型，方便以后对比不同模型的效果
 
 
-class AnalyzeError(Exception):
+class AIError(Exception):
     """识别过程中出的错。status_code 是返回给 App 的 HTTP 状态码，message 是给用户看的说明。"""
 
     def __init__(self, status_code: int, message: str):
@@ -110,7 +110,7 @@ def prepare_image(data: bytes) -> bytes:
         # 统一转成 RGB（去掉透明背景），因为 JPEG 不支持透明
         image = image.convert("RGB")
     except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
-        raise AnalyzeError(400, "无法读取这张图片，请上传 JPG、PNG 或 HEIC 格式的照片")
+        raise AIError(400, "无法读取这张图片，请上传 JPG、PNG 或 HEIC 格式的照片")
 
     # 等比例缩小，长边不超过 MAX_IMAGE_SIDE（本来就小的图不会被放大）
     image.thumbnail((MAX_IMAGE_SIDE, MAX_IMAGE_SIDE))
@@ -149,7 +149,7 @@ def get_client() -> anthropic.Anthropic:
     if _client is None:
         api_key = os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
-            raise AnalyzeError(500, "服务器没有配置 ANTHROPIC_API_KEY，请在 backend/.env 里填写后重启后端")
+            raise AIError(500, "服务器没有配置 ANTHROPIC_API_KEY，请在 backend/.env 里填写后重启后端")
         _client = anthropic.Anthropic(
             api_key=api_key,
             # 明确使用官方地址，不受电脑上其他程序设置的 ANTHROPIC_BASE_URL 影响
@@ -207,26 +207,26 @@ def ask_claude(jpeg: bytes, lang: str) -> tuple[AIResult, str]:
     # 下面按「从具体到笼统」的顺序处理各种出错情况
     except pydantic.ValidationError:
         # AI 返回的内容不是合格的 JSON（很少见，比如回答被截断）
-        raise AnalyzeError(502, "AI 返回的结果格式不对，请重试")
+        raise AIError(502, "AI 返回的结果格式不对，请重试")
     except anthropic.AuthenticationError:
-        raise AnalyzeError(500, "ANTHROPIC_API_KEY 无效，请检查 backend/.env 里的 Key")
+        raise AIError(500, "ANTHROPIC_API_KEY 无效，请检查 backend/.env 里的 Key")
     except anthropic.PermissionDeniedError:
-        raise AnalyzeError(500, "这个 API Key 没有权限使用该模型")
+        raise AIError(500, "这个 API Key 没有权限使用该模型")
     except anthropic.NotFoundError:
-        raise AnalyzeError(500, f"找不到模型 {MODEL}，请检查 .env 里的 FOOD_AI_MODEL")
+        raise AIError(500, f"找不到模型 {MODEL}，请检查 .env 里的 FOOD_AI_MODEL")
     except anthropic.RateLimitError:
-        raise AnalyzeError(429, "AI 服务太忙了，请稍后再试")
+        raise AIError(429, "AI 服务太忙了，请稍后再试")
     except anthropic.BadRequestError as e:
         # 比如账户余额不足，Anthropic 会返回这类错误，把原因原样告诉你方便排查
         logger.error("Claude 拒绝了请求：%s", e.message)
-        raise AnalyzeError(502, f"AI 服务拒绝了请求：{e.message}")
+        raise AIError(502, f"AI 服务拒绝了请求：{e.message}")
     except anthropic.APITimeoutError:
-        raise AnalyzeError(504, "AI 识别超时，请重试")
+        raise AIError(504, "AI 识别超时，请重试")
     except anthropic.APIConnectionError:
-        raise AnalyzeError(503, "连接不上 AI 服务，请检查网络")
+        raise AIError(503, "连接不上 AI 服务，请检查网络")
     except anthropic.APIStatusError as e:
         logger.error("Claude 服务出错：%s %s", e.status_code, e.message)
-        raise AnalyzeError(502, f"AI 服务出错（{e.status_code}），请稍后再试")
+        raise AIError(502, f"AI 服务出错（{e.status_code}），请稍后再试")
 
     # 在终端里打印这次的用时和 token 用量，方便你估算费用
     logger.info(
@@ -240,11 +240,11 @@ def ask_claude(jpeg: bytes, lang: str) -> tuple[AIResult, str]:
 
     # 先看 AI 为什么停下，再读结果
     if response.stop_reason == "refusal":
-        raise AnalyzeError(422, "AI 无法处理这张图片，请换一张照片试试")
+        raise AIError(422, "AI 无法处理这张图片，请换一张照片试试")
     if response.stop_reason == "max_tokens":
-        raise AnalyzeError(502, "AI 的回答被截断了，请重试")
+        raise AIError(502, "AI 的回答被截断了，请重试")
     if response.parsed_output is None:
-        raise AnalyzeError(502, "AI 没有返回识别结果，请重试")
+        raise AIError(502, "AI 没有返回识别结果，请重试")
     # response.model 是实际回答的模型（触发备用模型时会和 MODEL 不同）
     return response.parsed_output, response.model
 

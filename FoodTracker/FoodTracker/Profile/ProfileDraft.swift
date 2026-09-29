@@ -45,28 +45,40 @@ final class ProfileDraft {
     var heightError: String? { ProfileValidator.heightError(heightCm) }
     var weightError: String? { ProfileValidator.weightError(weightKg) }
 
+    /// 身高、体重各自合规，但组合起来离谱（比如单位填错）
+    var plausibilityError: String? {
+        guard let heightCm, let weightKg, heightError == nil, weightError == nil else { return nil }
+        return ProfileValidator.plausibilityError(heightCm: heightCm, weightKg: weightKg)
+    }
+
+    /// BMI 很高时提醒确认单位（不阻止继续）
+    var unitWarning: String? {
+        guard let heightCm, let weightKg, heightError == nil, weightError == nil else { return nil }
+        return ProfileValidator.unitWarning(heightCm: heightCm, weightKg: weightKg)
+    }
+
     /// 性别、年龄、身高、体重是否都填对了
     var isBasicInfoValid: Bool {
-        ageError == nil && heightError == nil && weightError == nil
+        ageError == nil && heightError == nil && weightError == nil && plausibilityError == nil
     }
 
-    /// 体重是否偏轻（BMI 低于 18.5）。偏轻时不允许选「减脂」
-    var isUnderweight: Bool {
-        guard let heightCm, let weightKg, heightError == nil, weightError == nil else { return false }
-        return ProfileValidator.isUnderweight(heightCm: heightCm, weightKg: weightKg)
+    /// 不能选「减脂」时的说明；nil 表示可以选
+    var fatLossRestriction: String? {
+        guard isBasicInfoValid, let age, let heightCm, let weightKg else { return nil }
+        return ProfileValidator.fatLossRestriction(age: age, heightCm: heightCm, weightKg: weightKg)
     }
 
-    /// 偏轻时给用户看的说明
-    var underweightMessage: String? {
-        guard let heightCm, let weightKg, heightError == nil, weightError == nil else { return nil }
-        return ProfileValidator.underweightMessage(heightCm: heightCm, weightKg: weightKg)
+    /// 针对当前选择的温和提示
+    var goalNotes: [String] {
+        guard let bodyInfo else { return [] }
+        return ProfileValidator.goalNotes(for: bodyInfo)
     }
 
     /// 全部填好、填对时，得到可以用来计算和保存的数据；否则是 nil
     var bodyInfo: BodyInfo? {
         guard isBasicInfoValid, let age, let heightCm, let weightKg, let activity, let goal else { return nil }
-        // 偏轻的人选了减脂（比如编辑资料时体重改小了），要先换目标才能保存
-        if goal == .loseFat && isUnderweight { return nil }
+        // 不适合减脂的人选了减脂（比如编辑资料时体重改小了），要先换目标才能保存
+        if goal == .loseFat && fatLossRestriction != nil { return nil }
         return BodyInfo(sex: sex, age: age, heightCm: heightCm, weightKg: weightKg, activity: activity, goal: goal)
     }
 

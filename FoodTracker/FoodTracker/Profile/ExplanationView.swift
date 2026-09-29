@@ -40,15 +40,18 @@ struct ExplanationView: View {
 
             Section("第 3 步：按目标调整") {
                 Text(goalExplanation)
-                FormulaRow(formula: adjustmentFormula, result: "\(t.goalCalories.noDecimal) 千卡")
+                // 碰到安全下限时，不显示公式算出来的那个更低的数，只显示最终目标
+                FormulaRow(
+                    formula: adjustmentFormula,
+                    result: t.isRaisedToFloor ? "低于安全下限，按 \(t.calories.noDecimal) 千卡" : "\(t.goalCalories.noDecimal) 千卡"
+                )
                 if t.isRaisedToFloor {
-                    Text("不过这个数低于安全下限。在没有医生或营养师指导时，女性每天不建议低于 \(NutritionCalculator.minimumCalories(for: .female).noDecimal) 千卡、男性不低于 \(NutritionCalculator.minimumCalories(for: .male).noDecimal) 千卡，所以最终目标定为 \(t.calories.noDecimal) 千卡。")
-                        .foregroundStyle(.orange)
-                }
-                if bodyInfo.goal != .maintain {
-                    Text(weeklyChangeText)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    // 用平静的灰色说明，不用红色或橙色的「警告」样式
+                    Label(
+                        "为了让你吃够身体需要的营养，在没有医生或营养师指导时，女性每天通常不建议低于 \(NutritionCalculator.minimumCalories(for: .female).noDecimal) 千卡、男性不低于 \(NutritionCalculator.minimumCalories(for: .male).noDecimal) 千卡，所以最终目标定为 \(t.calories.noDecimal) 千卡。",
+                        systemImage: "heart.circle"
+                    )
+                    .foregroundStyle(.secondary)
                 }
             }
 
@@ -62,6 +65,11 @@ struct ExplanationView: View {
                     )
                     if t.isProteinCapped {
                         Text("这个数超过了每日热量的 \(NutritionCalculator.maxProteinShare.percent)，所以按 \(NutritionCalculator.maxProteinShare.percent) 的上限取 \(t.proteinG.noDecimal) 克，给碳水和脂肪留出空间。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    if bodyInfo.age >= ProfileValidator.kidneyNoteAge {
+                        Text("\(ProfileValidator.kidneyNoteAge) 岁以上、有高血压或糖尿病，或近一年没查过肾功能的话，按这个蛋白质目标吃之前先问问医生。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -86,8 +94,8 @@ struct ExplanationView: View {
 
             Section("要记住的几点") {
                 Text("这些数字是根据公式估算的起点，每个人的实际消耗会有差别。")
-                Text("可以先按这个目标吃 2～3 周，再根据体重变化小幅调整。")
-                Text("本 App 不提供医疗建议。如有疾病、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
+                Text("可以先按这个目标吃 2～3 周，看两周的平均体重再小幅调整。减脂时如果每周下降超过体重的 1%，每天多吃 150～200 千卡，或把活动量调高一档。")
+                Text("本 App 不提供医疗建议。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
             }
 
             Section("参考资料") {
@@ -104,14 +112,17 @@ struct ExplanationView: View {
 
     private var goalExplanation: String {
         let share = abs(bodyInfo.goal.calorieAdjustmentShare).percent
-        let cap = NutritionCalculator.maxDailyAdjustment.noDecimal
         switch bodyInfo.goal {
         case .loseFat:
-            return "你的目标是减脂：每天比总消耗少吃 \(share)，但最多少 \(cap) 千卡。缺口不大，体重下降比较平稳，也更容易保住肌肉："
+            return "你的目标是减脂：每天比总消耗少吃 \(share)，但最多少 \(t.maxAdjustment.noDecimal) 千卡。这个上限按你的体重算：让体重每周下降不超过约 \(bodyInfo.bmi < NutritionCalculator.leanBMI ? "0.5%" : "0.7%")，并且不超过 \(NutritionCalculator.maxDailyAdjustment.noDecimal) 千卡。缺口不大，体重下降比较平稳，也更容易保住肌肉："
         case .maintain:
             return "你的目标是维持：吃进去的和消耗的差不多就好："
         case .gainMuscle:
-            return "你的目标是增肌：每天比总消耗多吃 \(share)，但最多多 \(cap) 千卡，给肌肉生长提供原料，同时不会长太多脂肪："
+            var text = "你的目标是增肌：每天比总消耗多吃 \(share)，但最多多 \(NutritionCalculator.maxDailyAdjustment.noDecimal) 千卡，给肌肉生长提供原料，同时不会长太多脂肪"
+            if bodyInfo.bmi < ProfileValidator.underweightBMI {
+                text += "；体重偏轻时至少多吃 \(NutritionCalculator.minSurplusWhenUnderweight.noDecimal) 千卡"
+            }
+            return text + "："
         }
     }
 
@@ -124,13 +135,6 @@ struct ExplanationView: View {
         case .gainMuscle:
             "\(t.tdee.noDecimal) + \(t.adjustment.noDecimal)"
         }
-    }
-
-    private var weeklyChangeText: String {
-        let change = t.expectedWeeklyChangeKg
-        let amount = abs(change).formatted(.number.precision(.fractionLength(1)))
-        let direction = change < 0 ? "减少" : "增加"
-        return "按 1 公斤脂肪约 7700 千卡粗略估算，体重预计每周\(direction)约 \(amount) 公斤。"
     }
 
     /// 蛋白质公式里体重那一项怎么写
@@ -213,6 +217,9 @@ enum References {
         Item(
             title: "每日热量下限：Harvard Health",
             url: URL(string: "https://www.health.harvard.edu/staying-healthy/calorie-counting-made-easy")!),
+        Item(
+            title: "老年人减重的注意事项：欧洲临床营养与代谢学会（ESPEN）老年营养指南",
+            url: URL(string: "https://www.espen.org/guidelines-home/espen-guidelines")!),
     ]
 }
 

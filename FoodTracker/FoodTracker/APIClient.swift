@@ -2,7 +2,7 @@
 //  APIClient.swift
 //  FoodTracker
 //
-//  负责和后端通信：把照片发给 /analyze 接口，拿回识别结果。
+//  负责和后端通信：上传照片识别（/analyze）、生成食谱（/recipes）、查询剩余次数（/quota）。
 //
 
 import Foundation
@@ -20,7 +20,7 @@ enum APIError: LocalizedError {
         case .offline:
             "手机没有联网，请检查网络设置。"
         case .timeout:
-            "识别超时，请检查网络后重试。"
+            "等待超时，请检查网络后重试。"
         case .cannotConnect(let code):
             "连不上后端服务（错误码 \(code)）。请确认电脑上的后端正在运行。"
         case .server(let message):
@@ -32,18 +32,48 @@ enum APIError: LocalizedError {
 }
 
 enum APIClient {
+    // MARK: - 接口
+
     /// 把 JPEG 照片发给后端识别，返回识别结果。
     /// - Parameter lang: 结果用什么语言，"zh" 中文或 "en" 英文
     static func analyze(jpegData: Data, lang: String) async throws -> AnalyzeResult {
-        // 1. 准备请求：POST 到 /analyze，内容用 multipart/form-data 格式（网页上传文件用的就是这种格式）
+        // 照片用 multipart/form-data 格式上传（网页上传文件用的就是这种格式）
         let boundary = "Boundary-\(UUID().uuidString)"
-        var request = URLRequest(url: AppConfig.backendURL.appending(path: "analyze"))
-        request.httpMethod = "POST"
-        request.timeoutInterval = 90  // AI 识别一般 5～15 秒，这里留足余量
+        var request = makeRequest(path: "analyze", method: "POST", timeout: 90)
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.httpBody = multipartBody(jpegData: jpegData, lang: lang, boundary: boundary)
+        return try await send(request)
+    }
 
-        // 2. 发送请求，等待回应；网络层面的错误转成中文说明
+    /// 根据目标和偏好生成食谱
+    static func recipes(_ body: RecipeRequest) async throws -> RecipesResult {
+        var request = makeRequest(path: "recipes", method: "POST", timeout: 120)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase  // dailyCalories → daily_calories
+        request.httpBody = try encoder.encode(body)
+        return try await send(request)
+    }
+
+    /// 今天还能识别几次、生成几次食谱
+    static func quota() async throws -> Quota {
+        try await send(makeRequest(path: "quota", method: "GET", timeout: 15))
+    }
+
+    // MARK: - 公共部分
+
+    /// 准备一个请求：拼上后端地址，带上设备 ID
+    private static func makeRequest(path: String, method: String, timeout: TimeInterval) -> URLRequest {
+        var request = URLRequest(url: AppConfig.backendURL.appending(path: path))
+        request.httpMethod = method
+        request.timeoutInterval = timeout
+        request.setValue(DeviceID.current, forHTTPHeaderField: "X-Device-ID")
+        return request
+    }
+
+    /// 发送请求，检查状态码，把返回的 JSON 转成需要的类型
+    private static func send<T: Decodable>(_ request: URLRequest) async throws -> T {
+        // 1. 发送请求，等待回应；网络层面的错误转成中文说明
         let data: Data
         let response: URLResponse
         do {
@@ -52,7 +82,7 @@ enum APIClient {
             throw apiError(from: error)
         }
 
-        // 3. 检查状态码：200 表示成功，其他情况后端会返回 {"detail": "错误说明"}
+        // 2. 检查状态码：200 表示成功，其他情况后端会返回 {"detail": "错误说明"}
         guard let http = response as? HTTPURLResponse else { throw APIError.badResponse }
         guard http.statusCode == 200 else {
             if let body = try? JSONDecoder().decode(ErrorBody.self, from: data) {
@@ -61,11 +91,11 @@ enum APIClient {
             throw APIError.server("服务器出错（错误码 \(http.statusCode)），请稍后再试。")
         }
 
-        // 4. 把 JSON 转成 AnalyzeResult
+        // 3. 把 JSON 转成需要的类型
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase  // is_food → isFood
         do {
-            return try decoder.decode(AnalyzeResult.self, from: data)
+            return try decoder.decode(T.self, from: data)
         } catch {
             throw APIError.badResponse
         }

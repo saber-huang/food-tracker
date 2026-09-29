@@ -30,6 +30,9 @@ struct MainTabView: View {
             HomeView(profile: profile)
                 .tabItem { Label("今日", systemImage: "fork.knife") }
 
+            RecipesView(profile: profile)
+                .tabItem { Label("食谱", systemImage: "book") }
+
             ProfileView(profile: profile)
                 .tabItem { Label("我的", systemImage: "person.crop.circle") }
         }

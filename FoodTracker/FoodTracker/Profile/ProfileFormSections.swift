@@ -49,9 +49,16 @@ struct BasicInfoSection: View {
 
             NumberRow(
                 title: "体重", unit: "公斤", text: $draft.weightText,
-                keyboard: .decimalPad, error: draft.weightError
+                keyboard: .decimalPad, error: draft.weightError ?? draft.plausibilityError
             )
             .focused($focusedField, equals: .weight)
+
+            // BMI 很高时提醒确认单位（不阻止继续）
+            if let warning = draft.unitWarning {
+                Label(warning, systemImage: "info.circle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         } header: {
             Text("基本信息")
         } footer: {
@@ -103,7 +110,7 @@ struct ActivitySection: View {
         } header: {
             Text("日常活动量")
         } footer: {
-            Text("拿不准的时候，选低一档更稳妥。")
+            Text("按大多数星期的实际情况选；2～3 周后再根据体重变化调整。")
         }
     }
 }
@@ -116,18 +123,24 @@ struct GoalSection: View {
     var body: some View {
         Section {
             ForEach(Goal.allCases, id: \.self) { goal in
-                // 体重偏轻时，「减脂」这一项不能选
-                let disabled = goal == .loseFat && draft.isUnderweight
+                // 不适合减脂的人（体重偏轻，或 65 岁以上且 BMI 低于 30），「减脂」这一项不能选
+                let disabled = goal == .loseFat && draft.fatLossRestriction != nil
                 ChoiceRow(title: goal.title, detail: goal.detail, isSelected: draft.goal == goal) {
                     draft.goal = goal
                 }
                 .disabled(disabled)
                 .opacity(disabled ? 0.4 : 1)
             }
-            if let message = draft.underweightMessage {
-                Label(message, systemImage: "exclamationmark.circle")
+            // 用平静的灰色说明，不用红色或橙色的「警告」样式
+            if let message = draft.fatLossRestriction {
+                Label(message, systemImage: "info.circle")
                     .font(.callout)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(.secondary)
+            }
+            ForEach(draft.goalNotes, id: \.self) { note in
+                Label(note, systemImage: "info.circle")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
             }
         } header: {
             Text("你的目标")

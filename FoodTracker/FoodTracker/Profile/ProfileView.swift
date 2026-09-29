@@ -22,6 +22,7 @@ struct ProfileView: View {
                 Section("每日目标") {
                     TargetsSummaryView(targets: targets)
                     FloorNotice(targets: targets)
+                    GoalNotesView(bodyInfo: bodyInfo)
                     NavigationLink("这些数字是怎么算的？") {
                         ExplanationView(bodyInfo: bodyInfo)
                     }
@@ -38,7 +39,7 @@ struct ProfileView: View {
                 }
 
                 Section {
-                    Text("热量和营养目标是根据公式估算的参考值，不是医疗建议。如有疾病、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
+                    Text("热量和营养目标是根据公式估算的参考值，不是医疗建议。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
