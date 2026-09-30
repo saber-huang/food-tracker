@@ -259,8 +259,15 @@ struct ProfileValidatorTests {
         #expect(ProfileValidator.plausibilityError(heightCm: 165, weightKg: 120) == nil)
         // 150 厘米、180 公斤：BMI 80 → 不允许继续
         #expect(ProfileValidator.plausibilityError(heightCm: 150, weightKg: 180) != nil)
-        // 180 厘米、35 公斤：BMI 10.8 → 不允许继续
+        // 180 厘米、35 公斤：BMI 10.8 → 不允许继续；体重那一行已经有错误提示，不再重复提醒
         #expect(ProfileValidator.plausibilityError(heightCm: 180, weightKg: 35) != nil)
+        #expect(ProfileValidator.unitWarning(heightCm: 180, weightKg: 35) == nil)
+        // 175 厘米、45 公斤：BMI 约 14.7，低于 16 → 提醒核对身高和体重（可能打错了数字），但允许继续
+        #expect(ProfileValidator.unitWarning(heightCm: 175, weightKg: 45)?.contains("身高") == true)
+        #expect(ProfileValidator.plausibilityError(heightCm: 175, weightKg: 45) == nil)
+        // 16 上下：160 厘米、40.9 公斤（约 15.98）提醒；41 公斤（约 16.02）不提醒
+        #expect(ProfileValidator.unitWarning(heightCm: 160, weightKg: 40.9) != nil)
+        #expect(ProfileValidator.unitWarning(heightCm: 160, weightKg: 41) == nil)
         // 正常身材：都没有提示
         #expect(ProfileValidator.unitWarning(heightCm: 170, weightKg: 65) == nil)
         #expect(ProfileValidator.plausibilityError(heightCm: 170, weightKg: 65) == nil)
@@ -296,5 +303,25 @@ struct ProfileValidatorTests {
         // 普通年轻人 + 维持 → 没有提示
         let normal = BodyInfo(sex: .male, age: 30, heightCm: 178, weightKg: 75, activity: .moderate, goal: .maintain)
         #expect(ProfileValidator.goalNotes(for: normal).isEmpty)
+    }
+
+    @Test("BMI 低于 16：建议请医生或注册营养师来定，目标当作至少要吃到的量")
+    func severeThinnessNote() {
+        // 170 厘米、45 公斤：BMI 约 15.6
+        for goal in [Goal.maintain, .gainMuscle] {
+            let body = BodyInfo(sex: .female, age: 25, heightCm: 170, weightKg: 45, activity: .light, goal: goal)
+            let notes = ProfileValidator.goalNotes(for: body)
+            // 选哪个目标都显示这一条
+            #expect(notes.contains { $0.contains("注册营养师") && $0.contains("至少") })
+            // 不再给「自己多吃 200～300 千卡」这种自己调整的建议
+            #expect(!notes.contains { $0.contains("200～300") })
+            // 语气平静：不用吓人的词
+            #expect(notes.allSatisfy { !$0.contains("危险") && !$0.contains("警告") })
+        }
+        // BMI 约 17.6（偏轻但不到重度消瘦）→ 还是原来那条「多吃 200～300 千卡」的提示
+        let underweight = BodyInfo(sex: .female, age: 25, heightCm: 165, weightKg: 48, activity: .light, goal: .maintain)
+        let notes = ProfileValidator.goalNotes(for: underweight)
+        #expect(notes.contains { $0.contains("200～300") })
+        #expect(!notes.contains { $0.contains("注册营养师") })
     }
 }

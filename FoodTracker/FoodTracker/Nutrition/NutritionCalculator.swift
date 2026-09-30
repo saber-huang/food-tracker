@@ -16,6 +16,7 @@
 //  - 碳水：不低于 130 克/天（美国国家科学院推荐量）
 //  - 热量下限：女性 1200、男性 1500 千卡（Harvard Health）
 //  - 不提供减脂的情况：BMI 低于 18.5（WHO 偏轻）；65 岁以上且 BMI 低于 30（ESPEN 老年营养指南）
+//  - BMI 低于 16（WHO 重度消瘦）：目标照常算，但建议请医生或注册营养师来定，目标当作「至少吃到的量」
 //
 //  类型前面的 nonisolated 表示：这些纯计算代码不需要限定在主线程运行，
 //  在任何地方（包括单元测试）都可以直接调用。
@@ -287,6 +288,8 @@ nonisolated enum ProfileValidator {
     static let weightRange = 30.0...250.0  // 公斤
     /// BMI 低于这个值属于体重过轻（世界卫生组织标准）
     static let underweightBMI = 18.5
+    /// BMI 低于这个值属于重度消瘦（世界卫生组织标准）：公式算的目标只作参考，建议请医生或营养师来定
+    static let severeThinnessBMI = 16.0
     /// BMI 达到这个值属于肥胖（世界卫生组织标准）
     static let obesityBMI = 30.0
     /// 这个年龄以上，减脂要更谨慎（欧洲临床营养学会老年营养指南以 65 岁为界）
@@ -331,11 +334,16 @@ nonisolated enum ProfileValidator {
         return nil
     }
 
-    /// BMI 很高时，温和地提醒确认单位（不阻止继续）
+    /// BMI 很高或很低时，温和地提醒核对数字和单位（不阻止继续）
     static func unitWarning(heightCm: Double, weightKg: Double) -> String? {
         let bmi = NutritionCalculator.bmi(heightCm: heightCm, weightKg: weightKg)
-        guard bmi >= unitCheckBMI, plausibleBMIRange.contains(bmi) else { return nil }
-        return "请确认体重单位是公斤（1 公斤 = 2 斤）"
+        // 超出合理范围时，体重那一行已经有更明确的错误提示，这里不重复
+        guard plausibleBMIRange.contains(bmi) else { return nil }
+        // 很高：多半是把「斤」当成了「公斤」
+        if bmi >= unitCheckBMI { return "请确认体重单位是公斤（1 公斤 = 2 斤）" }
+        // 很低：可能是身高或体重打错了一位数字（比如 54 打成 45）
+        if bmi < severeThinnessBMI { return "请确认身高和体重填写正确（身高单位是厘米，体重单位是公斤）" }
+        return nil
     }
 
     /// 体重是否已经偏轻（BMI 低于 18.5）
@@ -359,7 +367,10 @@ nonisolated enum ProfileValidator {
     static func goalNotes(for body: BodyInfo) -> [String] {
         var notes: [String] = []
         let bmi = body.bmi
-        if bmi < underweightBMI && body.goal != .loseFat {
+        if bmi < severeThinnessBMI {
+            // 重度消瘦：不让用户自己加减热量，而是平静地建议找专业的人；不用「危险」「警告」这类吓人的词
+            notes.append("BMI 低于 \(Int(severeThinnessBMI)) 时，公式算出的目标不一定适合你，建议请医生或注册营养师帮你确定每天吃多少。在那之前，可以把每日目标当作每天至少要吃到的量。如果吃饭或体重让你感到有压力，也可以找心理咨询师聊聊。")
+        } else if bmi < underweightBMI && body.goal != .loseFat {
             notes.append("体重偏轻时，公式估算的消耗可能偏低。如果两周的平均体重还在下降，每天多吃 200～300 千卡，或咨询医生、营养师。")
         }
         if body.age >= seniorAge && body.goal == .loseFat {
