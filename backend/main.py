@@ -127,9 +127,12 @@ def client_ip(request: Request) -> str:
     """计次用的来访者地址。
     在 Render 上，请求先经过 Cloudflare，再经过 Render 的转发层才到这里。Cloudflare 会把来访者的真实地址
     写进 CF-Connecting-IP 请求头，并且不让来访者自己伪造它（带着伪造值的请求会被 Cloudflare 直接拦下，已实测），
-    所以在 Render 上优先用它。
-    以前是让 uvicorn 按可信代理列表从 X-Forwarded-For 里推算，但在 Render 上实测所有来访者都被算成了
-    同一个地址（同一台电脑分别用 IPv4 和 IPv6 访问，共用了同一个「每分钟」次数），现在只把它当备用。
+    所以在 Render 上优先用它；没带这个头时，退回 uvicorn 按可信代理列表从 X-Forwarded-For 里推算的地址。
+    注意：以前「同一台电脑分别用 IPv4 和 IPv6 访问，共用了同一个每分钟次数」的测试不成立。
+    Render 的域名只有 IPv4 地址，curl -6 实际走的还是 IPv4，两次请求本来就来自同一个地址。
+    要检查「不同来访者各算各的」，得用两个真正不同的网络（比如电脑的 Wi-Fi 和手机的蜂窝数据）。
+    2026-09-30 在 Render 的日志里确认过：没有出现下面那条「没有带合法的 CF-Connecting-IP」的记录，
+    访问日志里记下的也是来访者自己的公网地址（不是转发层的地址），两种方式得到的地址一致。
     本地开发没有 Cloudflare，直接用 uvicorn 给出的地址。"""
     global _warned_missing_cf_header
     if ON_RENDER:
