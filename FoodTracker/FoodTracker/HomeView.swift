@@ -76,7 +76,7 @@ struct HomeView: View {
                 }
                 // resultRoute 有值时跳到结果页；用户按「返回」时它会自动变回 nil
                 .navigationDestination(item: $resultRoute) { route in
-                    ResultView(result: route.result, photo: photo, day: route.day, today: today) {
+                    ResultView(result: route.result, photo: photo, dayKey: route.dayKey, today: today) {
                         // 保存成功：关掉结果页、清掉照片，同一餐不会不小心识别两次
                         resultRoute = nil
                         photo = nil
@@ -143,6 +143,11 @@ struct HomeView: View {
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
                     refreshToday(appBecameActive: false)
                 }
+                // 手机换了时区（比如坐飞机落地）：马上按新的时区重新算「今天」，列表查的也是新的一天。
+                // 系统没说这个通知在哪个线程发出，所以回到主线程再改界面的数据
+                .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
+                    Task { @MainActor in refreshToday(appBecameActive: false) }
+                }
                 // 热量提示里的按钮：推荐下一餐、编辑资料
                 .sheet(item: $hintSheet) { sheet in
                     switch sheet {
@@ -160,14 +165,15 @@ struct HomeView: View {
                 }
                 // 手动添加：填好后存成一条记录，记到正在看的那一天
                 .sheet(isPresented: $showManualEntry) {
+                    // 打开表单时就把「哪一天」换成数字定下来，填表中途手机换了时区也不会记到别的一天
                     EntryEditView(
-                        draft: EntryDraft(meal: suggestedMeal, day: selectedDay), title: "手动添加", showsMealPicker: true,
-                        showsDate: true
+                        draft: EntryDraft(meal: suggestedMeal, dayKey: DayMath.dayKey(for: selectedDay)), title: "手动添加",
+                        showsMealPicker: true, showsDate: true
                     ) { item in
                         modelContext.insert(
                             FoodEntry(
-                                day: item.day, meal: item.meal, name: item.name, weightG: item.weightG, values: item.values,
-                                source: .manual))
+                                dayKey: item.dayKey, meal: item.meal, name: item.name, weightG: item.weightG,
+                                values: item.values, source: .manual))
                         try? modelContext.save()
                     }
                 }
@@ -360,14 +366,15 @@ struct HomeView: View {
         isAnalyzing = true
         defer { isAnalyzing = false }  // 不管成功还是失败，最后都关掉加载动画
 
-        // 识别要好几秒，先把「记到哪一天」定下来：记到正在看的那天；就算等待时刚好过了午夜，也还是按下按钮时的那天
+        // 识别要好几秒，先把「记到哪一天」定下来（换成数字）：记到正在看的那天；
+        // 就算等待时刚好过了午夜、或者手机换了时区，也还是按下按钮时的那天
         refreshToday(appBecameActive: false)
-        let day = selectedDay
+        let dayKey = DayMath.dayKey(for: selectedDay)
         do {
             // 界面目前只有中文，所以固定要中文结果；以后做英文版时再跟随手机语言
             let result = try await APIClient.analyze(jpegData: jpegData, lang: "zh")
             refreshToday(appBecameActive: false)
-            resultRoute = ResultRoute(result: result, day: day)
+            resultRoute = ResultRoute(result: result, dayKey: dayKey)
         } catch {
             showError(message: error.localizedDescription)
         }
@@ -382,15 +389,15 @@ struct HomeView: View {
     /// 调试菜单：不识别，直接用示例结果打开结果页（记到正在看的那天）
     private func showSampleResult(_ result: AnalyzeResult) {
         refreshToday(appBecameActive: false)
-        resultRoute = ResultRoute(result: result, day: selectedDay)
+        resultRoute = ResultRoute(result: result, dayKey: DayMath.dayKey(for: selectedDay))
     }
     #endif
 }
 
-/// 跳到结果页需要的两样东西：识别结果，以及这餐要记到哪一天
+/// 跳到结果页需要的两样东西：识别结果，以及这餐要记到哪一天（20260929 这样的数字）
 private struct ResultRoute: Hashable {
     let result: AnalyzeResult
-    let day: Date
+    let dayKey: Int
 }
 
 /// 按钮上图标在上、文字在下（系统没有现成的这种样式，自己定义一个）

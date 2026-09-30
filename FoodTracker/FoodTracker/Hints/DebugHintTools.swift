@@ -19,7 +19,8 @@ struct DebugHintSection: View {
     @AppStorage(HintKeys.adjustSnoozedUntil) private var adjustSnoozedUntil = 0.0
     @State private var isConfirmingClear = false
 
-    private let calendar = DayMath.calendar
+    /// 每次都取手机现在的日历（换了时区也跟着变）
+    private var calendar: Calendar { DayMath.calendar }
 
     var body: some View {
         Section {
@@ -83,13 +84,16 @@ struct DebugHintSection: View {
         let targets = profile.targets
         let kcal = (kcalPerDay / Double(meals.count)).rounded()  // 每一餐的热量，取整
         let share = kcal / targets.calories  // 营养素按每日目标的同样比例给
+        let calendar = calendar
         for day in days {
-            let old = (try? modelContext.fetch(FetchDescriptor(predicate: FoodEntry.predicate(day: day)))) ?? []
+            let old =
+                (try? modelContext.fetch(FetchDescriptor(predicate: FoodEntry.predicate(day: day, calendar: calendar)))) ?? []
             old.forEach { modelContext.delete($0) }
             for meal in meals {
                 modelContext.insert(
                     FoodEntry(
-                        day: day, meal: meal, name: HintCopy.debugEntryName(meal.title), weightG: nil,
+                        dayKey: DayMath.dayKey(for: day, calendar: calendar), meal: meal,
+                        name: HintCopy.debugEntryName(meal.title), weightG: nil,
                         values: NutrientValues(
                             caloriesKcal: kcal,
                             proteinG: (targets.proteinG * share * 10).rounded() / 10,

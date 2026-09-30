@@ -106,7 +106,7 @@ struct RecipeDetailView: View {
         guard logged == nil else { return }
         modelContext.insert(
             FoodEntry(
-                day: DayMath.startOfDay(.now), meal: meal, name: recipe.name, weightG: DietLogMath.weight(of: recipe),
+                dayKey: DayMath.dayKey(for: .now), meal: meal, name: recipe.name, weightG: DietLogMath.weight(of: recipe),
                 values: DietLogMath.rounded(NutrientValues(recipe: recipe)), source: .recipe))
         try? modelContext.save()
         logged = meal

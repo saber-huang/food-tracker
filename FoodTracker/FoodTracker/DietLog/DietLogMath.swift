@@ -57,12 +57,14 @@ nonisolated struct EditableItem: Identifiable, Equatable {
     var values: NutrientValues
     var confidence: Confidence?  // AI 的把握；nil = 用户改过（显示「已修改」）或手动添加的
     var meal: MealType  // 记到哪一餐
-    var day: Date  // 记到哪一天（那天的 0 点）
+    /// 记到哪一天：20260929 这样的数字（和 FoodEntry.dayKey 一样）。
+    /// 从打开表单的那一刻起就用数字，一直带到保存：中途手机换了时区，也还是这一天
+    var dayKey: Int
 }
 
 nonisolated extension EditableItem {
     /// 从识别结果的一种食物开始。AI 给的重量是 0 表示不知道重量
-    init(_ item: FoodItem, meal: MealType, day: Date) {
+    init(_ item: FoodItem, meal: MealType, dayKey: Int) {
         self.init(
             id: UUID(),
             name: item.name,
@@ -70,7 +72,7 @@ nonisolated extension EditableItem {
             values: NutrientValues(item: item),
             confidence: item.confidence,
             meal: meal,
-            day: day
+            dayKey: dayKey
         )
     }
 }

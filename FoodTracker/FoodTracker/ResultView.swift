@@ -13,9 +13,13 @@ import SwiftUI
 struct ResultView: View {
     let result: AnalyzeResult
     let photo: UIImage?
-    let day: Date  // 记到哪一天：打开这页时「今日」页正在看的那天，这页里不能改
+    /// 记到哪一天：按下「开始识别」时「今日」页正在看的那天（20260929 这样的数字），这页里不能改
+    let dayKey: Int
     let today: Date  // 今天是哪一天：决定按钮上写「保存到今日」还是「保存到 9月20日」
     let onSaved: () -> Void  // 保存成功后由「今日」页关掉这一页、清掉照片
+
+    /// 显示用的日期（那天的 0 点）
+    private var day: Date { DayMath.date(fromDayKey: dayKey) }
 
     @Environment(\.modelContext) private var modelContext
     @State private var items: [EditableItem]  // 识别到的食物，用户可以改、删、加
@@ -24,16 +28,16 @@ struct ResultView: View {
     @State private var isAddingItem = false  // 是否弹出「添加食物」
     @State private var isSaving = false  // 防止快速连点两次「保存」存成两份
 
-    init(result: AnalyzeResult, photo: UIImage?, day: Date, today: Date, onSaved: @escaping () -> Void) {
+    init(result: AnalyzeResult, photo: UIImage?, dayKey: Int, today: Date, onSaved: @escaping () -> Void) {
         self.result = result
         self.photo = photo
-        self.day = day
+        self.dayKey = dayKey
         self.today = today
         self.onSaved = onSaved
         // 按现在几点默认选一餐；识别结果先复制成可以修改的一份，用户改的是这份，原始结果不动
         let meal = DietLogMath.suggestedMeal(hour: DayMath.calendar.component(.hour, from: .now))
         _meal = State(initialValue: meal)
-        _items = State(initialValue: result.items.map { EditableItem($0, meal: meal, day: day) })
+        _items = State(initialValue: result.items.map { EditableItem($0, meal: meal, dayKey: dayKey) })
     }
 
     /// 有食物时显示列表和保存按钮；没识别到食物时显示提示
@@ -139,7 +143,7 @@ struct ResultView: View {
         }
         // 补一项 AI 没认出来的食物
         .sheet(isPresented: $isAddingItem) {
-            EntryEditView(draft: EntryDraft(meal: meal, day: day), title: "添加食物") { item in
+            EntryEditView(draft: EntryDraft(meal: meal, dayKey: dayKey), title: "添加食物") { item in
                 items.append(item)
             }
         }
@@ -150,7 +154,7 @@ struct ResultView: View {
         guard !isSaving else { return }
         isSaving = true
         // 每一项自己记的餐次和日期在这页用不上：以这页选的餐次、打开时定好的日期为准
-        FoodEntry.insert(items, meal: meal, day: day, source: .photo, into: modelContext)
+        FoodEntry.insert(items, meal: meal, dayKey: dayKey, source: .photo, into: modelContext)
         try? modelContext.save()
         onSaved()
     }
@@ -269,7 +273,8 @@ private struct MacroView: View {
 #Preview("有食物") {
     NavigationStack {
         ResultView(
-            result: SampleData.analyzeResult, photo: nil, day: DayMath.startOfDay(.now), today: DayMath.startOfDay(.now)
+            result: SampleData.analyzeResult, photo: nil, dayKey: DayMath.dayKey(for: .now),
+            today: DayMath.startOfDay(.now)
         ) {}
     }
     .modelContainer(for: AppModels.all, inMemory: true)
@@ -278,7 +283,8 @@ private struct MacroView: View {
 #Preview("没有食物") {
     NavigationStack {
         ResultView(
-            result: SampleData.notFoodResult, photo: nil, day: DayMath.startOfDay(.now), today: DayMath.startOfDay(.now)
+            result: SampleData.notFoodResult, photo: nil, dayKey: DayMath.dayKey(for: .now),
+            today: DayMath.startOfDay(.now)
         ) {}
     }
     .modelContainer(for: AppModels.all, inMemory: true)

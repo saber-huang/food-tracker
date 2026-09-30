@@ -59,12 +59,14 @@ struct EntryEditView: View {
                             .foregroundStyle(.red)
                     }
                     if showsDate {
-                        LabeledContent("记录日期", value: DayMath.dayTitle(for: draft.day, today: .now))
+                        LabeledContent("记录日期", value: DayMath.dayTitle(for: draft.displayDay, today: .now))
                     }
                     if showsDayPicker {
-                        // 只能选到今天为止，不能记到未来。日期按中文显示（2026年9月29日），弹出的月历从周一开始
-                        DatePicker("日期", selection: $draft.day, in: ...Date.now, displayedComponents: .date)
+                        // 只能选到今天为止，不能记到未来。日期按中文显示（2026年9月29日）；
+                        // 弹出的月历从周一开始：这要靠日历设置（只设地区的话还是从周日开始）
+                        DatePicker("日期", selection: $draft.displayDay, in: ...Date.now, displayedComponents: .date)
                             .environment(\.locale, DayMath.locale)
+                            .environment(\.calendar, DayMath.calendar)
                     }
                 } header: {
                     Text("食物")
@@ -176,19 +178,24 @@ struct EntryEditView: View {
 }
 
 #Preview("手动添加") {
-    EntryEditView(draft: EntryDraft(meal: .lunch, day: .now), title: "手动添加", showsMealPicker: true, showsDate: true) { _ in }
+    EntryEditView(
+        draft: EntryDraft(meal: .lunch, dayKey: DayMath.dayKey(for: .now)), title: "手动添加", showsMealPicker: true,
+        showsDate: true
+    ) { _ in }
 }
 
 #Preview("修改识别结果") {
     EntryEditView(
-        draft: EntryDraft(item: EditableItem(SampleData.analyzeResult.items[0], meal: .lunch, day: .now)),
+        draft: EntryDraft(
+            item: EditableItem(SampleData.analyzeResult.items[0], meal: .lunch, dayKey: DayMath.dayKey(for: .now))),
         title: "修改食物"
     ) { _ in }
 }
 
 #Preview("修改已保存的记录") {
     EntryEditView(
-        draft: EntryDraft(item: EditableItem(SampleData.analyzeResult.items[0], meal: .lunch, day: .now)),
+        draft: EntryDraft(
+            item: EditableItem(SampleData.analyzeResult.items[0], meal: .lunch, dayKey: DayMath.dayKey(for: .now))),
         title: "修改记录", showsMealPicker: true, showsDayPicker: true, onSave: { _ in }, onDelete: {}
     )
 }

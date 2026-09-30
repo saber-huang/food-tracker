@@ -29,7 +29,15 @@ final class EntryDraft {
     var carbsText = ""
     var fatText = ""
     var meal: MealType
-    var day: Date
+    /// 记到哪一天：20260929 这样的数字，一直带到保存（中途手机换了时区也不会变成别的一天）
+    var dayKey: Int
+
+    /// 显示用的日期（那天的 0 点，按手机现在的时区），也给「日期」选择器用：
+    /// 用户选了新日期，马上换回数字存起来
+    var displayDay: Date {
+        get { DayMath.date(fromDayKey: dayKey) }
+        set { dayKey = DayMath.dayKey(for: newValue) }
+    }
 
     /// 每 100 克含多少热量和营养素（不四舍五入）；nil = 还不能按比例换算
     private(set) var per100: NutrientValues?
@@ -46,9 +54,9 @@ final class EntryDraft {
     var allTexts: [String] { [weightText, caloriesText, proteinText, carbsText, fatText] }
 
     /// 空白的草稿：手动添加、识别结果页的「添加一项」
-    init(meal: MealType, day: Date) {
+    init(meal: MealType, dayKey: Int) {
         self.meal = meal
-        self.day = day
+        self.dayKey = dayKey
         original = nil
         id = UUID()
         lastTexts = allTexts
@@ -63,7 +71,7 @@ final class EntryDraft {
         carbsText = NumberText.text(from: item.values.carbsG)
         fatText = NumberText.text(from: item.values.fatG)
         meal = item.meal
-        day = item.day
+        dayKey = item.dayKey
         per100 = DietLogMath.per100(item.values, weightG: item.weightG)
         baseWeightG = item.weightG
         original = item
@@ -175,6 +183,6 @@ final class EntryDraft {
             values: values,
             confidence: unchanged ? original?.confidence : nil,
             meal: meal,
-            day: day)
+            dayKey: dayKey)
     }
 }

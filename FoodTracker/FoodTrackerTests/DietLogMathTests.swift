@@ -210,19 +210,18 @@ struct DietLogMathTests {
 
     @Test("识别结果的一项变成可修改的一项")
     func editableItem() {
-        let day = Date(timeIntervalSince1970: 1_790_613_000)
         let item = EditableItem(
             FoodItem(name: "米饭", weightG: 150, caloriesKcal: 174, proteinG: 3.9, carbsG: 38.1, fatG: 0.5, confidence: .high),
-            meal: .lunch, day: day)
+            meal: .lunch, dayKey: 20260929)
         #expect(item.weightG == 150)
         #expect(item.values == rice)
         #expect(item.confidence == .high)
         #expect(item.meal == .lunch)
-        #expect(item.day == day)
+        #expect(item.dayKey == 20260929)
         // AI 给的重量是 0：当作不知道重量
         let noWeight = EditableItem(
             FoodItem(name: "葱花", weightG: 0, caloriesKcal: 2, proteinG: 0.1, carbsG: 0.3, fatG: 0, confidence: .low),
-            meal: .lunch, day: day)
+            meal: .lunch, dayKey: 20260929)
         #expect(noWeight.weightG == nil)
     }
 }

@@ -15,13 +15,13 @@ import Testing
 @MainActor
 @Suite("饮食记录草稿")
 struct EntryDraftTests {
-    let day = Date(timeIntervalSince1970: 1_790_613_000)
+    let dayKey = 20260929  // 记到哪一天（2026 年 9 月 29 日）
 
     /// 识别结果里的米饭：150 克、174 千卡、蛋白质 3.9、碳水 38.1、脂肪 0.5
     private var rice: EditableItem {
         EditableItem(
             FoodItem(name: "米饭", weightG: 150, caloriesKcal: 174, proteinG: 3.9, carbsG: 38.1, fatG: 0.5, confidence: .high),
-            meal: .lunch, day: day)
+            meal: .lunch, dayKey: dayKey)
     }
 
     /// 模拟用户在重量框里输入
@@ -91,7 +91,7 @@ struct EntryDraftTests {
     @Test("用户清空的框，改重量时不会自动填回去")
     func clearedBoxStaysBlank() throws {
         // 手动添加：100 克、120 千卡、蛋白质 10，然后把蛋白质删空
-        let draft = EntryDraft(meal: .lunch, day: day)
+        let draft = EntryDraft(meal: .lunch, dayKey: dayKey)
         draft.name = "燕麦"
         type(weight: "100", draft)
         type(calories: "120", draft)
@@ -115,7 +115,7 @@ struct EntryDraftTests {
     // 重量误填成「两」（2），营养素加起来比重量还多；改正成 100 克时，数字不能被放大 50 倍
     @Test("营养素比重量还多时不按比例换算")
     func unitMistakeDoesNotRescale() throws {
-        let draft = EntryDraft(meal: .lunch, day: day)
+        let draft = EntryDraft(meal: .lunch, dayKey: dayKey)
         draft.name = "米饭"
         type(weight: "2", draft)
         for text in ["1", "11", "116"] { type(calories: text, draft) }
@@ -145,7 +145,7 @@ struct EntryDraftTests {
 
     @Test("先填重量、再填热量：之后改重量会按比例换算")
     func weightThenCalories() {
-        let draft = EntryDraft(meal: .lunch, day: day)
+        let draft = EntryDraft(meal: .lunch, dayKey: dayKey)
         type(weight: "100", draft)
         #expect(draft.per100 == nil)
         #expect(draft.caloriesText == "")
@@ -157,7 +157,7 @@ struct EntryDraftTests {
 
     @Test("先填热量、再填重量：不换算，热量保持用户填的数")
     func caloriesThenWeight() throws {
-        let draft = EntryDraft(meal: .lunch, day: day)
+        let draft = EntryDraft(meal: .lunch, dayKey: dayKey)
         draft.name = "燕麦"
         type(calories: "120", draft)
         for text in ["1", "10", "100"] { type(weight: text, draft) }
@@ -175,7 +175,7 @@ struct EntryDraftTests {
 
     @Test("手动添加：名称和热量必须填，其他可以不填")
     func manualEntry() throws {
-        let draft = EntryDraft(meal: .snack, day: day)
+        let draft = EntryDraft(meal: .snack, dayKey: dayKey)
         #expect(draft.output == nil)
         draft.name = "拿铁"
         #expect(draft.output == nil)
@@ -186,12 +186,12 @@ struct EntryDraftTests {
         #expect(item.values == NutrientValues(caloriesKcal: 150))
         #expect(item.confidence == nil)
         #expect(item.meal == .snack)
-        #expect(item.day == day)
+        #expect(item.dayKey == dayKey)
     }
 
     @Test("重量填 0 或小到 0 克：当作不知道重量")
     func zeroWeight() throws {
-        let draft = EntryDraft(meal: .lunch, day: day)
+        let draft = EntryDraft(meal: .lunch, dayKey: dayKey)
         draft.name = "水"
         type(calories: "0", draft)
         type(weight: "0", draft)
@@ -202,14 +202,14 @@ struct EntryDraftTests {
 
     @Test("特别小或特别大的数字不会闪退")
     func extremeNumbers() {
-        let tiny = EntryDraft(meal: .lunch, day: day)
+        let tiny = EntryDraft(meal: .lunch, dayKey: dayKey)
         type(weight: "0.000000000000000001", tiny)
         type(calories: "174", tiny)
         type(weight: "150", tiny)
         #expect(tiny.per100 == nil)
         #expect(tiny.caloriesText == "174")
 
-        let huge = EntryDraft(meal: .lunch, day: day)
+        let huge = EntryDraft(meal: .lunch, dayKey: dayKey)
         huge.name = "x"
         type(weight: "0.1", huge)
         type(calories: "99999999999999999999", huge)
@@ -240,7 +240,7 @@ struct EntryDraftTests {
     func aiItemWithoutWeight() throws {
         let item = EditableItem(
             FoodItem(name: "葱花", weightG: 0, caloriesKcal: 2, proteinG: 0.1, carbsG: 0.3, fatG: 0, confidence: .low),
-            meal: .lunch, day: day)
+            meal: .lunch, dayKey: dayKey)
         let draft = EntryDraft(item: item)
         #expect(draft.weightText == "")
         #expect(draft.per100 == nil)
@@ -258,7 +258,7 @@ struct EntryDraftTests {
         let item = EditableItem(
             id: UUID(), name: "清蒸鸡胸肉配西兰花糙米饭", weightG: 373,
             values: NutrientValues(caloriesKcal: 590, proteinG: 48, carbsG: 63, fatG: 16), confidence: nil, meal: .lunch,
-            day: day)
+            dayKey: dayKey)
         let draft = EntryDraft(item: item)
         type(weight: "186.5", draft)
         #expect(nutrientTexts(draft) == ["295", "24", "31.5", "8"])
@@ -266,7 +266,7 @@ struct EntryDraftTests {
 
     @Test("输入检查的提示")
     func errorsAndWarnings() {
-        let draft = EntryDraft(meal: .lunch, day: day)
+        let draft = EntryDraft(meal: .lunch, dayKey: dayKey)
         draft.name = "测试"
         type(calories: "9000", draft)
         #expect(draft.caloriesError == "热量需要在 0～5000 千卡之间")

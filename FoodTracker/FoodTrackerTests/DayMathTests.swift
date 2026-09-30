@@ -71,6 +71,22 @@ struct DayMathTests {
         #expect(DayMath.dayKey(for: d(2025, 12, 31, hour: 23, cal), calendar: cal) == 20251231)
     }
 
+    // 表单里的日期选择器会把数字换成那天 0 点给用户看，用户选完再换回数字：同一个时区里来回换，结果必须不变
+    @Test("日期数字和那天 0 点来回换算，结果不变（含夏令时从 0 点开始的地方）", arguments: zones + ["America/Havana"])
+    func dayKeyRoundTrip(zone: String) {
+        let cal = calendar(zone)
+        var day = d(2026, 1, 1, cal)
+        var mismatches: [Int] = []
+        for _ in 0..<366 {
+            let key = DayMath.dayKey(for: day, calendar: cal)
+            if DayMath.dayKey(for: DayMath.date(fromDayKey: key, calendar: cal), calendar: cal) != key {
+                mismatches.append(key)
+            }
+            day = DayMath.addingDays(1, to: day, calendar: cal)
+        }
+        #expect(mismatches.isEmpty)
+    }
+
     @Test("换了时区，记录还在原来那天")
     func dayKeyAcrossTimeZones() {
         let shanghai = calendar("Asia/Shanghai")

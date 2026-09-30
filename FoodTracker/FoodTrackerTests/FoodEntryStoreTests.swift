@@ -39,8 +39,8 @@ struct FoodEntryStoreTests {
         _ name: String, on day: Date, _ cal: Calendar, meal: MealType = .lunch, createdAt: Date = .now
     ) -> FoodEntry {
         let entry = FoodEntry(
-            day: day, meal: meal, name: name, weightG: 100, values: NutrientValues(caloriesKcal: 100), source: .manual,
-            createdAt: createdAt, calendar: cal)
+            dayKey: DayMath.dayKey(for: day, calendar: cal), meal: meal, name: name, weightG: 100,
+            values: NutrientValues(caloriesKcal: 100), source: .manual, createdAt: createdAt)
         context.insert(entry)
         return entry
     }
@@ -82,9 +82,9 @@ struct FoodEntryStoreTests {
         try context.save()
 
         // 改到 28 日
-        var item = EditableItem(entry: entry, calendar: shanghai)
-        item.day = date(2026, 9, 28, shanghai)
-        entry.apply(item, calendar: shanghai)
+        var item = EditableItem(entry: entry)
+        item.dayKey = 20260928
+        entry.apply(item)
         try context.save()
         #expect(try names(on: date(2026, 9, 29, shanghai), shanghai) == ["另一条"])
         #expect(try names(on: date(2026, 9, 28, shanghai), shanghai) == ["午饭"])
@@ -125,27 +125,44 @@ struct FoodEntryStoreTests {
         let entry = insert("上海的午饭", on: date(2026, 9, 29, hour: 12, shanghai), shanghai)
         try context.save()
 
-        // 在洛杉矶打开这条记录，只改热量
-        var item = EditableItem(entry: entry, calendar: losAngeles)
+        // 打开这条记录，只改热量：日期跟着记录里的数字走，不经过时区换算
+        var item = EditableItem(entry: entry)
         item.values.caloriesKcal = 200
-        entry.apply(item, calendar: losAngeles)
+        entry.apply(item)
         #expect(entry.dayKey == 20260929)
         #expect(entry.caloriesKcal == 200)
 
-        // 把日期改成 27 日（表单里的时间可能不是 0 点）
-        item.day = date(2026, 9, 27, hour: 5, losAngeles)
-        entry.apply(item, calendar: losAngeles)
+        // 把日期改成 27 日
+        item.dayKey = 20260927
+        entry.apply(item)
         #expect(entry.dayKey == 20260927)
+    }
+
+    // 在上海打开「修改记录」，飞到洛杉矶以后才改热量、保存：还是 9 月 29 日。
+    // 以前表单里存的是「上海 29 日 0 点」这个时刻，到洛杉矶再换回日期就成了 28 日
+    @Test("打开表单后手机换了时区再保存，记录还在原来那天")
+    func editAcrossTimeZoneChange() throws {
+        let entry = insert("上海的午饭", on: date(2026, 9, 29, hour: 12, shanghai), shanghai)
+        try context.save()
+        let draft = EntryDraft(item: EditableItem(entry: entry))  // 在上海打开
+        draft.caloriesText = "450"  // 落地以后才改
+        draft.textsChanged()
+        entry.apply(try #require(draft.output))
+        try context.save()
+        #expect(entry.dayKey == 20260929)
+        #expect(entry.caloriesKcal == 450)
+        #expect(try names(on: date(2026, 9, 29, losAngeles), losAngeles) == ["上海的午饭"])
+        #expect(try names(on: date(2026, 9, 28, losAngeles), losAngeles).isEmpty)
     }
 
     // 结果页点「保存到今日」：两项一起存，顺序和列表一样，都记到选好的那一餐、那一天
     @Test("保存识别结果：几项一起存，顺序不变")
     func insertMeal() throws {
-        var items = SampleData.analyzeResult.items.map { EditableItem($0, meal: .snack, day: date(2026, 9, 1, shanghai)) }
+        var items = SampleData.analyzeResult.items.map { EditableItem($0, meal: .snack, dayKey: 20260901) }
         items[0].values.proteinG = 3.94  // 用户改过的数字，存之前要取整
         let day = date(2026, 9, 29, shanghai)
         let now = Date(timeIntervalSince1970: 1_790_000_000)
-        let saved = FoodEntry.insert(items, meal: .dinner, day: day, source: .photo, into: context, now: now, calendar: shanghai)
+        let saved = FoodEntry.insert(items, meal: .dinner, dayKey: 20260929, source: .photo, into: context, now: now)
         try context.save()
 
         #expect(saved.count == 2)
@@ -161,15 +178,14 @@ struct FoodEntryStoreTests {
     @Test("修改表单里显示的内容和记录一致")
     func editableItemFromEntry() {
         let entry = FoodEntry(
-            day: date(2026, 9, 29, shanghai), meal: .dinner, name: "米饭", weightG: nil,
-            values: NutrientValues(caloriesKcal: 174, proteinG: 3.9, carbsG: 38.1, fatG: 0.5), source: .photo,
-            calendar: shanghai)
-        let item = EditableItem(entry: entry, calendar: shanghai)
+            dayKey: 20260929, meal: .dinner, name: "米饭", weightG: nil,
+            values: NutrientValues(caloriesKcal: 174, proteinG: 3.9, carbsG: 38.1, fatG: 0.5), source: .photo)
+        let item = EditableItem(entry: entry)
         #expect(item.name == "米饭")
         #expect(item.weightG == nil)
         #expect(item.values == entry.values)
         #expect(item.confidence == nil)
         #expect(item.meal == .dinner)
-        #expect(item.day == date(2026, 9, 29, shanghai))
+        #expect(item.dayKey == 20260929)
     }
 }

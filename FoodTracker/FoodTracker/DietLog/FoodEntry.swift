@@ -6,9 +6,14 @@
 //  拍照识别出 3 种食物就是 3 条记录；同一天同一餐的记录（dayKey + mealRaw 相同）显示在一起。
 //
 //  ⚠️ 以后改这个类只能「加」，不能「改」，否则手机上已有的数据会读不出来：
-//  - 新属性要有默认值，或者是可选的（类型后面带 ?）
+//  - 新属性只用 String / Int / Double / Bool / Date 这类简单类型，并且要有默认值，或者是可选的（类型后面带 ?）
+//  - 选项（枚举）照 mealRaw 的样子存英文文字；不要直接存枚举或自己定义的结构体：
+//    旧记录读这个新属性会闪退（枚举），或者整个数据库打不开（结构体）
 //  - 想改属性名，要用 @Attribute(originalName: "旧名字")
 //  - 不要改已有属性的类型
+//
+//  「哪一天」一律用 dayKey 这个数字传来传去，只在显示时才换成日期（见 DayMath.date(fromDayKey:)）：
+//  先换成日期、过一会儿再换回数字的话，中途手机换了时区，记录就会跑到前一天或后一天
 //
 
 import Foundation
@@ -29,11 +34,12 @@ final class FoodEntry {
     var sourceRaw: String  // EntrySource 的英文名：photo / manual / recipe
     var createdAt: Date  // 同一餐里按添加的先后排
 
+    /// dayKey：记到哪一天，20260929 这样的数字。要记到「今天」就写 DayMath.dayKey(for: .now)
     init(
-        day: Date, meal: MealType, name: String, weightG: Double?, values: NutrientValues, source: EntrySource,
-        createdAt: Date = .now, calendar: Calendar = DayMath.calendar
+        dayKey: Int, meal: MealType, name: String, weightG: Double?, values: NutrientValues, source: EntrySource,
+        createdAt: Date = .now
     ) {
-        self.dayKey = DayMath.dayKey(for: day, calendar: calendar)
+        self.dayKey = dayKey
         self.mealRaw = meal.rawValue
         self.name = name
         self.weightG = weightG
@@ -52,6 +58,8 @@ final class FoodEntry {
         DayMath.date(fromDayKey: dayKey, calendar: calendar)
     }
 
+    // ⚠️ 下面的 meal、source、values 是「算出来的属性」，数据库里没有这几列，只能在查出来以后用。
+    //    #Predicate 和排序里要写存下来的 mealRaw、sourceRaw、caloriesKcal 等：写 $0.meal 能编译，但运行时会闪退
     var meal: MealType {
         get { MealType(rawValue: mealRaw) ?? .snack }
         set { mealRaw = newValue.rawValue }
@@ -63,8 +71,8 @@ final class FoodEntry {
         NutrientValues(caloriesKcal: caloriesKcal, proteinG: proteinG, carbsG: carbsG, fatG: fatG)
     }
 
-    /// 修改后保存：把表单里的内容写回这条记录
-    func apply(_ item: EditableItem, calendar: Calendar = DayMath.calendar) {
+    /// 修改后保存：把表单里的内容写回这条记录（日期也是数字，直接写回，不经过时区换算）
+    func apply(_ item: EditableItem) {
         name = item.name
         weightG = item.weightG
         caloriesKcal = item.values.caloriesKcal
@@ -72,9 +80,7 @@ final class FoodEntry {
         carbsG = item.values.carbsG
         fatG = item.values.fatG
         meal = item.meal
-        // 日期真的改了才改：表单里的日期是按这条记录的 dayKey 算出来的，没动过的话算回去还是同一个数
-        let newKey = DayMath.dayKey(for: item.day, calendar: calendar)
-        if newKey != dayKey { dayKey = newKey }
+        if item.dayKey != dayKey { dayKey = item.dayKey }
     }
 
     /// 把一餐里的几项食物一起存进数据库（识别结果页的「保存到今日」、调试菜单的示例记录都用它）。
@@ -83,13 +89,14 @@ final class FoodEntry {
     /// 这里不调用 save()，什么时候真正写进数据库由调用的地方决定
     @discardableResult
     static func insert(
-        _ items: [EditableItem], meal: MealType, day: Date, source: EntrySource, into context: ModelContext,
-        now: Date = .now, calendar: Calendar = DayMath.calendar
+        _ items: [EditableItem], meal: MealType, dayKey: Int, source: EntrySource, into context: ModelContext,
+        now: Date = .now
     ) -> [FoodEntry] {
         items.enumerated().map { index, item in
             let entry = FoodEntry(
-                day: day, meal: meal, name: item.name, weightG: item.weightG, values: DietLogMath.rounded(item.values),
-                source: source, createdAt: now.addingTimeInterval(Double(index) * 0.001), calendar: calendar)
+                dayKey: dayKey, meal: meal, name: item.name, weightG: item.weightG,
+                values: DietLogMath.rounded(item.values), source: source,
+                createdAt: now.addingTimeInterval(Double(index) * 0.001))
             context.insert(entry)
             return entry
         }
@@ -114,7 +121,7 @@ final class FoodEntry {
 
 extension EditableItem {
     /// 已保存的记录 → 编辑表单用的一项（要读 @Model，所以写在这里）
-    init(entry: FoodEntry, calendar: Calendar = DayMath.calendar) {
+    init(entry: FoodEntry) {
         self.init(
             id: UUID(),
             name: entry.name,
@@ -122,7 +129,7 @@ extension EditableItem {
             values: entry.values,
             confidence: nil,
             meal: entry.meal,
-            day: entry.day(calendar: calendar)
+            dayKey: entry.dayKey
         )
     }
 }
