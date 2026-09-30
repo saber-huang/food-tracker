@@ -95,7 +95,7 @@ struct PrivacyPolicyTests {
         #expect(url.absoluteString.hasPrefix("mailto:\(SupportInfo.contactEmail)?subject="))
         // 标题里的中文和括号要先转码，链接才打得开；转回来就是原来的标题
         let subject = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first?.value)
-        #expect(subject.hasPrefix("饮食记录 App 反馈"))
+        #expect(subject.hasPrefix("一拍即食 反馈"))
         #expect(subject.contains(SupportInfo.versionText))
     }
 }

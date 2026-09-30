@@ -1,4 +1,4 @@
-# Food Log App · Support
+# Kindbite · Support
 
 This app helps you keep track of what you eat. Snap a photo of a meal and an AI estimates its calories, protein, carbs and fat, or log it manually. It works out daily targets from your profile and can suggest recipes that fit them.
 

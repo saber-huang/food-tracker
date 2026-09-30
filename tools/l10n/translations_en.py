@@ -353,7 +353,7 @@ LOCALIZABLE = {
     "隐私政策暂时读不出来，请更新 App 后再试。": "The privacy policy couldn't be loaded. Please update the app and try again.",
     "隐私政策": "Privacy Policy",
     "联系邮箱稍后公布。": "A contact email will be posted soon.",
-    "饮食记录 App 反馈（%@）": "Food Log App Feedback (%@)",
+    "一拍即食 反馈（%@）": "Kindbite Feedback (%@)",
     # 身高体重单位
     "单位": "Units",
     "公制（厘米、公斤）": "Metric (cm, kg)",

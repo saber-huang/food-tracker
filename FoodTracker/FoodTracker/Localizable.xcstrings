@@ -449,6 +449,22 @@
         }
       }
     },
+    "一拍即食 反馈（%@）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kindbite Feedback (%@)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一拍即食 反馈（%@）"
+          }
+        }
+      }
+    },
     "上一周" : {
       "localizations" : {
         "en" : {
@@ -5173,22 +5189,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "饮食偏好（可不填）"
-          }
-        }
-      }
-    },
-    "饮食记录 App 反馈（%@）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Food Log App Feedback (%@)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "饮食记录 App 反馈（%@）"
           }
         }
       }

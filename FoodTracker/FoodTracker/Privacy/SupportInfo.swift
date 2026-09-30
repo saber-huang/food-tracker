@@ -22,7 +22,7 @@ nonisolated enum SupportInfo {
     static var feedbackURL: URL? {
         guard !contactEmail.isEmpty else { return nil }
         // 标题里有中文，要先转成网址能用的格式
-        let subject = String(localized: "饮食记录 App 反馈（\(versionText)）")
+        let subject = String(localized: "一拍即食 反馈（\(versionText)）")
             .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         return URL(string: "mailto:\(contactEmail)?subject=\(subject)")
     }
