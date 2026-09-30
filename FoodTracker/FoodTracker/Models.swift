@@ -17,8 +17,9 @@ struct AnalyzeResult: Codable, Hashable {
     let model: String  // 用的是哪个 AI 模型
 }
 
-/// 一种食物
-struct FoodItem: Codable, Hashable {
+/// 一种食物。
+/// nonisolated：纯数据，不需要限定在主线程，计算模块和单元测试都能直接用（和 NutritionCalculator 里的类型一样）
+nonisolated struct FoodItem: Codable, Hashable {
     let name: String  // 名称
     let weightG: Double  // 估算重量（克）
     let caloriesKcal: Double  // 热量（千卡）
@@ -29,7 +30,7 @@ struct FoodItem: Codable, Hashable {
 }
 
 /// 整餐合计
-struct MealTotal: Codable, Hashable {
+nonisolated struct MealTotal: Codable, Hashable {
     let weightG: Double
     let caloriesKcal: Double
     let proteinG: Double
@@ -38,7 +39,7 @@ struct MealTotal: Codable, Hashable {
 }
 
 /// 识别可信度：后端只会返回 high、medium、low 三种
-enum Confidence: String, Codable, Hashable {
+nonisolated enum Confidence: String, Codable, Hashable {
     case high, medium, low
 
     /// 显示在界面上的文字

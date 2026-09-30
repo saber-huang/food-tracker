@@ -27,8 +27,8 @@ final class ProfileDraft {
     init(from body: BodyInfo) {
         sex = body.sex
         ageText = String(body.age)
-        heightText = Self.text(from: body.heightCm)
-        weightText = Self.text(from: body.weightKg)
+        heightText = NumberText.text(from: body.heightCm)
+        weightText = NumberText.text(from: body.weightKg)
         activity = body.activity
         goal = body.goal
     }
@@ -36,8 +36,8 @@ final class ProfileDraft {
     // MARK: 把文字转成数字（转不了就是 nil）
 
     var age: Int? { Int(ageText.trimmingCharacters(in: .whitespaces)) }
-    var heightCm: Double? { Self.number(from: heightText) }
-    var weightKg: Double? { Self.number(from: weightText) }
+    var heightCm: Double? { NumberText.number(from: heightText) }
+    var weightKg: Double? { NumberText.number(from: weightText) }
 
     // MARK: 检查结果（nil 表示没问题）
 
@@ -80,19 +80,5 @@ final class ProfileDraft {
         // 不适合减脂的人选了减脂（比如编辑资料时体重改小了），要先换目标才能保存
         if goal == .loseFat && fatLossRestriction != nil { return nil }
         return BodyInfo(sex: sex, age: age, heightCm: heightCm, weightKg: weightKg, activity: activity, goal: goal)
-    }
-
-    // MARK: 小工具
-
-    /// 文字转数字。有些地区的键盘用逗号当小数点，这里一并支持
-    private static func number(from text: String) -> Double? {
-        let cleaned = text.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: ".")
-        guard let value = Double(cleaned), value.isFinite else { return nil }
-        return value
-    }
-
-    /// 数字转文字：175.0 → "175"，62.5 → "62.5"
-    private static func text(from value: Double) -> String {
-        value.rounded() == value ? String(Int(value)) : String(value)
     }
 }

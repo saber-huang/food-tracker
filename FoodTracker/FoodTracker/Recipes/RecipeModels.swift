@@ -8,7 +8,7 @@
 import Foundation
 
 /// 哪一餐
-enum MealSlot: String, Codable, CaseIterable, Identifiable {
+nonisolated enum MealSlot: String, Codable, CaseIterable, Identifiable {
     case breakfast, lunch, dinner
 
     var id: String { rawValue }
