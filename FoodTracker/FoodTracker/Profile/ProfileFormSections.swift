@@ -37,21 +37,21 @@ struct BasicInfoSection: View {
 
             NumberRow(
                 title: "年龄", unit: "岁", text: $draft.ageText,
-                keyboard: .numberPad, error: draft.ageError
+                keyboard: .numberPad, error: draft.ageError,
+                focus: $focusedField, field: .age
             )
-            .focused($focusedField, equals: .age)
 
             NumberRow(
                 title: "身高", unit: "厘米", text: $draft.heightText,
-                keyboard: .decimalPad, error: draft.heightError
+                keyboard: .decimalPad, error: draft.heightError,
+                focus: $focusedField, field: .height
             )
-            .focused($focusedField, equals: .height)
 
             NumberRow(
                 title: "体重", unit: "公斤", text: $draft.weightText,
-                keyboard: .decimalPad, error: draft.weightError ?? draft.plausibilityError
+                keyboard: .decimalPad, error: draft.weightError ?? draft.plausibilityError,
+                focus: $focusedField, field: .weight
             )
-            .focused($focusedField, equals: .weight)
 
             // BMI 很高时提醒确认单位（不阻止继续）
             if let warning = draft.unitWarning {
@@ -63,34 +63,6 @@ struct BasicInfoSection: View {
             Text("基本信息")
         } footer: {
             Text("性别只用于计算基础代谢，公式里男女的数值不同。")
-        }
-    }
-}
-
-/// 一行数字输入：标题、输入框、单位；填错时在下面显示红色提示
-private struct NumberRow: View {
-    let title: String
-    let unit: String
-    @Binding var text: String
-    let keyboard: UIKeyboardType
-    let error: String?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(title)
-                TextField(title, text: $text, prompt: Text("请输入"))
-                    .keyboardType(keyboard)
-                    .multilineTextAlignment(.trailing)
-                Text(unit)
-                    .foregroundStyle(.secondary)
-            }
-            // 还没输入时不显示错误，免得一打开页面就满屏红字
-            if let error, !text.isEmpty {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
         }
     }
 }

@@ -3,7 +3,8 @@
 //  FoodTracker
 //
 //  「今日」页：上面是今天的饮食记录（和目标比较的卡片 + 各餐的记录），
-//  底部是记录用的按钮：拍照、从相册选择。选了照片后点「开始识别」，识别成功后自动跳到结果页。
+//  底部是记录用的按钮：拍照、从相册选择、手动添加。
+//  选了照片后点「开始识别」，识别成功后自动跳到结果页；手动添加不需要联网，识别次数用完了也能记。
 //
 
 import PhotosUI
@@ -27,6 +28,7 @@ struct HomeView: View {
     @State private var showError = false  // 是否显示出错提示
     @State private var errorMessage = ""  // 出错提示的内容
     @State private var showNoCamera = false  // 是否提示「没有相机」
+    @State private var showManualEntry = false  // 是否打开「手动添加」
 
     var body: some View {
         NavigationStack {
@@ -66,6 +68,18 @@ struct HomeView: View {
                 }
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
                     refreshToday()
+                }
+                // 手动添加：填好后存成一条记录
+                .sheet(isPresented: $showManualEntry) {
+                    EntryEditView(
+                        draft: EntryDraft(meal: suggestedMeal, day: today), title: "手动添加", showsMealPicker: true, showsDate: true
+                    ) { item in
+                        modelContext.insert(
+                            FoodEntry(
+                                day: item.day, meal: item.meal, name: item.name, weightG: item.weightG, values: item.values,
+                                source: .manual))
+                        try? modelContext.save()
+                    }
                 }
                 // 全屏打开相机
                 .fullScreenCover(isPresented: $showCamera) {
@@ -126,7 +140,7 @@ struct HomeView: View {
         .background(.bar)
     }
 
-    /// 拍照 / 从相册选择 两个按钮
+    /// 拍照 / 从相册选择 / 手动添加 三个按钮（图标在上、文字在下，小屏幕的手机也放得下）
     private var pickButtons: some View {
         HStack(spacing: 12) {
             Button {
@@ -138,17 +152,22 @@ struct HomeView: View {
                 }
             } label: {
                 Label("拍照", systemImage: "camera")
-                    .frame(maxWidth: .infinity)
             }
 
             // PhotosPicker 是系统自带的相册选择器，不需要申请相册权限
             PhotosPicker(selection: $pickerItem, matching: .images) {
                 Label("从相册选择", systemImage: "photo.on.rectangle")
-                    .frame(maxWidth: .infinity)
+            }
+
+            Button {
+                refreshToday()  // 打开前确认一下今天是哪天（可能刚过午夜）
+                showManualEntry = true
+            } label: {
+                Label("手动添加", systemImage: "square.and.pencil")
             }
         }
+        .labelStyle(IconAboveTitleLabelStyle())
         .buttonStyle(.bordered)
-        .controlSize(.large)
         .disabled(isAnalyzing)
     }
 
@@ -166,6 +185,11 @@ struct HomeView: View {
     }
 
     // MARK: - 功能
+
+    /// 按现在几点，默认选中这一餐（用户可以改）
+    private var suggestedMeal: MealType {
+        DietLogMath.suggestedMeal(hour: DayMath.calendar.component(.hour, from: .now))
+    }
 
     /// 如果已经过了午夜，把「今天」换成新的一天
     private func refreshToday() {
@@ -208,6 +232,20 @@ struct HomeView: View {
     private func showError(message: String) {
         errorMessage = message
         showError = true
+    }
+}
+
+/// 按钮上图标在上、文字在下（系统没有现成的这种样式，自己定义一个）
+private struct IconAboveTitleLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        VStack(spacing: 4) {
+            configuration.icon
+                .font(.title3)
+            configuration.title
+                .font(.caption)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 4)
     }
 }
 

@@ -1,0 +1,137 @@
+//
+//  EntryEditView.swift
+//  FoodTracker
+//
+//  填写或修改一项食物的表单：名称、重量、热量、三大营养素。
+//  它只负责填写；点「保存」后把结果交给打开它的页面，由那个页面决定怎么存（和「编辑资料」页一样的做法）。
+//  手动添加、修改识别结果里的一项，都用这个表单。
+//
+
+import SwiftUI
+
+struct EntryEditView: View {
+    let title: String
+    let showsMealPicker: Bool  // 是否显示「记到哪一餐」
+    let showsDate: Bool  // 是否显示「记录日期」（只显示，不能改）
+    let onSave: (EditableItem) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var draft: EntryDraft
+    @State private var didSave = false  // 防止快速连点两次「保存」存成两条
+    @FocusState private var focusedField: Field?
+    private enum Field { case name, weight, calories, protein, carbs, fat }
+
+    init(
+        draft: EntryDraft, title: String, showsMealPicker: Bool = false, showsDate: Bool = false,
+        onSave: @escaping (EditableItem) -> Void
+    ) {
+        _draft = State(initialValue: draft)
+        self.title = title
+        self.showsMealPicker = showsMealPicker
+        self.showsDate = showsDate
+        self.onSave = onSave
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("食物") {
+                    TextField("名称", text: $draft.name, prompt: Text("例如：米饭"))
+                        .focused($focusedField, equals: .name)
+                        // 数字键盘没有「完成」键，在键盘上方加一个。只挂在这一行上，挂多了会出现好几个「完成」
+                        .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Spacer()
+                                Button("完成") { focusedField = nil }
+                            }
+                        }
+                    if let error = draft.nameError, !draft.name.isEmpty, focusedField != .name {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                    if showsMealPicker {
+                        Picker("记到哪一餐", selection: $draft.meal) {
+                            ForEach(MealType.allCases) { meal in
+                                Text(meal.title).tag(meal)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    if showsDate {
+                        LabeledContent("记录日期", value: DayMath.dayTitle(for: draft.day, today: .now))
+                    }
+                }
+
+                Section {
+                    NumberRow(
+                        title: "重量", unit: "克", text: $draft.weightText, keyboard: .decimalPad,
+                        error: draft.weightError, focus: $focusedField, field: .weight)
+                    NumberRow(
+                        title: "热量", unit: "千卡", text: $draft.caloriesText, keyboard: .decimalPad,
+                        error: draft.caloriesError, focus: $focusedField, field: .calories)
+                    NumberRow(
+                        title: "蛋白质", unit: "克", text: $draft.proteinText, keyboard: .decimalPad,
+                        error: draft.proteinError, focus: $focusedField, field: .protein)
+                    NumberRow(
+                        title: "碳水", unit: "克", text: $draft.carbsText, keyboard: .decimalPad,
+                        error: draft.carbsError, focus: $focusedField, field: .carbs)
+                    NumberRow(
+                        title: "脂肪", unit: "克", text: $draft.fatText, keyboard: .decimalPad,
+                        error: draft.fatError, focus: $focusedField, field: .fat)
+
+                    // 灰色提醒：可能填错了，但不阻止保存
+                    if let warning = draft.kcalMismatchWarning {
+                        Label(warning, systemImage: "info.circle")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    if let warning = draft.macrosExceedWeightWarning {
+                        Label(warning, systemImage: "info.circle")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("分量与营养")
+                } footer: {
+                    Text(
+                        draft.per100 == nil
+                            ? "名称和热量必须填，其他可以不填。先填重量、再填热量，之后改重量才会按比例换算。"
+                            : "改了重量，热量和三大营养素会按比例一起变；直接改某一项，就只改那一项。")
+                }
+            }
+            // 任何一个数字框变了，交给草稿判断要不要按比例换算
+            .onChange(of: draft.allTexts) { draft.textsChanged() }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("保存") { save() }
+                        .disabled(draft.output == nil || didSave)
+                }
+            }
+        }
+    }
+
+    private func save() {
+        // 按钮变灰要等下一次刷新界面，所以这里再检查一次，连点两下也只存一条
+        guard !didSave, let item = draft.output else { return }
+        didSave = true
+        onSave(item)
+        dismiss()
+    }
+}
+
+#Preview("手动添加") {
+    EntryEditView(draft: EntryDraft(meal: .lunch, day: .now), title: "手动添加", showsMealPicker: true, showsDate: true) { _ in }
+}
+
+#Preview("修改识别结果") {
+    EntryEditView(
+        draft: EntryDraft(item: EditableItem(SampleData.analyzeResult.items[0], meal: .lunch, day: .now)),
+        title: "修改食物"
+    ) { _ in }
+}
