@@ -66,8 +66,23 @@ struct PrivacyPolicyTests {
         let allText = blocks.map { "\($0)" }.joined()
         #expect(allText.contains("test@example.com"))
         #expect(!allText.contains("{{"))
-        // 还没定邮箱时，写的是「稍后公布」，也不会露出占位符
+        // 默认用 SupportInfo 里的联系邮箱
+        let defaultText = PrivacyPolicy.blocks().map { "\($0)" }.joined()
+        #expect(defaultText.contains(SupportInfo.contactLine))
+    }
+
+    @Test("意见反馈：打开写好收件人和标题的邮件")
+    func feedbackMail() throws {
+        // 没填邮箱时不显示「意见反馈」；填了就是一个 mailto 链接
         #expect(SupportInfo.contactEmail.isEmpty == (SupportInfo.feedbackURL == nil))
+        guard !SupportInfo.contactEmail.isEmpty else { return }
+        let url = try #require(SupportInfo.feedbackURL)
+        #expect(url.scheme == "mailto")
+        #expect(url.absoluteString.hasPrefix("mailto:\(SupportInfo.contactEmail)?subject="))
+        // 标题里的中文和括号要先转码，链接才打得开；转回来就是原来的标题
+        let subject = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first?.value)
+        #expect(subject.hasPrefix("饮食记录 App 反馈"))
+        #expect(subject.contains(SupportInfo.versionText))
     }
 }
 

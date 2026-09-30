@@ -8,9 +8,10 @@
 import Foundation
 
 nonisolated enum SupportInfo {
-    /// 意见反馈和隐私问题的联系邮箱，会公开显示在 App 和隐私政策里。
-    /// 还没定：空着时「我的」页不显示「意见反馈」，隐私政策里写「联系邮箱稍后公布」
-    static let contactEmail = ""
+    /// 意见反馈和隐私问题的联系邮箱，会公开显示在 App、隐私政策和支持网页上。
+    /// 换邮箱只改这一行，再按 site/build_site.py 开头的说明更新网页。
+    /// 空着时「我的」页不显示「意见反馈」，隐私政策里写「联系邮箱稍后公布」
+    static let contactEmail = "1390434115@qq.com"
 
     /// 隐私政策「联系我们」后面的那句
     static var contactLine: String {
