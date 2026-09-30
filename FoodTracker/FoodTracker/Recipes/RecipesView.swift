@@ -23,6 +23,7 @@ struct RecipesView: View {
     @State private var isGeneratingAll = false  // 正在生成整套
     @State private var swappingMeal: MealSlot?  // 正在「换一个」的那一餐
     @State private var remaining: Int?  // 今天还能生成几次
+    @State private var pendingAIAction: PendingAIAction?  // 还没同意使用 AI 时，先记下要做的生成，同意后再做
     @State private var showPreferences = false
     @State private var showError = false
     @State private var errorMessage = ""
@@ -43,6 +44,8 @@ struct RecipesView: View {
             .sheet(isPresented: $showPreferences) {
                 RecipePreferencesView()
             }
+            // 第一次生成前：说明会发送什么、发给谁，同意后才发送（见 AIConsent.swift）
+            .aiConsentSheet(pending: $pendingAIAction)
             .alert("生成失败", isPresented: $showError) {
                 Button("好", role: .cancel) {}
             } message: {
@@ -121,7 +124,8 @@ struct RecipesView: View {
     private var generateSection: some View {
         Section {
             Button {
-                Task { await generateAll() }
+                // 没同意过使用 AI 时，先弹出说明；同意后才发送目标和偏好
+                AIConsent.perform(pending: $pendingAIAction) { Task { await generateAll() } }
             } label: {
                 HStack {
                     if isGeneratingAll {
@@ -155,7 +159,7 @@ struct RecipesView: View {
             }
 
             Button {
-                Task { await swap(recipe.meal) }
+                AIConsent.perform(pending: $pendingAIAction) { Task { await swap(recipe.meal) } }
             } label: {
                 HStack {
                     if swappingMeal == recipe.meal {

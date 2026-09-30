@@ -25,6 +25,7 @@ struct NextMealSheet: View {
     @State private var isGenerating = false
     @State private var remaining: Int?  // 今天还能生成几次；问不到就不显示
     @State private var errorMessage: String?  // 有值时弹出出错提示
+    @State private var pendingAIAction: PendingAIAction?  // 还没同意使用 AI 时，先记下要做的生成，同意后再做
 
     private var mealName: String { budget.meal.title }
 
@@ -45,7 +46,8 @@ struct NextMealSheet: View {
 
                 Section {
                     Button {
-                        Task { await generate() }
+                        // 没同意过使用 AI 时，先弹出说明；同意后才发送这一餐的目标和偏好
+                        AIConsent.perform(pending: $pendingAIAction) { Task { await generate() } }
                     } label: {
                         HStack {
                             if isGenerating {
@@ -92,6 +94,8 @@ struct NextMealSheet: View {
             } message: {
                 Text(errorMessage ?? "")
             }
+            // 第一次生成前：说明会发送什么、发给谁，同意后才发送（见 AIConsent.swift）
+            .aiConsentSheet(pending: $pendingAIAction)
             // 固定在页面最底部的提示（和「食谱」页一样）
             .safeAreaInset(edge: .bottom) {
                 Text(RecipeCopy.disclaimer)

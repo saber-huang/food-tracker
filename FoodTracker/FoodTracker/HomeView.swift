@@ -29,6 +29,7 @@ struct HomeView: View {
     @State private var showCamera = false  // 是否打开相机
     @State private var isAnalyzing = false  // 是否正在识别
     @State private var analyzeRemaining: Int?  // 今天还能拍照识别几次；问不到（没网、服务器在唤醒）就不显示
+    @State private var pendingAIAction: PendingAIAction?  // 还没同意使用 AI 时，先记下要做的识别，同意后再做
     @State private var resultRoute: ResultRoute?  // 识别结果 + 记到哪一天，有值时自动跳到结果页
     @State private var showError = false  // 是否显示出错提示
     @State private var errorMessage = ""  // 出错提示的内容
@@ -184,6 +185,8 @@ struct HomeView: View {
                         try? modelContext.save()
                     }
                 }
+                // 第一次识别前：说明照片会发给谁、怎么处理，同意后才上传（见 AIConsent.swift）
+                .aiConsentSheet(pending: $pendingAIAction)
                 // 全屏打开相机
                 .fullScreenCover(isPresented: $showCamera) {
                     CameraPicker { newPhoto in
@@ -192,7 +195,7 @@ struct HomeView: View {
                     .ignoresSafeArea()
                 }
                 .alert("识别失败", isPresented: $showError) {
-                    Button("重试") { Task { await analyze() } }
+                    Button("重试") { AIConsent.perform(pending: $pendingAIAction) { Task { await analyze() } } }
                     // 没网、识别次数用完了：不用等，直接手动记
                     Button("改为手动添加") { openManualEntry() }
                     Button("好", role: .cancel) {}
@@ -307,7 +310,8 @@ struct HomeView: View {
     /// 开始识别按钮：识别中不能重复点
     private var analyzeButton: some View {
         Button {
-            Task { await analyze() }
+            // 没同意过使用 AI 时，先弹出说明；同意后才真正上传照片
+            AIConsent.perform(pending: $pendingAIAction) { Task { await analyze() } }
         } label: {
             Label("开始识别", systemImage: "sparkles")
                 .frame(maxWidth: .infinity)
