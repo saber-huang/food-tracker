@@ -186,7 +186,8 @@ nonisolated enum DayMath {
         let d = startOfDay(day, calendar: calendar)
         let t = startOfDay(today, calendar: calendar)
         if d == t { return "今天" }
-        if d == addingDays(-1, to: t, calendar: calendar) { return "昨天" }
+        // 有的地方夏令时从 0 点开始（比如古巴），「今天 0 点往前一天」可能落在昨天 1 点，所以再取一次那天的 0 点
+        if d == startOfDay(addingDays(-1, to: t, calendar: calendar), calendar: calendar) { return "昨天" }
         return shortDate(d, today: t, calendar: calendar) + " " + weekdayNames[weekdayIndex(of: d, calendar: calendar)]
     }
 

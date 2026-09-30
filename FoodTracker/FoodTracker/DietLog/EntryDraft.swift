@@ -10,6 +10,10 @@
 //  - 直接改热量或某一种营养素：只改那一项，并把它当成新的「每 100 克含量」
 //  - 「每 100 克含量」只在填好重量之后、改了热量或营养素时才记下来；打重量的时候不记，
 //    因为输入 100 要先经过 1、10，按 1 克算出来的含量全是错的
+//  - 重量删空（或填 0）：按记下「每 100 克含量」时的重量把数字换算回来，数字不会停在删到一半（比如 1 克）时的样子
+//  - 用户清空的框不自动填回去；改重量时只换算还有数字的框
+//  - 三大营养素加起来比重量还多（多半是单位填错了）：这时的「每 100 克含量」不可信，丢掉不用，
+//    免得改正重量时所有数字被放大几十倍
 //
 
 import Foundation
@@ -35,6 +39,8 @@ final class EntryDraft {
     private let id: UUID
     /// 上一次看到的五个输入框：用来判断这次用户改的是哪一个（界面不需要它，所以不触发刷新）
     @ObservationIgnored private var lastTexts: [String] = []
+    /// 「每 100 克含量」是在多少克时记下的：重量删空（或填 0）时，按这个重量把数字换算回来
+    @ObservationIgnored private var baseWeightG: Double?
 
     /// 五个输入框，顺序：重量、热量、蛋白质、碳水、脂肪（给 .onChange 用）
     var allTexts: [String] { [weightText, caloriesText, proteinText, carbsText, fatText] }
@@ -59,9 +65,12 @@ final class EntryDraft {
         meal = item.meal
         day = item.day
         per100 = DietLogMath.per100(item.values, weightG: item.weightG)
+        baseWeightG = item.weightG
         original = item
         id = item.id
         lastTexts = allTexts
+        // 打开时营养素就比重量还多：「每 100 克含量」不可信，不拿来换算
+        if macrosExceedWeightWarning != nil { per100 = nil }
     }
 
     /// 重量（克），保留 1 位小数；没填、填 0 或小到四舍五入后是 0，都当作「不知道重量」
@@ -80,15 +89,19 @@ final class EntryDraft {
         defer { lastTexts = allTexts }
 
         if weightText != old[0] {
-            // 用户改了重量：有「每 100 克含量」就把四个数按比例重算；没有就什么都不做
-            guard let per100, let grams = weightG else { return }
+            // 用户改了重量：有「每 100 克含量」就把还有数字的框按比例重算；没有就什么都不做。
+            // 重量删空了就按记下含量时的重量算，数字回到原样
+            guard let per100, let grams = weightG ?? baseWeightG else { return }
             let values = DietLogMath.rounded(DietLogMath.scaled(per100, toWeightG: grams))
-            caloriesText = NumberText.text(from: values.caloriesKcal)
-            proteinText = NumberText.text(from: values.proteinG)
-            carbsText = NumberText.text(from: values.carbsG)
-            fatText = NumberText.text(from: values.fatG)
+            // 用户清空的框不自动填回去（它的「每 100 克含量」可能还停在清空前某一下按键时的数）
+            if !NumberText.isBlank(caloriesText) { caloriesText = NumberText.text(from: values.caloriesKcal) }
+            if !NumberText.isBlank(proteinText) { proteinText = NumberText.text(from: values.proteinG) }
+            if !NumberText.isBlank(carbsText) { carbsText = NumberText.text(from: values.carbsG) }
+            if !NumberText.isBlank(fatText) { fatText = NumberText.text(from: values.fatG) }
         } else if allTexts != old {
             nutrientEdited(old: old)
+            // 三大营养素比重量还多：重量或数字肯定有一个填错了，这时的「每 100 克含量」不可信，不拿来换算
+            if macrosExceedWeightWarning != nil { per100 = nil }
         }
     }
 
@@ -106,6 +119,7 @@ final class EntryDraft {
             else { return }
             per100 = DietLogMath.per100(
                 NutrientValues(caloriesKcal: kcal, proteinG: protein, carbsG: carbs, fatG: fat), weightG: grams)
+            baseWeightG = grams
             return
         }
         // 已经有了：只改用户改的那一项（清空的框先不动它）
@@ -114,6 +128,7 @@ final class EntryDraft {
         if carbsText != old[3], let carbs = NumberText.number(from: carbsText) { density.carbsG = carbs / grams * 100 }
         if fatText != old[4], let fat = NumberText.number(from: fatText) { density.fatG = fat / grams * 100 }
         per100 = density
+        baseWeightG = grams
     }
 
     /// 营养素的框：空白算 0；填了但不是数字 → nil

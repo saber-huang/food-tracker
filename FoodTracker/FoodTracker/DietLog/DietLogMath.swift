@@ -199,11 +199,15 @@ nonisolated enum EntryValidator {
         return macroRange.contains(grams) ? nil : "\(name)需要在 0～1000 克之间"
     }
 
-    /// 灰色提醒（不阻止保存）：填的热量和按三大营养素算出来的差太多，可能是填错了
+    /// 灰色提醒（不阻止保存）：填的热量和按三大营养素算出来的差太多，可能是填错了。
+    /// 三种营养素都填了才两头比较；有没填的（算 0）时，按营养素算的热量只会偏少，所以只在「反而更多」时提醒
     static func kcalMismatchWarning(_ v: NutrientValues) -> String? {
         let fromMacros = DietLogMath.macroKcal(v)
-        guard v.caloriesKcal >= 50, fromMacros > 0, abs(fromMacros - v.caloriesKcal) > 0.3 * v.caloriesKcal else { return nil }
-        return "按三大营养素算约 \(Int(DietLogMath.round0(fromMacros))) 千卡，和填写的热量差得比较多，可以再核对一下。"
+        let allFilled = v.proteinG > 0 && v.carbsG > 0 && v.fatG > 0
+        let gap = allFilled ? abs(fromMacros - v.caloriesKcal) : fromMacros - v.caloriesKcal
+        guard v.caloriesKcal >= 50, gap > 0.3 * v.caloriesKcal else { return nil }
+        // 用 NumberText 转文字：特别大的数也不会闪退（直接转成 Int 会）
+        return "按三大营养素算约 \(NumberText.text(from: DietLogMath.round0(fromMacros))) 千卡，和填写的热量差得比较多，可以再核对一下。"
     }
 
     /// 灰色提醒（不阻止保存）：三大营养素加起来比食物本身还重，多半是单位填错了

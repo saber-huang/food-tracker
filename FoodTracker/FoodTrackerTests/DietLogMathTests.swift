@@ -70,11 +70,12 @@ struct DietLogMathTests {
         #expect(half.fatG == 0.3)
     }
 
-    // 150 → 75 → 150 克，数字要和最开始完全一样：换算用的是没四舍五入的「每 100 克含量」
-    @Test("来回改重量不会累积误差")
+    // 按「每 100 克含量」换算回原来的 150 克，数字和最开始完全一样：
+    // 中间的小数误差（比如 173.99999999999997）被四舍五入消掉了。
+    // 150 → 75 → 150 克来回改的情况在 EntryDraftTests 里测
+    @Test("换算回原来的重量，数字不变")
     func roundTrip() throws {
         let p = try #require(DietLogMath.per100(rice, weightG: 150))
-        _ = DietLogMath.rounded(DietLogMath.scaled(p, toWeightG: 75))
         #expect(DietLogMath.rounded(DietLogMath.scaled(p, toWeightG: 150)) == rice)
     }
 
@@ -103,6 +104,11 @@ struct DietLogMathTests {
         #expect(EntryValidator.kcalMismatchWarning(NutrientValues(caloriesKcal: 100, proteinG: 50, carbsG: 50, fatG: 20)) != nil)  // 580 ≠ 100
         #expect(EntryValidator.kcalMismatchWarning(NutrientValues(caloriesKcal: 30, proteinG: 0, carbsG: 0, fatG: 10)) == nil)  // 热量太小不提醒
         #expect(EntryValidator.kcalMismatchWarning(NutrientValues(caloriesKcal: 100)) == nil)  // 没填营养素不提醒
+        // 只填了一部分营养素：按营养素算的热量只会偏少，不提醒；反而更多才提醒
+        #expect(EntryValidator.kcalMismatchWarning(NutrientValues(caloriesKcal: 150, proteinG: 8)) == nil)
+        #expect(EntryValidator.kcalMismatchWarning(NutrientValues(caloriesKcal: 100, proteinG: 50)) != nil)  // 200 > 100
+        // 特别大的数不会闪退
+        #expect(EntryValidator.kcalMismatchWarning(NutrientValues(caloriesKcal: 100, proteinG: 1e20)) != nil)
     }
 
     @Test("营养素加起来超过重量时的提醒")
@@ -210,12 +216,13 @@ struct EntryValidatorTests {
         #expect(EntryValidator.nameError("") != nil)
         #expect(EntryValidator.nameError("   ") != nil)
         #expect(EntryValidator.nameError(String(repeating: "米", count: 41)) != nil)
+        #expect(EntryValidator.nameError(String(repeating: "米", count: 40)) == nil)  // 正好 40 个字可以
         #expect(EntryValidator.nameError(" 米饭 ") == nil)
     }
 
     @Test("重量（可以不填）")
     func weight() {
-        for text in ["", "0", "150", "62,5"] {
+        for text in ["", "0", "150", "62,5", "5000"] {
             #expect(EntryValidator.weightError(text: text) == nil, "\(text) 应该可以")
         }
         for text in ["-5", "5001", "abc"] {

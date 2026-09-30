@@ -109,6 +109,14 @@ struct DayMathTests {
         #expect(DayMath.recordCaption(day: d(2026, 9, 28, cal), today: today, calendar: cal) == "记录到 9月28日 周一")
     }
 
+    // 古巴的夏令时在 0 点切换：3 月 8 日没有 0 点（直接从 23:59 跳到 1:00），11 月 1 日有两个 0 点
+    @Test("夏令时从 0 点开始的地方也显示「昨天」")
+    func yesterdayWhenDSTAtMidnight() {
+        let havana = calendar("America/Havana")
+        #expect(DayMath.dayTitle(for: d(2026, 3, 7, hour: 12, havana), today: d(2026, 3, 8, hour: 12, havana), calendar: havana) == "昨天")
+        #expect(DayMath.dayTitle(for: d(2026, 11, 1, hour: 12, havana), today: d(2026, 11, 2, hour: 12, havana), calendar: havana) == "昨天")
+    }
+
     // MARK: - 周横条
 
     @Test("一周从周一 0 点开始", arguments: zones)

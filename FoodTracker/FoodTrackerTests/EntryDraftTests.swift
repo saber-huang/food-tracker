@@ -77,9 +77,59 @@ struct EntryDraftTests {
         #expect(nutrientTexts(draft) == ["174", "3.9", "38.1", "0.5"])
         #expect(draft.output?.confidence == .high)  // 改回原样：又是 AI 原来的把握程度
 
-        // 把重量删掉，再一个字一个字地输入 200
-        for text in ["", "2", "20", "200"] { type(weight: text, draft) }
+        // 用退格键一个字一个字地把重量删空：数字回到原样，而不是停在「1 克」时换算出的数
+        for text in ["15", "1", ""] { type(weight: text, draft) }
+        #expect(nutrientTexts(draft) == ["174", "3.9", "38.1", "0.5"])
+        // 再一个字一个字地输入 200
+        for text in ["2", "20", "200"] { type(weight: text, draft) }
         #expect(nutrientTexts(draft) == ["232", "5.2", "50.8", "0.7"])
+        // 全选删除也一样：回到原样
+        type(weight: "", draft)
+        #expect(nutrientTexts(draft) == ["174", "3.9", "38.1", "0.5"])
+    }
+
+    @Test("用户清空的框，改重量时不会自动填回去")
+    func clearedBoxStaysBlank() throws {
+        // 手动添加：100 克、120 千卡、蛋白质 10，然后把蛋白质删空
+        let draft = EntryDraft(meal: .lunch, day: day)
+        draft.name = "燕麦"
+        type(weight: "100", draft)
+        type(calories: "120", draft)
+        for text in ["1", "10", "1", ""] {
+            draft.proteinText = text
+            draft.textsChanged()
+        }
+        for text in ["2", "20", "200"] { type(weight: text, draft) }
+        #expect(draft.caloriesText == "240")
+        #expect(draft.proteinText == "")
+        #expect(try #require(draft.output).values.proteinG == 0)
+
+        // 识别结果里的米饭：把热量删空再改重量，热量框保持空白，不能保存
+        let riceDraft = EntryDraft(item: rice)
+        for text in ["17", "1", ""] { type(calories: text, riceDraft) }
+        type(weight: "200", riceDraft)
+        #expect(riceDraft.caloriesText == "")
+        #expect(riceDraft.output == nil)
+    }
+
+    // 重量误填成「两」（2），营养素加起来比重量还多；改正成 100 克时，数字不能被放大 50 倍
+    @Test("营养素比重量还多时不按比例换算")
+    func unitMistakeDoesNotRescale() throws {
+        let draft = EntryDraft(meal: .lunch, day: day)
+        draft.name = "米饭"
+        type(weight: "2", draft)
+        for text in ["1", "11", "116"] { type(calories: text, draft) }
+        draft.proteinText = "2.6"
+        draft.textsChanged()
+        draft.carbsText = "25.4"
+        draft.textsChanged()
+        draft.fatText = "0.3"
+        draft.textsChanged()
+        #expect(draft.macrosExceedWeightWarning != nil)
+        for text in ["", "1", "10", "100"] { type(weight: text, draft) }
+        #expect(draft.allTexts == ["100", "116", "2.6", "25.4", "0.3"])
+        #expect(draft.macrosExceedWeightWarning == nil)
+        #expect(draft.output != nil)
     }
 
     // 75 克时把热量改成 200：每 100 克含 266.67 千卡；再改回 150 克 → 400 千卡，蛋白质照旧按比例
@@ -140,14 +190,14 @@ struct EntryDraftTests {
     }
 
     @Test("重量填 0 或小到 0 克：当作不知道重量")
-    func zeroWeight() {
+    func zeroWeight() throws {
         let draft = EntryDraft(meal: .lunch, day: day)
         draft.name = "水"
         type(calories: "0", draft)
         type(weight: "0", draft)
-        #expect(draft.output?.weightG == nil)
+        #expect(try #require(draft.output).weightG == nil)
         type(weight: "0.04", draft)
-        #expect(draft.output?.weightG == nil)
+        #expect(try #require(draft.output).weightG == nil)
     }
 
     @Test("特别小或特别大的数字不会闪退")
@@ -169,24 +219,25 @@ struct EntryDraftTests {
     }
 
     @Test("只改名称也算修改过")
-    func renameClearsConfidence() {
+    func renameClearsConfidence() throws {
         let draft = EntryDraft(item: rice)
         draft.name = "糙米饭"
-        #expect(draft.output?.confidence == nil)
+        #expect(try #require(draft.output).confidence == nil)
     }
 
     @Test("清空重量后改了热量：以后再填重量，不会覆盖用户填的热量")
     func clearWeightThenEdit() {
         let draft = EntryDraft(item: rice)
-        type(weight: "", draft)
+        for text in ["15", "1", ""] { type(weight: text, draft) }
         type(calories: "300", draft)
+        #expect(nutrientTexts(draft) == ["300", "3.9", "38.1", "0.5"])
         for text in ["2", "20", "200"] { type(weight: text, draft) }
         #expect(draft.caloriesText == "300")
         #expect(draft.per100 == nil)
     }
 
     @Test("AI 给的重量是 0 的食物（比如葱花）")
-    func aiItemWithoutWeight() {
+    func aiItemWithoutWeight() throws {
         let item = EditableItem(
             FoodItem(name: "葱花", weightG: 0, caloriesKcal: 2, proteinG: 0.1, carbsG: 0.3, fatG: 0, confidence: .low),
             meal: .lunch, day: day)
@@ -195,6 +246,7 @@ struct EntryDraftTests {
         #expect(draft.per100 == nil)
         type(weight: "5", draft)
         #expect(draft.caloriesText == "2")  // 没有换算基础，不动
+        #expect(try #require(draft.output).confidence == nil)  // 只填了重量也算改过：显示「已修改」
         type(calories: "3", draft)  // 有了重量再改热量：记下每 100 克 60 千卡
         type(weight: "10", draft)
         #expect(draft.caloriesText == "6")

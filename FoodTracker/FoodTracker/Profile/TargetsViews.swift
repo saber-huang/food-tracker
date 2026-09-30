@@ -2,7 +2,7 @@
 //  TargetsViews.swift
 //  FoodTracker
 //
-//  显示每日目标的几个小组件，在首页、引导页结果、「我的」页面里共用。
+//  显示每日目标的几个小组件，在引导页结果、「我的」页面和食谱详情页里共用。
 //
 
 import SwiftUI
@@ -75,38 +75,5 @@ struct GoalNotesView: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
-    }
-}
-
-/// 首页顶部的小卡片：一行显示今日目标，点「怎么算的」看说明
-struct TargetsCard: View {
-    let bodyInfo: BodyInfo
-
-    private var targets: DailyTargets { NutritionCalculator.targets(for: bodyInfo) }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("每日目标")
-                    .font(.headline)
-                Spacer()
-                NavigationLink("怎么算的") {
-                    ExplanationView(bodyInfo: bodyInfo)
-                }
-                .font(.subheadline)
-            }
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(targets.calories.noDecimal)
-                    .font(.title.bold())
-                Text("千卡")
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text("蛋白质 \(targets.proteinG.noDecimal) · 碳水 \(targets.carbsG.noDecimal) · 脂肪 \(targets.fatG.noDecimal) 克")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding()
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
     }
 }

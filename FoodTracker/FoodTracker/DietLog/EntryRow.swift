@@ -20,19 +20,24 @@ struct EntryRow: View {
                 Text("\(entry.caloriesKcal.noDecimal) 千卡")
                     .font(.headline.monospacedDigit())
             }
-            Text(detail)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            if !detail.isEmpty {
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
-        .contentShape(Rectangle())  // 整行都能点（第 5 步用）
+        .contentShape(Rectangle())  // 整行都能点
     }
 
-    /// 「约 150 克 · 蛋白质 3.9 · 碳水 38.1 · 脂肪 0.5 克」；不知道重量时省略重量
+    /// 「约 150 克 · 蛋白质 3.9 · 碳水 38.1 · 脂肪 0.5 克」；不知道重量时省略重量，
+    /// 三种营养素都是 0（只填了热量）时省略营养素，免得看起来像「没有蛋白质、碳水、脂肪」
     private var detail: String {
         var parts: [String] = []
         if entry.source == .recipe { parts.append("来自食谱") }
         if let weight = entry.weightG { parts.append("约 \(weight.oneDecimal) 克") }
-        parts.append("蛋白质 \(entry.proteinG.oneDecimal) · 碳水 \(entry.carbsG.oneDecimal) · 脂肪 \(entry.fatG.oneDecimal) 克")
+        if entry.proteinG > 0 || entry.carbsG > 0 || entry.fatG > 0 {
+            parts.append("蛋白质 \(entry.proteinG.oneDecimal) · 碳水 \(entry.carbsG.oneDecimal) · 脂肪 \(entry.fatG.oneDecimal) 克")
+        }
         return parts.joined(separator: " · ")
     }
 }

@@ -176,11 +176,14 @@ private struct FoodRow: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
-            Text(
-                "蛋白质 \(item.values.proteinG.oneDecimal) 克 · 碳水 \(item.values.carbsG.oneDecimal) 克 · 脂肪 \(item.values.fatG.oneDecimal) 克"
-            )
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            // 三种营养素都是 0（只填了热量）时不显示，免得看起来像「没有蛋白质、碳水、脂肪」
+            if item.values.proteinG > 0 || item.values.carbsG > 0 || item.values.fatG > 0 {
+                Text(
+                    "蛋白质 \(item.values.proteinG.oneDecimal) 克 · 碳水 \(item.values.carbsG.oneDecimal) 克 · 脂肪 \(item.values.fatG.oneDecimal) 克"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
         }
         .padding(.vertical, 4)
         // 整行都能点，不只是文字

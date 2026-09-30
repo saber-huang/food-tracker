@@ -40,7 +40,7 @@ struct DayLogView: View {
             if isToday || !entries.isEmpty {
                 Section {
                     DayProgressCard(consumed: DietLogMath.total(of: entries.map(\.values)), bodyInfo: bodyInfo, isToday: isToday)
-                    NavigationLink("怎么算的") {
+                    NavigationLink("每日目标是怎么算的？") {
                         ExplanationView(bodyInfo: bodyInfo)
                     }
                 }
