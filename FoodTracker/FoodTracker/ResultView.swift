@@ -98,8 +98,10 @@ struct ResultView: View {
                     ContentUnavailableView(
                         "没有识别到食物",
                         systemImage: "questionmark.circle",
-                        description: Text("请返回，换一张清楚的餐食照片再试。")
+                        description: Text("可以返回换一张照片，也可以手动添加。")
                     )
+                    // 手动加的一项会进入上面的列表，之后就和识别到食物一样：可以再改、再加，最后一起保存
+                    Button("改为手动添加") { isAddingItem = true }
                 }
             }
         }
@@ -122,13 +124,18 @@ struct ResultView: View {
                 .padding(.vertical, 10)
                 .background(.bar)
         }
-        // 修改一项：保存后替换掉列表里 id 相同的那一项
+        // 修改一项：保存后替换掉列表里 id 相同的那一项；表单里也能删掉这一项
         .sheet(item: $editingItem) { item in
-            EntryEditView(draft: EntryDraft(item: item), title: "修改食物") { edited in
-                if let index = items.firstIndex(where: { $0.id == edited.id }) {
-                    items[index] = edited
-                }
-            }
+            EntryEditView(
+                draft: EntryDraft(item: item), title: "修改食物",
+                onSave: { edited in
+                    if let index = items.firstIndex(where: { $0.id == edited.id }) {
+                        items[index] = edited
+                    }
+                },
+                onDelete: {
+                    items.removeAll { $0.id == item.id }
+                })
         }
         // 补一项 AI 没认出来的食物
         .sheet(isPresented: $isAddingItem) {

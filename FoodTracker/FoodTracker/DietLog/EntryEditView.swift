@@ -4,7 +4,7 @@
 //
 //  填写或修改一项食物的表单：名称、重量、热量、三大营养素。
 //  它只负责填写；点「保存」后把结果交给打开它的页面，由那个页面决定怎么存（和「编辑资料」页一样的做法）。
-//  手动添加、修改识别结果里的一项，都用这个表单。
+//  手动添加、修改识别结果里的一项、修改已保存的记录，都用这个表单。
 //
 
 import SwiftUI
@@ -12,8 +12,10 @@ import SwiftUI
 struct EntryEditView: View {
     let title: String
     let showsMealPicker: Bool  // 是否显示「记到哪一餐」
-    let showsDate: Bool  // 是否显示「记录日期」（只显示，不能改）
+    let showsDate: Bool  // 是否显示「记录日期」（只显示，不能改：新记录固定记到正在看的那天）
+    let showsDayPicker: Bool  // 是否显示可以改的「日期」（修改已保存的记录时用）
     let onSave: (EditableItem) -> Void
+    let onDelete: (() -> Void)?  // 有值时多一个「删除这一项」按钮
 
     @Environment(\.dismiss) private var dismiss
     @State private var draft: EntryDraft
@@ -23,13 +25,15 @@ struct EntryEditView: View {
 
     init(
         draft: EntryDraft, title: String, showsMealPicker: Bool = false, showsDate: Bool = false,
-        onSave: @escaping (EditableItem) -> Void
+        showsDayPicker: Bool = false, onSave: @escaping (EditableItem) -> Void, onDelete: (() -> Void)? = nil
     ) {
         _draft = State(initialValue: draft)
         self.title = title
         self.showsMealPicker = showsMealPicker
         self.showsDate = showsDate
+        self.showsDayPicker = showsDayPicker
         self.onSave = onSave
+        self.onDelete = onDelete
     }
 
     var body: some View {
@@ -60,6 +64,11 @@ struct EntryEditView: View {
                     }
                     if showsDate {
                         LabeledContent("记录日期", value: DayMath.dayTitle(for: draft.day, today: .now))
+                    }
+                    if showsDayPicker {
+                        // 只能选到今天为止，不能记到未来。日期按中文显示（2026年9月29日），弹出的月历从周一开始
+                        DatePicker("日期", selection: $draft.day, in: ...Date.now, displayedComponents: .date)
+                            .environment(\.locale, DayMath.locale)
                     }
                 }
 
@@ -99,6 +108,16 @@ struct EntryEditView: View {
                             ? "名称和热量必须填，其他可以不填。先填重量、再填热量，之后改重量才会按比例换算。"
                             : "改了重量，热量和三大营养素会按比例一起变；直接改某一项，就只改那一项。")
                 }
+
+                if let onDelete {
+                    Section {
+                        // 先关掉表单再删：表单还开着的时候删掉它正在显示的记录，会出错
+                        Button("删除这一项", role: .destructive) {
+                            dismiss()
+                            onDelete()
+                        }
+                    }
+                }
             }
             // 任何一个数字框变了，交给草稿判断要不要按比例换算
             .onChange(of: draft.allTexts) { draft.textsChanged() }
@@ -134,4 +153,11 @@ struct EntryEditView: View {
         draft: EntryDraft(item: EditableItem(SampleData.analyzeResult.items[0], meal: .lunch, day: .now)),
         title: "修改食物"
     ) { _ in }
+}
+
+#Preview("修改已保存的记录") {
+    EntryEditView(
+        draft: EntryDraft(item: EditableItem(SampleData.analyzeResult.items[0], meal: .lunch, day: .now)),
+        title: "修改记录", showsMealPicker: true, showsDayPicker: true, onSave: { _ in }, onDelete: {}
+    )
 }

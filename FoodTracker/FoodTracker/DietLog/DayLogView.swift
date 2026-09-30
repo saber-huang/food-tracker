@@ -3,7 +3,8 @@
 //  FoodTracker
 //
 //  一天的饮食记录：顶部是和目标比较的卡片，下面按早餐、午餐、晚餐、加餐分组列出每一条记录。
-//  「今日」页用它显示今天；以后翻看往日也用它。
+//  点一条记录可以修改（包括改到别的餐、别的日期）或删除；向左滑也能删除。
+//  「今日」页用它显示今天；翻看往日也用它。
 //
 
 import SwiftData
@@ -16,6 +17,7 @@ struct DayLogView: View {
 
     @Query private var entries: [FoodEntry]
     @Environment(\.modelContext) private var modelContext
+    @State private var editingEntry: FoodEntry?  // 正在修改的记录，有值时弹出表单
 
     init(day: Date, today: Date, bodyInfo: BodyInfo) {
         self.day = day
@@ -49,7 +51,13 @@ struct DayLogView: View {
                 if !mealEntries.isEmpty {
                     Section {
                         ForEach(mealEntries) { entry in
-                            EntryRow(entry: entry)
+                            // 点一下打开修改表单
+                            Button {
+                                editingEntry = entry
+                            } label: {
+                                EntryRow(entry: entry)
+                            }
+                            .buttonStyle(.plain)
                         }
                         // 向左滑动出现「删除」
                         .onDelete { offsets in
@@ -74,6 +82,21 @@ struct DayLogView: View {
                     )
                 }
             }
+        }
+        // 整个列表只挂一个修改表单，点哪条就改哪条（每行各挂一个会开出很多份，还会互相干扰）
+        .sheet(item: $editingEntry) { entry in
+            EntryEditView(
+                draft: EntryDraft(item: EditableItem(entry: entry)), title: "修改记录", showsMealPicker: true,
+                showsDayPicker: true,
+                onSave: { item in
+                    // 改到别的餐或别的日期也在这里：这条记录会从这一天消失，出现在新的那天
+                    entry.apply(item)
+                    try? modelContext.save()
+                },
+                onDelete: {
+                    editingEntry = nil
+                    delete([entry])
+                })
         }
     }
 

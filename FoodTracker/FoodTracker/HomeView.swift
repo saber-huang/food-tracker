@@ -96,6 +96,8 @@ struct HomeView: View {
                 }
                 .alert("识别失败", isPresented: $showError) {
                     Button("重试") { Task { await analyze() } }
+                    // 没网、识别次数用完了：不用等，直接手动记
+                    Button("改为手动添加") { openManualEntry() }
                     Button("好", role: .cancel) {}
                 } message: {
                     Text(errorMessage)
@@ -166,8 +168,7 @@ struct HomeView: View {
             }
 
             Button {
-                refreshToday()  // 打开前确认一下今天是哪天（可能刚过午夜）
-                showManualEntry = true
+                openManualEntry()
             } label: {
                 Label("手动添加", systemImage: "square.and.pencil")
             }
@@ -195,6 +196,12 @@ struct HomeView: View {
     /// 按现在几点，默认选中这一餐（用户可以改）
     private var suggestedMeal: MealType {
         DietLogMath.suggestedMeal(hour: DayMath.calendar.component(.hour, from: .now))
+    }
+
+    /// 打开「手动添加」表单
+    private func openManualEntry() {
+        refreshToday()  // 打开前确认一下今天是哪天（可能刚过午夜）
+        showManualEntry = true
     }
 
     /// 如果已经过了午夜，把「今天」换成新的一天
