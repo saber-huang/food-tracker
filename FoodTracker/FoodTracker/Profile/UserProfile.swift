@@ -50,6 +50,8 @@ final class UserProfile {
 
     /// 用新填的资料覆盖旧资料
     func update(with body: BodyInfo) {
+        // 什么都没改就不算修改（修改时间也不变）：热量提示要靠修改时间判断目标是不是刚改过
+        guard body != bodyInfo else { return }
         sexRaw = body.sex.rawValue
         age = body.age
         heightCm = body.heightCm

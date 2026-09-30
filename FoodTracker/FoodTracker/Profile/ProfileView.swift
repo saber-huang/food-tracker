@@ -12,6 +12,8 @@ struct ProfileView: View {
     let profile: UserProfile
 
     @State private var isEditing = false
+    // 热量提示的设置，存在手机本地（UserDefaults）；默认全部开启
+    @AppStorage(HintKeys.level) private var hintLevel: HintLevel = .all
 
     var body: some View {
         let bodyInfo = profile.bodyInfo
@@ -36,6 +38,19 @@ struct ProfileView: View {
                     LabeledContent("活动量", value: bodyInfo.activity.title)
                     LabeledContent("目标", value: bodyInfo.goal.title)
                     Button("编辑资料") { isEditing = true }
+                }
+
+                // 热量提示：全部开启 / 只看每周小结 / 关闭（文案都在 HintCopy 里）
+                Section {
+                    Picker(HintCopy.settingsPickerLabel, selection: $hintLevel) {
+                        ForEach(HintLevel.allCases, id: \.self) { level in
+                            Text(HintCopy.levelTitle(level)).tag(level)
+                        }
+                    }
+                } header: {
+                    Text(HintCopy.settingsHeader)
+                } footer: {
+                    Text(HintCopy.levelExplanation(hintLevel) + "\n\n" + HintCopy.settingsGoalNote)
                 }
 
                 Section {
