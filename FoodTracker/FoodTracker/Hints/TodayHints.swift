@@ -114,9 +114,65 @@ struct TodayHints: View {
             Section {
                 note(HintCopy.over(byKcal: byKcal, nextMealName: meal?.title), icon: "heart.circle")
             }
-        case .adjustTarget, .weeklySummary:
-            // 第 11 步再做：连续多天的询问卡片、每周小结
-            EmptyView()
+        case .adjustTarget(let days):
+            // 连续几天明显高于目标：温和地问一句要不要调整目标。两个按钮都会让这张卡片 7 天内不再出现
+            Section {
+                note(HintCopy.adjustTarget(consecutiveDays: days), icon: "heart.circle")
+                Button(HintCopy.adjustTargetAction) {
+                    snoozeAdjust(from: now)
+                    sheet = .editProfile
+                }
+                .accessibilityHint(HintCopy.adjustTargetA11y)
+                Button(HintCopy.adjustTargetLater) {
+                    snoozeAdjust(from: now)
+                }
+                .foregroundStyle(.secondary)
+            }
+        case .weeklySummary(let summary):
+            weeklySection(summary)
+        }
+    }
+
+    /// 每周小结：上一个完整的周一～周日。点「知道了」这一周就不再显示；下周一换成新的一周
+    private func weeklySection(_ summary: WeeklySummary) -> some View {
+        Section {
+            // 只记了 1～2 天时算不出有参考价值的平均，不显示数字
+            if summary.trend != .fewDays {
+                Text(
+                    HintCopy.weeklyNumbers(
+                        averageKcal: summary.averageKcal, targetKcal: summary.targetKcal, daysCounted: summary.daysCounted)
+                )
+                .font(.subheadline)
+                .monospacedDigit()
+            }
+            Text(verdict(for: summary))
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            if summary.targetChangedRecently {
+                Text(HintCopy.weeklyTargetChangedNote)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            if summary.suggestsAdjustingTarget {
+                Text(HintCopy.weeklyAdjustSuggestion)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                Button(HintCopy.adjustTargetAction) { sheet = .editProfile }
+                    .accessibilityHint(HintCopy.adjustTargetA11y)
+            }
+            Button(HintCopy.weeklyDismiss) { weeklyDismissedWeek = summary.weekKey }
+        } header: {
+            Label(HintCopy.weeklyTitle, systemImage: "calendar")
+        }
+    }
+
+    /// 小结里的那句话：一致 / 偏高 / 偏低 / 记录太少
+    private func verdict(for summary: WeeklySummary) -> String {
+        switch summary.trend {
+        case .onTarget: HintCopy.weeklyOnTarget
+        case .above: HintCopy.weeklyAbove(differenceKcal: summary.differenceKcal)
+        case .below: HintCopy.weeklyBelow(differenceKcal: -summary.differenceKcal)
+        case .fewDays: HintCopy.weeklyFewDays(daysCounted: summary.daysCounted)
         }
     }
 
@@ -125,5 +181,10 @@ struct TodayHints: View {
         Label(text, systemImage: icon)
             .font(.callout)
             .foregroundStyle(.secondary)
+    }
+
+    /// 7 天内不再问要不要调整目标（按提示用的「现在」算，模拟器里假装的时间也一样）
+    private func snoozeAdjust(from now: Date) {
+        adjustSnoozedUntil = now.addingTimeInterval(Double(HintEngine.adjustSnoozeDays) * 86_400).timeIntervalSince1970
     }
 }
