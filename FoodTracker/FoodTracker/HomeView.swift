@@ -175,7 +175,7 @@ struct HomeView: View {
                 .sheet(isPresented: $showManualEntry) {
                     // 打开表单时就把「哪一天」换成数字定下来，填表中途手机换了时区也不会记到别的一天
                     EntryEditView(
-                        draft: EntryDraft(meal: suggestedMeal, dayKey: DayMath.dayKey(for: selectedDay)), title: "手动添加",
+                        draft: EntryDraft(meal: suggestedMeal, dayKey: DayMath.dayKey(for: selectedDay)), title: String(localized: "手动添加"),
                         showsMealPicker: true, showsDate: true
                     ) { item in
                         modelContext.insert(
@@ -366,7 +366,7 @@ struct HomeView: View {
         {
             photo = image
         } else {
-            showError(message: "读取照片失败，请换一张试试。")
+            showError(message: String(localized: "读取照片失败，请换一张试试。"))
         }
         pickerItem = nil  // 清空选择，下次选同一张照片也能生效
     }
@@ -375,7 +375,7 @@ struct HomeView: View {
     private func analyze() async {
         guard let photo else { return }
         guard let jpegData = photo.compressedForUpload() else {
-            showError(message: "照片处理失败，请换一张试试。")
+            showError(message: String(localized: "照片处理失败，请换一张试试。"))
             return
         }
 
@@ -387,8 +387,8 @@ struct HomeView: View {
         refreshToday(appBecameActive: false)
         let dayKey = DayMath.dayKey(for: selectedDay)
         do {
-            // 界面目前只有中文，所以固定要中文结果；以后做英文版时再跟随手机语言
-            let result = try await APIClient.analyze(jpegData: jpegData, lang: "zh")
+            // 识别结果（食物名称和那句总结）用 App 现在显示的语言
+            let result = try await APIClient.analyze(jpegData: jpegData, lang: AppLanguage.current.apiCode)
             refreshToday(appBecameActive: false)
             resultRoute = ResultRoute(result: result, dayKey: dayKey)
         } catch {

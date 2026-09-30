@@ -22,10 +22,10 @@ nonisolated enum MealType: String, CaseIterable, Codable, Identifiable {
 
     var title: String {
         switch self {
-        case .breakfast: "早餐"
-        case .lunch: "午餐"
-        case .dinner: "晚餐"
-        case .snack: "加餐"
+        case .breakfast: String(localized: "早餐")
+        case .lunch: String(localized: "午餐")
+        case .dinner: String(localized: "晚餐")
+        case .snack: String(localized: "加餐")
         }
     }
 

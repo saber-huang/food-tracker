@@ -35,9 +35,9 @@ struct RecipeDetailView: View {
                             .foregroundStyle(.secondary)
                     }
                     HStack {
-                        NutrientColumn(name: "蛋白质", grams: recipe.proteinG, color: .blue)
-                        NutrientColumn(name: "碳水", grams: recipe.carbsG, color: .orange)
-                        NutrientColumn(name: "脂肪", grams: recipe.fatG, color: .pink)
+                        NutrientColumn(name: String(localized: "蛋白质"), grams: recipe.proteinG, color: .blue)
+                        NutrientColumn(name: String(localized: "碳水"), grams: recipe.carbsG, color: .orange)
+                        NutrientColumn(name: String(localized: "脂肪"), grams: recipe.fatG, color: .pink)
                     }
                 }
                 .padding(.vertical, 4)
@@ -47,14 +47,14 @@ struct RecipeDetailView: View {
                     showMealChoice = true
                 } label: {
                     Label(
-                        logged.map { "已记录到\($0.title)" } ?? "记录到今日",
+                        logged.map { String(localized: "已记录到\($0.title)") } ?? String(localized: "记录到今日"),
                         systemImage: logged == nil ? "plus.circle" : "checkmark.circle")
                 }
                 .disabled(logged != nil)
                 // 选记到哪一餐（挂在按钮上，弹出的小窗会指向这个按钮）：这道菜本来是哪一餐，就在那一项后面标「（推荐）」
                 .confirmationDialog("记到哪一餐？", isPresented: $showMealChoice, titleVisibility: .visible) {
                     ForEach(MealType.allCases) { meal in
-                        Button(meal == MealType(slot: recipe.meal) ? "\(meal.title)（推荐）" : meal.title) {
+                        Button(meal == MealType(slot: recipe.meal) ? String(localized: "\(meal.title)（推荐）") : meal.title) {
                             log(meal)
                         }
                     }

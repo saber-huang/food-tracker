@@ -33,9 +33,9 @@ struct DayProgressCard: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             macroLayout {
-                MacroProgress(name: "蛋白质", consumed: consumed.proteinG, target: targets.proteinG, fraction: progress.proteinFraction, color: .blue)
-                MacroProgress(name: "碳水", consumed: consumed.carbsG, target: targets.carbsG, fraction: progress.carbsFraction, color: .orange)
-                MacroProgress(name: "脂肪", consumed: consumed.fatG, target: targets.fatG, fraction: progress.fatFraction, color: .pink)
+                MacroProgress(name: String(localized: "蛋白质"), consumed: consumed.proteinG, target: targets.proteinG, fraction: progress.proteinFraction, color: .blue)
+                MacroProgress(name: String(localized: "碳水"), consumed: consumed.carbsG, target: targets.carbsG, fraction: progress.carbsFraction, color: .orange)
+                MacroProgress(name: String(localized: "脂肪"), consumed: consumed.fatG, target: targets.fatG, fraction: progress.fatFraction, color: .pink)
             }
         }
         .padding(.vertical, 4)
@@ -53,10 +53,18 @@ struct DayProgressCard: View {
                 .font(.system(size: heroSize, weight: .bold, design: .rounded))
                 // 多了的时候数字也用灰色，不用红色
                 .foregroundStyle(remaining > 0 ? Color.primary : Color.secondary)
-            let label = remaining > 0 ? (isToday ? "还可以吃" : "比目标少") : "比目标多"
-            // 整句是一段文字：字号很大时像句子一样换行，数字不会被拆开；旁白也一次读完
-            Text("\(label) \(number) 千卡")
-                .foregroundStyle(.secondary)
+            // 整句是一段文字：字号很大时像句子一样换行，数字不会被拆开；旁白也一次读完。
+            // 三种情况各写成一整句，翻译成英文时可以调整语序（英文是「798 kcal left」）
+            Group {
+                if remaining <= 0 {
+                    Text("比目标多 \(number) 千卡")
+                } else if isToday {
+                    Text("还可以吃 \(number) 千卡")
+                } else {
+                    Text("比目标少 \(number) 千卡")
+                }
+            }
+            .foregroundStyle(.secondary)
         }
     }
 }

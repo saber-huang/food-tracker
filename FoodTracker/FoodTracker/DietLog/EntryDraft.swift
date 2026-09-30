@@ -149,9 +149,9 @@ final class EntryDraft {
     var nameError: String? { EntryValidator.nameError(name) }
     var weightError: String? { EntryValidator.weightError(text: weightText) }
     var caloriesError: String? { EntryValidator.caloriesError(text: caloriesText) }
-    var proteinError: String? { EntryValidator.macroError(text: proteinText, name: "蛋白质") }
-    var carbsError: String? { EntryValidator.macroError(text: carbsText, name: "碳水") }
-    var fatError: String? { EntryValidator.macroError(text: fatText, name: "脂肪") }
+    var proteinError: String? { EntryValidator.macroError(text: proteinText, name: String(localized: "蛋白质")) }
+    var carbsError: String? { EntryValidator.macroError(text: carbsText, name: String(localized: "碳水")) }
+    var fatError: String? { EntryValidator.macroError(text: fatText, name: String(localized: "脂肪")) }
 
     private var currentValues: NutrientValues {
         NutrientValues(

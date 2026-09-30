@@ -36,19 +36,19 @@ struct BasicInfoSection: View {
             }
 
             NumberRow(
-                title: "年龄", unit: "岁", text: $draft.ageText,
+                title: String(localized: "年龄"), unit: String(localized: "岁"), text: $draft.ageText,
                 keyboard: .numberPad, error: draft.ageError,
                 focus: $focusedField, field: .age
             )
 
             NumberRow(
-                title: "身高", unit: "厘米", text: $draft.heightText,
+                title: String(localized: "身高"), unit: String(localized: "厘米"), text: $draft.heightText,
                 keyboard: .decimalPad, error: draft.heightError,
                 focus: $focusedField, field: .height
             )
 
             NumberRow(
-                title: "体重", unit: "公斤", text: $draft.weightText,
+                title: String(localized: "体重"), unit: String(localized: "公斤"), text: $draft.weightText,
                 keyboard: .decimalPad, error: draft.weightError ?? draft.plausibilityError,
                 focus: $focusedField, field: .weight
             )

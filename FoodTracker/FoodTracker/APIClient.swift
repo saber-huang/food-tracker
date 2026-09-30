@@ -18,19 +18,19 @@ enum APIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .offline:
-            "手机没有联网，请检查网络设置。"
+            String(localized: "手机没有联网，请检查网络设置。")
         case .timeout:
             AppConfig.isCloud
-                ? "服务器没有及时响应。免费服务器闲置后会休眠，唤醒大约需要 1 分钟，请稍等一下再试。"
-                : "等待超时，请检查网络后重试。"
+                ? String(localized: "服务器没有及时响应。免费服务器闲置后会休眠，唤醒大约需要 1 分钟，请稍等一下再试。")
+                : String(localized: "等待超时，请检查网络后重试。")
         case .cannotConnect(let code):
             AppConfig.isCloud
-                ? "连不上服务器（错误码 \(code)）。请检查手机网络，或稍等 1 分钟再试。"
-                : "连不上后端服务（错误码 \(code)）。请确认电脑上的后端正在运行。"
+                ? String(localized: "连不上服务器（错误码 \(code)）。请检查手机网络，或稍等 1 分钟再试。")
+                : String(localized: "连不上后端服务（错误码 \(code)）。请确认电脑上的后端正在运行。")
         case .server(let message):
             message
         case .badResponse:
-            "后端返回的数据格式不对，请稍后再试。"
+            String(localized: "后端返回的数据格式不对，请稍后再试。")
         }
     }
 }
@@ -104,9 +104,9 @@ enum APIClient {
             }
             // 云端服务器唤醒过程中，Render 可能先返回一个不含 JSON 的页面
             if AppConfig.isCloud && (500...599).contains(http.statusCode) {
-                throw APIError.server("服务器正在启动，请稍等 1 分钟再试。")
+                throw APIError.server(String(localized: "服务器正在启动，请稍等 1 分钟再试。"))
             }
-            throw APIError.server("服务器出错（错误码 \(http.statusCode)），请稍后再试。")
+            throw APIError.server(String(localized: "服务器出错（错误码 \(http.statusCode)），请稍后再试。"))
         }
 
         // 3. 把 JSON 转成需要的类型

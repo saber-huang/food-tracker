@@ -98,10 +98,10 @@ struct RecipesView: View {
                 showPreferences = true
             } label: {
                 VStack(alignment: .leading, spacing: 4) {
-                    summaryRow("偏好", preferencesText.isEmpty ? "未填写" : preferencesText)
-                    summaryRow("过敏", allergiesText.isEmpty ? "无" : allergiesText)
-                    summaryRow("忌口", dislikesText.isEmpty ? "无" : dislikesText)
-                    summaryRow("烹饪时间", "每餐不超过 \(cookingMinutes) 分钟")
+                    summaryRow(String(localized: "偏好"), preferencesText.isEmpty ? String(localized: "未填写") : preferencesText)
+                    summaryRow(String(localized: "过敏"), allergiesText.isEmpty ? String(localized: "无") : allergiesText)
+                    summaryRow(String(localized: "忌口"), dislikesText.isEmpty ? String(localized: "无") : dislikesText)
+                    summaryRow(String(localized: "烹饪时间"), String(localized: "每餐不超过 \(cookingMinutes) 分钟"))
                 }
             }
             .foregroundStyle(.primary)
@@ -245,7 +245,7 @@ struct RecipesView: View {
 
 /// 「食谱」页、食谱详情和「推荐下一餐」共用的文字
 enum RecipeCopy {
-    static let disclaimer = "食谱与营养数据为 AI 估算，仅供参考；如有疾病、处于孕期或有特殊饮食需求，请咨询医生或营养师"
+    static let disclaimer = String(localized: "食谱与营养数据为 AI 估算，仅供参考；如有疾病、处于孕期或有特殊饮食需求，请咨询医生或营养师")
 }
 
 /// 一道菜的摘要：菜名、热量和营养素、时间和食材数（「食谱」页和「推荐下一餐」的卡片共用）

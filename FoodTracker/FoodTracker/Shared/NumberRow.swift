@@ -28,7 +28,7 @@ struct NumberRow<Field: Hashable>: View {
     /// 这一行对应的是哪个框
     let field: Field
     /// 输入框里的灰字（必须写成 var 才能有默认值）
-    var prompt = "请输入"
+    var prompt = String(localized: "请输入")
 
     private var isEditing: Bool { focus.wrappedValue == field }
 

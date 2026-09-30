@@ -32,8 +32,8 @@ nonisolated enum Sex: String, CaseIterable, Codable {
 
     var title: String {
         switch self {
-        case .male: "男"
-        case .female: "女"
+        case .male: String(localized: "男")
+        case .female: String(localized: "女")
         }
     }
 }
@@ -55,22 +55,22 @@ nonisolated enum ActivityLevel: String, CaseIterable, Codable {
 
     var title: String {
         switch self {
-        case .sedentary: "久坐"
-        case .light: "轻度活动"
-        case .moderate: "中度活动"
-        case .active: "高度活动"
-        case .veryActive: "非常高"
+        case .sedentary: String(localized: "久坐")
+        case .light: String(localized: "轻度活动")
+        case .moderate: String(localized: "中度活动")
+        case .active: String(localized: "高度活动")
+        case .veryActive: String(localized: "非常高")
         }
     }
 
     /// 通俗的说明，帮用户选对档位
     var detail: String {
         switch self {
-        case .sedentary: "办公室工作，平时基本不运动"
-        case .light: "每周运动 1～3 次"
-        case .moderate: "每周运动 3～5 次"
-        case .active: "每周运动 6～7 次，或需要长时间站立走动的工作"
-        case .veryActive: "体力劳动，或每天训练两次"
+        case .sedentary: String(localized: "办公室工作，平时基本不运动")
+        case .light: String(localized: "每周运动 1～3 次")
+        case .moderate: String(localized: "每周运动 3～5 次")
+        case .active: String(localized: "每周运动 6～7 次，或需要长时间站立走动的工作")
+        case .veryActive: String(localized: "体力劳动，或每天训练两次")
         }
     }
 }
@@ -99,17 +99,17 @@ nonisolated enum Goal: String, CaseIterable, Codable {
 
     var title: String {
         switch self {
-        case .loseFat: "减脂"
-        case .maintain: "维持"
-        case .gainMuscle: "增肌"
+        case .loseFat: String(localized: "减脂")
+        case .maintain: String(localized: "维持")
+        case .gainMuscle: String(localized: "增肌")
         }
     }
 
     var detail: String {
         switch self {
-        case .loseFat: "适度少吃，慢慢减掉脂肪，同时保住肌肉"
-        case .maintain: "保持现在的体重"
-        case .gainMuscle: "适度多吃，配合力量训练增加肌肉"
+        case .loseFat: String(localized: "适度少吃，慢慢减掉脂肪，同时保住肌肉")
+        case .maintain: String(localized: "保持现在的体重")
+        case .gainMuscle: String(localized: "适度多吃，配合力量训练增加肌肉")
         }
     }
 }
@@ -302,25 +302,25 @@ nonisolated enum ProfileValidator {
     static let plausibleBMIRange = 12.0...60.0
 
     static func ageError(_ age: Int?) -> String? {
-        guard let age else { return "请输入年龄（整数）" }
+        guard let age else { return String(localized: "请输入年龄（整数）") }
         guard ageRange.contains(age) else {
-            return "年龄需要在 \(ageRange.lowerBound)～\(ageRange.upperBound) 岁之间，计算公式适用于成年人"
+            return String(localized: "年龄需要在 \(ageRange.lowerBound)～\(ageRange.upperBound) 岁之间，计算公式适用于成年人")
         }
         return nil
     }
 
     static func heightError(_ heightCm: Double?) -> String? {
-        guard let heightCm else { return "请输入身高（厘米）" }
+        guard let heightCm else { return String(localized: "请输入身高（厘米）") }
         guard heightRange.contains(heightCm) else {
-            return "身高需要在 \(Int(heightRange.lowerBound))～\(Int(heightRange.upperBound)) 厘米之间"
+            return String(localized: "身高需要在 \(Int(heightRange.lowerBound))～\(Int(heightRange.upperBound)) 厘米之间")
         }
         return nil
     }
 
     static func weightError(_ weightKg: Double?) -> String? {
-        guard let weightKg else { return "请输入体重（公斤）" }
+        guard let weightKg else { return String(localized: "请输入体重（公斤）") }
         guard weightRange.contains(weightKg) else {
-            return "体重需要在 \(Int(weightRange.lowerBound))～\(Int(weightRange.upperBound)) 公斤之间"
+            return String(localized: "体重需要在 \(Int(weightRange.lowerBound))～\(Int(weightRange.upperBound)) 公斤之间")
         }
         return nil
     }
@@ -329,7 +329,7 @@ nonisolated enum ProfileValidator {
     static func plausibilityError(heightCm: Double, weightKg: Double) -> String? {
         let bmi = NutritionCalculator.bmi(heightCm: heightCm, weightKg: weightKg)
         guard plausibleBMIRange.contains(bmi) else {
-            return "身高和体重的组合不太合理（BMI 约 \(bmi.formatted(.number.precision(.fractionLength(0))))），请检查数字和单位：体重单位是公斤，1 公斤 = 2 斤"
+            return String(localized: "身高和体重的组合不太合理（BMI 约 \(bmi.formatted(.number.precision(.fractionLength(0))))），请检查数字和单位：体重单位是公斤，1 公斤 = 2 斤")
         }
         return nil
     }
@@ -340,9 +340,9 @@ nonisolated enum ProfileValidator {
         // 超出合理范围时，体重那一行已经有更明确的错误提示，这里不重复
         guard plausibleBMIRange.contains(bmi) else { return nil }
         // 很高：多半是把「斤」当成了「公斤」
-        if bmi >= unitCheckBMI { return "请确认体重单位是公斤（1 公斤 = 2 斤）" }
+        if bmi >= unitCheckBMI { return String(localized: "请确认体重单位是公斤（1 公斤 = 2 斤）") }
         // 很低：可能是身高或体重打错了一位数字（比如 54 打成 45）
-        if bmi < severeThinnessBMI { return "请确认身高和体重填写正确（身高单位是厘米，体重单位是公斤）" }
+        if bmi < severeThinnessBMI { return String(localized: "请确认身高和体重填写正确（身高单位是厘米，体重单位是公斤）") }
         return nil
     }
 
@@ -355,10 +355,10 @@ nonisolated enum ProfileValidator {
     static func fatLossRestriction(age: Int, heightCm: Double, weightKg: Double) -> String? {
         let bmi = NutritionCalculator.bmi(heightCm: heightCm, weightKg: weightKg)
         if bmi < underweightBMI {
-            return "你的 BMI 约为 \(bmi.formatted(.number.precision(.fractionLength(1))))，低于 \(underweightBMI)，属于偏轻范围，所以这里不提供减脂目标。可以选择「维持」或「增肌」；如果对体重有顾虑，建议咨询医生或营养师。"
+            return String(localized: "你的 BMI 约为 \(bmi.formatted(.number.precision(.fractionLength(1))))，低于 \(underweightBMI.formatted())，属于偏轻范围，所以这里不提供减脂目标。可以选择「维持」或「增肌」；如果对体重有顾虑，建议咨询医生或营养师。")
         }
         if age >= seniorAge && bmi < obesityBMI {
-            return "\(seniorAge) 岁以上、BMI 低于 \(Int(obesityBMI)) 时，不建议主动减重，因为容易连肌肉一起掉。建议选择「维持」并配合力量训练；如果有体重相关的健康问题，请咨询医生。"
+            return String(localized: "\(seniorAge) 岁以上、BMI 低于 \(Int(obesityBMI)) 时，不建议主动减重，因为容易连肌肉一起掉。建议选择「维持」并配合力量训练；如果有体重相关的健康问题，请咨询医生。")
         }
         return nil
     }
@@ -369,18 +369,18 @@ nonisolated enum ProfileValidator {
         let bmi = body.bmi
         if bmi < severeThinnessBMI {
             // 重度消瘦：不让用户自己加减热量，而是平静地建议找专业的人；不用「危险」「警告」这类吓人的词
-            notes.append("BMI 低于 \(Int(severeThinnessBMI)) 时，公式算出的目标不一定适合你，建议请医生或注册营养师帮你确定每天吃多少。在那之前，可以把每日目标当作每天至少要吃到的量。如果吃饭或体重让你感到有压力，也可以找心理咨询师聊聊。")
+            notes.append(String(localized: "BMI 低于 \(Int(severeThinnessBMI)) 时，公式算出的目标不一定适合你，建议请医生或注册营养师帮你确定每天吃多少。在那之前，可以把每日目标当作每天至少要吃到的量。如果吃饭或体重让你感到有压力，也可以找心理咨询师聊聊。"))
         } else if bmi < underweightBMI && body.goal != .loseFat {
-            notes.append("体重偏轻时，公式估算的消耗可能偏低。如果两周的平均体重还在下降，每天多吃 200～300 千卡，或咨询医生、营养师。")
+            notes.append(String(localized: "体重偏轻时，公式估算的消耗可能偏低。如果两周的平均体重还在下降，每天多吃 200～300 千卡，或咨询医生、营养师。"))
         }
         if body.age >= seniorAge && body.goal == .loseFat {
-            notes.append("\(seniorAge) 岁以上减脂要格外注意保住肌肉：配合力量训练，开始前先和医生确认。")
+            notes.append(String(localized: "\(seniorAge) 岁以上减脂要格外注意保住肌肉：配合力量训练，开始前先和医生确认。"))
         }
         if bmi >= obesityBMI && body.goal == .gainMuscle {
-            notes.append("体重基数较大时，配合力量训练、按维持热量吃也能长肌肉，同时不额外增加体脂。可以考虑选择「维持」。")
+            notes.append(String(localized: "体重基数较大时，配合力量训练、按维持热量吃也能长肌肉，同时不额外增加体脂。可以考虑选择「维持」。"))
         }
         if body.age >= kidneyNoteAge {
-            notes.append("\(kidneyNoteAge) 岁以上、有高血压或糖尿病，或近一年没查过肾功能的话，按这个蛋白质目标吃之前先问问医生。")
+            notes.append(String(localized: "\(kidneyNoteAge) 岁以上、有高血压或糖尿病，或近一年没查过肾功能的话，按这个蛋白质目标吃之前先问问医生。"))
         }
         return notes
     }

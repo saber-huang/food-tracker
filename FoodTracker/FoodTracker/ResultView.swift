@@ -136,7 +136,7 @@ struct ResultView: View {
         // 修改一项：保存后替换掉列表里 id 相同的那一项；表单里也能删掉这一项
         .sheet(item: $editingItem) { item in
             EntryEditView(
-                draft: EntryDraft(item: item), title: "修改食物",
+                draft: EntryDraft(item: item), title: String(localized: "修改食物"),
                 onSave: { edited in
                     if let index = items.firstIndex(where: { $0.id == edited.id }) {
                         items[index] = edited
@@ -148,7 +148,7 @@ struct ResultView: View {
         }
         // 补一项 AI 没认出来的食物
         .sheet(isPresented: $isAddingItem) {
-            EntryEditView(draft: EntryDraft(meal: meal, dayKey: dayKey), title: "添加食物") { item in
+            EntryEditView(draft: EntryDraft(meal: meal, dayKey: dayKey), title: String(localized: "添加食物")) { item in
                 items.append(item)
             }
         }
@@ -214,7 +214,7 @@ private struct ConfidenceBadge: View {
     }
 
     var body: some View {
-        Text(confidence?.label ?? "已修改")
+        Text(confidence?.label ?? String(localized: "已修改"))
             .font(.caption2.bold())
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
@@ -246,9 +246,9 @@ private struct TotalView: View {
                 }
             }
             HStack {
-                MacroView(name: "蛋白质", grams: total.proteinG, color: .blue)
-                MacroView(name: "碳水", grams: total.carbsG, color: .orange)
-                MacroView(name: "脂肪", grams: total.fatG, color: .pink)
+                MacroView(name: String(localized: "蛋白质"), grams: total.proteinG, color: .blue)
+                MacroView(name: String(localized: "碳水"), grams: total.carbsG, color: .orange)
+                MacroView(name: String(localized: "脂肪"), grams: total.fatG, color: .pink)
             }
         }
         .padding(.vertical, 4)

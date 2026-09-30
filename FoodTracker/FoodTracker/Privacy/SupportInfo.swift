@@ -15,14 +15,14 @@ nonisolated enum SupportInfo {
 
     /// 隐私政策「联系我们」后面的那句
     static var contactLine: String {
-        contactEmail.isEmpty ? "联系邮箱稍后公布。" : contactEmail
+        contactEmail.isEmpty ? String(localized: "联系邮箱稍后公布。") : contactEmail
     }
 
     /// 点「意见反馈」时打开的邮件：收件人和标题已经填好。没有邮箱时是 nil
     static var feedbackURL: URL? {
         guard !contactEmail.isEmpty else { return nil }
         // 标题里有中文，要先转成网址能用的格式
-        let subject = "饮食记录 App 反馈（\(versionText)）"
+        let subject = String(localized: "饮食记录 App 反馈（\(versionText)）")
             .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         return URL(string: "mailto:\(contactEmail)?subject=\(subject)")
     }

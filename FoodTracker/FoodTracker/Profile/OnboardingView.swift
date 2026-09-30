@@ -83,11 +83,11 @@ struct OnboardingView: View {
 
     private var title: String {
         switch step {
-        case .welcome: "欢迎"
-        case .basicInfo: "基本信息"
-        case .activity: "活动量"
-        case .goal: "目标"
-        case .result: "你的每日目标"
+        case .welcome: String(localized: "欢迎")
+        case .basicInfo: String(localized: "基本信息")
+        case .activity: String(localized: "活动量")
+        case .goal: String(localized: "目标")
+        case .result: String(localized: "你的每日目标")
         }
     }
 

@@ -98,20 +98,20 @@ struct EntryEditView: View {
                 Section {
                     // 名称和热量必须填，其他可以不填：输入框里的灰字直接写明
                     NumberRow(
-                        title: "重量", unit: "克", text: $draft.weightText, keyboard: .decimalPad,
-                        error: draft.weightError, focus: $focusedField, field: .weight, prompt: "选填")
+                        title: String(localized: "重量"), unit: String(localized: "克"), text: $draft.weightText, keyboard: .decimalPad,
+                        error: draft.weightError, focus: $focusedField, field: .weight, prompt: String(localized: "选填"))
                     NumberRow(
-                        title: "热量", unit: "千卡", text: $draft.caloriesText, keyboard: .decimalPad,
-                        error: draft.caloriesError, focus: $focusedField, field: .calories, prompt: "必填")
+                        title: String(localized: "热量"), unit: String(localized: "千卡"), text: $draft.caloriesText, keyboard: .decimalPad,
+                        error: draft.caloriesError, focus: $focusedField, field: .calories, prompt: String(localized: "必填"))
                     NumberRow(
-                        title: "蛋白质", unit: "克", text: $draft.proteinText, keyboard: .decimalPad,
-                        error: draft.proteinError, focus: $focusedField, field: .protein, prompt: "选填")
+                        title: String(localized: "蛋白质"), unit: String(localized: "克"), text: $draft.proteinText, keyboard: .decimalPad,
+                        error: draft.proteinError, focus: $focusedField, field: .protein, prompt: String(localized: "选填"))
                     NumberRow(
-                        title: "碳水", unit: "克", text: $draft.carbsText, keyboard: .decimalPad,
-                        error: draft.carbsError, focus: $focusedField, field: .carbs, prompt: "选填")
+                        title: String(localized: "碳水"), unit: String(localized: "克"), text: $draft.carbsText, keyboard: .decimalPad,
+                        error: draft.carbsError, focus: $focusedField, field: .carbs, prompt: String(localized: "选填"))
                     NumberRow(
-                        title: "脂肪", unit: "克", text: $draft.fatText, keyboard: .decimalPad,
-                        error: draft.fatError, focus: $focusedField, field: .fat, prompt: "选填")
+                        title: String(localized: "脂肪"), unit: String(localized: "克"), text: $draft.fatText, keyboard: .decimalPad,
+                        error: draft.fatError, focus: $focusedField, field: .fat, prompt: String(localized: "选填"))
 
                     // 灰色提醒：可能填错了，但不阻止保存
                     if let warning = draft.kcalMismatchWarning {
@@ -135,11 +135,11 @@ struct EntryEditView: View {
                     // 第一句一直显示；第二句看现在能不能按比例换算；
                     // 最后一句：国内包装上的「能量」按规定用千焦标示，照着抄很容易把千焦当成千卡
                     Text(
-                        "名称和热量必须填，其他可以不填。"
+                        String(localized: "名称和热量必须填，其他可以不填。")
                             + (draft.per100 == nil
-                                ? "先填重量、再填热量，之后改重量才会按比例换算。"
-                                : "改了重量，热量和三大营养素会按比例一起变；直接改某一项，就只改那一项。")
-                            + "包装上的「能量」一般是千焦（kJ），除以 4.2 大约就是千卡。")
+                                ? String(localized: "先填重量、再填热量，之后改重量才会按比例换算。")
+                                : String(localized: "改了重量，热量和三大营养素会按比例一起变；直接改某一项，就只改那一项。"))
+                            + String(localized: "包装上的「能量」一般是千焦（kJ），除以 4.2 大约就是千卡。"))
                 }
 
                 if let onDelete {

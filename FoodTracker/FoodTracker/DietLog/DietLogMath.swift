@@ -194,30 +194,30 @@ nonisolated enum EntryValidator {
 
     static func nameError(_ name: String) -> String? {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty { return "请输入名称" }
-        if trimmed.count > nameMaxLength { return "名称最多 \(nameMaxLength) 个字" }
+        if trimmed.isEmpty { return String(localized: "请输入名称") }
+        if trimmed.count > nameMaxLength { return String(localized: "名称最多 \(nameMaxLength) 个字") }
         return nil
     }
 
     /// 重量可以不填
     static func weightError(text: String) -> String? {
         if NumberText.isBlank(text) { return nil }
-        guard let grams = NumberText.number(from: text) else { return "请输入数字" }
-        return weightRange.contains(grams) ? nil : "重量需要在 0～5000 克之间"
+        guard let grams = NumberText.number(from: text) else { return String(localized: "请输入数字") }
+        return weightRange.contains(grams) ? nil : String(localized: "重量需要在 0～5000 克之间")
     }
 
     /// 热量必须填
     static func caloriesError(text: String) -> String? {
-        if NumberText.isBlank(text) { return "请输入热量（千卡）" }
-        guard let kcal = NumberText.number(from: text) else { return "请输入数字" }
-        return caloriesRange.contains(kcal) ? nil : "热量需要在 0～5000 千卡之间"
+        if NumberText.isBlank(text) { return String(localized: "请输入热量（千卡）") }
+        guard let kcal = NumberText.number(from: text) else { return String(localized: "请输入数字") }
+        return caloriesRange.contains(kcal) ? nil : String(localized: "热量需要在 0～5000 千卡之间")
     }
 
     /// 三大营养素可以不填（不填按 0 算）；name 是「蛋白质」「碳水」「脂肪」
     static func macroError(text: String, name: String) -> String? {
         if NumberText.isBlank(text) { return nil }
-        guard let grams = NumberText.number(from: text) else { return "请输入数字" }
-        return macroRange.contains(grams) ? nil : "\(name)需要在 0～1000 克之间"
+        guard let grams = NumberText.number(from: text) else { return String(localized: "请输入数字") }
+        return macroRange.contains(grams) ? nil : String(localized: "\(name)需要在 0～1000 克之间")
     }
 
     /// 灰色提醒（不阻止保存）：填的热量和按三大营养素算出来的差太多，可能是填错了。
@@ -228,12 +228,12 @@ nonisolated enum EntryValidator {
         let gap = allFilled ? abs(fromMacros - v.caloriesKcal) : fromMacros - v.caloriesKcal
         guard v.caloriesKcal >= 50, gap > 0.3 * v.caloriesKcal else { return nil }
         // 用 NumberText 转文字：特别大的数也不会闪退（直接转成 Int 会）
-        return "按三大营养素算约 \(NumberText.text(from: DietLogMath.round0(fromMacros))) 千卡，和填写的热量差得比较多，可以再核对一下。"
+        return String(localized: "按三大营养素算约 \(NumberText.text(from: DietLogMath.round0(fromMacros))) 千卡，和填写的热量差得比较多，可以再核对一下。")
     }
 
     /// 灰色提醒（不阻止保存）：三大营养素加起来比食物本身还重，多半是单位填错了
     static func macrosExceedWeightWarning(_ v: NutrientValues, weightG: Double?) -> String? {
         guard let weight = weightG, weight > 0, v.proteinG + v.carbsG + v.fatG > weight * 1.05 + 1 else { return nil }
-        return "蛋白质、碳水、脂肪加起来超过了重量，请检查单位。"
+        return String(localized: "蛋白质、碳水、脂肪加起来超过了重量，请检查单位。")
     }
 }

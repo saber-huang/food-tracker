@@ -21,7 +21,7 @@ nonisolated enum PrivacyPolicy {
 
     /// 拆好块、填好联系方式的正文
     static func blocks(bundle: Bundle = .main, contact: String = SupportInfo.contactLine) -> [MarkdownBlock] {
-        let text = markdown(bundle: bundle) ?? "隐私政策暂时读不出来，请更新 App 后再试。"
+        let text = markdown(bundle: bundle) ?? String(localized: "隐私政策暂时读不出来，请更新 App 后再试。")
         return MarkdownBlocks.parse(text.replacingOccurrences(of: contactPlaceholder, with: contact))
     }
 }

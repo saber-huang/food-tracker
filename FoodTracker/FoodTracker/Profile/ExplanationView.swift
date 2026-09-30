@@ -22,8 +22,8 @@ struct ExplanationView: View {
             Section("第 1 步：基础代谢") {
                 Text("基础代谢是身体一整天躺着不动，维持心跳、呼吸和体温也要消耗的热量。我们用营养学界常用的 Mifflin-St Jeor 公式估算：")
                 FormulaRow(
-                    formula: "10 × 体重 \(bodyInfo.weightKg.oneDecimal) + 6.25 × 身高 \(bodyInfo.heightCm.oneDecimal) − 5 × 年龄 \(bodyInfo.age) \(bodyInfo.sex == .male ? "+ 5" : "− 161")",
-                    result: "\(t.bmr.noDecimal) 千卡"
+                    formula: String(localized: "10 × 体重 \(bodyInfo.weightKg.oneDecimal) + 6.25 × 身高 \(bodyInfo.heightCm.oneDecimal) − 5 × 年龄 \(bodyInfo.age) \(bodyInfo.sex == .male ? "+ 5" : "− 161")"),
+                    result: String(localized: "\(t.bmr.noDecimal) 千卡")
                 )
                 Text("公式最后一项男女不同：男性加 5，女性减 161。")
                     .font(.caption)
@@ -34,7 +34,7 @@ struct ExplanationView: View {
                 Text("再乘上活动系数，得到一天的总消耗。你选的是「\(bodyInfo.activity.title)」（\(bodyInfo.activity.detail)），系数是 \(bodyInfo.activity.factor.threeDecimals)：")
                 FormulaRow(
                     formula: "\(t.bmr.noDecimal) × \(bodyInfo.activity.factor.threeDecimals)",
-                    result: "\(t.tdee.noDecimal) 千卡"
+                    result: String(localized: "\(t.tdee.noDecimal) 千卡")
                 )
             }
 
@@ -43,7 +43,7 @@ struct ExplanationView: View {
                 // 碰到安全下限时，不显示公式算出来的那个更低的数，只显示最终目标
                 FormulaRow(
                     formula: adjustmentFormula,
-                    result: t.isRaisedToFloor ? "低于安全下限，按 \(t.calories.noDecimal) 千卡" : "\(t.goalCalories.noDecimal) 千卡"
+                    result: t.isRaisedToFloor ? String(localized: "低于安全下限，按 \(t.calories.noDecimal) 千卡") : String(localized: "\(t.goalCalories.noDecimal) 千卡")
                 )
                 if t.isRaisedToFloor {
                     // 用平静的灰色说明，不用红色或橙色的「警告」样式
@@ -61,7 +61,7 @@ struct ExplanationView: View {
                     Text(proteinExplanation)
                     FormulaRow(
                         formula: "\(proteinWeightLabel) × \(bodyInfo.goal.proteinPerKg.oneDecimal)",
-                        result: "\(t.proteinG.noDecimal) 克"
+                        result: String(localized: "\(t.proteinG.noDecimal) 克")
                     )
                     if t.isProteinCapped {
                         Text("这个数超过了每日热量的 \(NutritionCalculator.maxProteinShare.percent)，所以按 \(NutritionCalculator.maxProteinShare.percent) 的上限取 \(t.proteinG.noDecimal) 克，给碳水和脂肪留出空间。")
@@ -79,15 +79,15 @@ struct ExplanationView: View {
                     Text(fatExplanation)
                     FormulaRow(
                         formula: "\(t.calories.noDecimal) × \(t.fatShare.percent) ÷ 9",
-                        result: "\(t.fatG.noDecimal) 克"
+                        result: String(localized: "\(t.fatG.noDecimal) 克")
                     )
                 }
                 VStack(alignment: .leading, spacing: 6) {
                     Text("碳水").font(.headline)
                     Text("剩下的热量都给碳水，它是训练时最主要的能量来源。蛋白质和碳水每克都约 4 千卡：")
                     FormulaRow(
-                        formula: "(\(t.calories.noDecimal) − 蛋白质 \(t.proteinG.noDecimal) × 4 − 脂肪 \(t.fatG.noDecimal) × 9) ÷ 4",
-                        result: "\(t.carbsG.noDecimal) 克"
+                        formula: String(localized: "(\(t.calories.noDecimal) − 蛋白质 \(t.proteinG.noDecimal) × 4 − 脂肪 \(t.fatG.noDecimal) × 9) ÷ 4"),
+                        result: String(localized: "\(t.carbsG.noDecimal) 克")
                     )
                 }
             }
@@ -114,15 +114,15 @@ struct ExplanationView: View {
         let share = abs(bodyInfo.goal.calorieAdjustmentShare).percent
         switch bodyInfo.goal {
         case .loseFat:
-            return "你的目标是减脂：每天比总消耗少吃 \(share)，但最多少 \(t.maxAdjustment.noDecimal) 千卡。这个上限按你的体重算：让体重每周下降不超过约 \(bodyInfo.bmi < NutritionCalculator.leanBMI ? "0.5%" : "0.7%")，并且不超过 \(NutritionCalculator.maxDailyAdjustment.noDecimal) 千卡。缺口不大，体重下降比较平稳，也更容易保住肌肉："
+            return String(localized: "你的目标是减脂：每天比总消耗少吃 \(share)，但最多少 \(t.maxAdjustment.noDecimal) 千卡。这个上限按你的体重算：让体重每周下降不超过约 \(bodyInfo.bmi < NutritionCalculator.leanBMI ? "0.5%" : "0.7%")，并且不超过 \(NutritionCalculator.maxDailyAdjustment.noDecimal) 千卡。缺口不大，体重下降比较平稳，也更容易保住肌肉：")
         case .maintain:
-            return "你的目标是维持：吃进去的和消耗的差不多就好："
+            return String(localized: "你的目标是维持：吃进去的和消耗的差不多就好：")
         case .gainMuscle:
-            var text = "你的目标是增肌：每天比总消耗多吃 \(share)，但最多多 \(NutritionCalculator.maxDailyAdjustment.noDecimal) 千卡，给肌肉生长提供原料，同时不会长太多脂肪"
+            var text = String(localized: "你的目标是增肌：每天比总消耗多吃 \(share)，但最多多 \(NutritionCalculator.maxDailyAdjustment.noDecimal) 千卡，给肌肉生长提供原料，同时不会长太多脂肪")
             if bodyInfo.bmi < ProfileValidator.underweightBMI {
-                text += "；体重偏轻时至少多吃 \(NutritionCalculator.minSurplusWhenUnderweight.noDecimal) 千卡"
+                text += String(localized: "；体重偏轻时至少多吃 \(NutritionCalculator.minSurplusWhenUnderweight.noDecimal) 千卡")
             }
-            return text + "："
+            return text + String(localized: "：")
         }
     }
 
@@ -140,33 +140,33 @@ struct ExplanationView: View {
     /// 蛋白质公式里体重那一项怎么写
     private var proteinWeightLabel: String {
         t.proteinReferenceWeightKg < bodyInfo.weightKg
-            ? "参考体重 \(t.proteinReferenceWeightKg.oneDecimal)"
-            : "体重 \(bodyInfo.weightKg.oneDecimal)"
+            ? String(localized: "参考体重 \(t.proteinReferenceWeightKg.oneDecimal)")
+            : String(localized: "体重 \(bodyInfo.weightKg.oneDecimal)")
     }
 
     private var proteinExplanation: String {
         var text: String =
             switch bodyInfo.goal {
             case .loseFat:
-                "减脂时每公斤体重吃 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克蛋白质。多吃一些蛋白质，有助于在少吃的同时保住肌肉。"
+                String(localized: "减脂时每公斤体重吃 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克蛋白质。多吃一些蛋白质，有助于在少吃的同时保住肌肉。")
             case .maintain:
-                "有规律训练的人，蛋白质需求比一般人高一些，按每公斤体重 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克计算。"
+                String(localized: "有规律训练的人，蛋白质需求比一般人高一些，按每公斤体重 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克计算。")
             case .gainMuscle:
-                "增肌需要充足的蛋白质作为原料，按每公斤体重 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克计算。"
+                String(localized: "增肌需要充足的蛋白质作为原料，按每公斤体重 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克计算。")
             }
         if t.proteinReferenceWeightKg < bodyInfo.weightKg {
-            text += "你的 BMI 超过 \(NutritionCalculator.proteinReferenceBMI.noDecimal)，为了避免目标高得吃不下，按 BMI \(NutritionCalculator.proteinReferenceBMI.noDecimal) 对应的体重 \(t.proteinReferenceWeightKg.oneDecimal) 公斤来算："
+            text += String(localized: "你的 BMI 超过 \(NutritionCalculator.proteinReferenceBMI.noDecimal)，为了避免目标高得吃不下，按 BMI \(NutritionCalculator.proteinReferenceBMI.noDecimal) 对应的体重 \(t.proteinReferenceWeightKg.oneDecimal) 公斤来算：")
         } else {
-            text += "："
+            text += String(localized: "：")
         }
         return text
     }
 
     private var fatExplanation: String {
         if t.fatShare < NutritionCalculator.fatShare - 0.0001 {
-            return "脂肪一般占每日热量的 \(NutritionCalculator.fatShare.percent)。你的热量目标比较低，为了让碳水不少于 \(NutritionCalculator.minCarbsG.noDecimal) 克，脂肪降到了 \(t.fatShare.percent)（不会低于 \(NutritionCalculator.minFatShare.percent)）。每克脂肪约 9 千卡："
+            return String(localized: "脂肪一般占每日热量的 \(NutritionCalculator.fatShare.percent)。你的热量目标比较低，为了让碳水不少于 \(NutritionCalculator.minCarbsG.noDecimal) 克，脂肪降到了 \(t.fatShare.percent)（不会低于 \(NutritionCalculator.minFatShare.percent)）。每克脂肪约 9 千卡：")
         }
-        return "脂肪占每日热量的 \(NutritionCalculator.fatShare.percent)。每克脂肪约 9 千卡："
+        return String(localized: "脂肪占每日热量的 \(NutritionCalculator.fatShare.percent)。每克脂肪约 9 千卡：")
     }
 }
 
@@ -197,28 +197,28 @@ enum References {
 
     static let all: [Item] = [
         Item(
-            title: "基础代谢公式：Mifflin 等人，1990 年",
+            title: String(localized: "基础代谢公式：Mifflin 等人，1990 年"),
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/2305711/")!),
         Item(
-            title: "蛋白质建议：国际运动营养学会立场声明，2017 年",
+            title: String(localized: "蛋白质建议：国际运动营养学会立场声明，2017 年"),
             url: URL(string: "https://pmc.ncbi.nlm.nih.gov/articles/PMC5477153/")!),
         Item(
-            title: "减脂速度与饮食安排：国际运动营养学会立场声明，2017 年",
+            title: String(localized: "减脂速度与饮食安排：国际运动营养学会立场声明，2017 年"),
             url: URL(string: "https://pmc.ncbi.nlm.nih.gov/articles/PMC5470183/")!),
         Item(
-            title: "增肌期营养建议：Iraki 等人，2019 年",
+            title: String(localized: "增肌期营养建议：Iraki 等人，2019 年"),
             url: URL(string: "https://pmc.ncbi.nlm.nih.gov/articles/PMC6680710/")!),
         Item(
-            title: "运动营养联合声明（热量缺口、脂肪比例）：ACSM 等，2016 年",
+            title: String(localized: "运动营养联合声明（热量缺口、脂肪比例）：ACSM 等，2016 年"),
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/26891166/")!),
         Item(
-            title: "碳水、脂肪推荐量：美国国家科学院膳食参考摄入量",
+            title: String(localized: "碳水、脂肪推荐量：美国国家科学院膳食参考摄入量"),
             url: URL(string: "https://www.nationalacademies.org/cdn/materials/9fb9fae1-63a0-4048-88ad-3f972639149a")!),
         Item(
-            title: "每日热量下限：Harvard Health",
+            title: String(localized: "每日热量下限：Harvard Health"),
             url: URL(string: "https://www.health.harvard.edu/staying-healthy/calorie-counting-made-easy")!),
         Item(
-            title: "老年人减重的注意事项：欧洲临床营养与代谢学会（ESPEN）老年营养指南",
+            title: String(localized: "老年人减重的注意事项：欧洲临床营养与代谢学会（ESPEN）老年营养指南"),
             url: URL(string: "https://www.espen.org/guidelines-home/espen-guidelines")!),
     ]
 }

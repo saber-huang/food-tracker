@@ -6,7 +6,9 @@
 //  只做计算，不涉及界面和存储，所以可以单独写单元测试（FoodTrackerTests/DayMathTests.swift）。
 //
 //  几个约定：
-//  - 一周从周一开始，不跟手机的地区设置走
+//  - 一周从周一开始，不跟手机的地区设置走（中文和英文都一样）
+//  - 显示用的文字按 App 的语言拼：中文「9月20日 周日」，英文「Sun, Sep 20」。
+//    每个拼文字的函数都有 language 参数：App 里用默认值（App 当前的语言），测试里可以指定
 //  - 「加一天」都用日历来算，不直接加 86400 秒：夏令时切换那天只有 23 或 25 个小时
 //  - 每个函数都有 calendar 参数：App 里用默认值（手机当前的时区）；测试里传固定时区的日历，
 //    这样测试结果不会因为电脑在哪个时区而变化
@@ -18,8 +20,16 @@ nonisolated enum DayMath {
 
     // MARK: - 日历设置
 
-    /// 中文，一周从周一开始。只写 "zh_CN" 的话，系统认为一周从周日开始
-    static let locale = Locale(identifier: "zh_CN@fw=mon")
+    /// 日期选择器、月历用的语言和地区：跟着 App 的语言，一周都从周一开始。
+    /// 只写 "zh_CN" 或 "en_US" 的话，系统认为一周从周日开始，所以加上 @fw=mon（第一天是周一）
+    static var locale: Locale { locale(for: .current) }
+
+    static func locale(for language: AppLanguage) -> Locale {
+        switch language {
+        case .zh: Locale(identifier: "zh_CN@fw=mon")
+        case .en: Locale(identifier: "en_US@fw=mon")
+        }
+    }
 
     /// 公历、一周从周一开始。时区默认跟随手机（换了时区会自动更新）
     static func makeCalendar(timeZone: TimeZone = .autoupdatingCurrent) -> Calendar {
@@ -63,9 +73,39 @@ nonisolated enum DayMath {
 
     // MARK: - 星期
 
-    static let weekdayNames = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
-    /// 周横条上每一列顶上的字
-    static let weekdayLetters = ["一", "二", "三", "四", "五", "六", "日"]
+    /// 星期几的名字，周一在前：「周一」「Mon」
+    static var weekdayNames: [String] { weekdayNames(in: .current) }
+
+    static func weekdayNames(in language: AppLanguage) -> [String] {
+        switch language {
+        case .zh: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+        case .en: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        }
+    }
+
+    /// 周横条上每一列顶上的字：「一」「M」
+    static var weekdayLetters: [String] { weekdayLetters(in: .current) }
+
+    static func weekdayLetters(in language: AppLanguage) -> [String] {
+        switch language {
+        case .zh: ["一", "二", "三", "四", "五", "六", "日"]
+        case .en: ["M", "T", "W", "T", "F", "S", "S"]
+        }
+    }
+
+    /// 英文月份：月份标题用全称，其他地方用缩写
+    private static let englishMonths = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
+    ]
+    private static let englishShortMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    /// 1～12 月 → 英文月份（超出范围时返回空字符串，不会闪退）
+    private static func englishMonth(_ month: Int?, short: Bool) -> String {
+        let names = short ? englishShortMonths : englishMonths
+        guard let month, (1...12).contains(month) else { return "" }
+        return names[month - 1]
+    }
 
     /// 周一 = 0，周二 = 1 … 周日 = 6
     static func weekdayIndex(of date: Date, calendar: Calendar = DayMath.calendar) -> Int {
@@ -174,40 +214,74 @@ nonisolated enum DayMath {
 
     // MARK: - 显示用的文字（直接拼数字，不用系统的日期格式，结果固定，也不会出现「2,026」）
 
-    /// 「9月20日」；不是今年的日期带上年份：「2025年12月31日」
-    static func shortDate(_ date: Date, today: Date, calendar: Calendar = DayMath.calendar) -> String {
+    /// 中文「9月20日」，英文「Sep 20」；不是今年的日期带上年份：「2025年12月31日」「Dec 31, 2025」
+    static func shortDate(
+        _ date: Date, today: Date, calendar: Calendar = DayMath.calendar, language: AppLanguage = .current
+    ) -> String {
         let c = calendar.dateComponents([.year, .month, .day], from: date)
-        let monthDay = "\(c.month ?? 0)月\(c.day ?? 0)日"
-        return c.year == calendar.component(.year, from: today) ? monthDay : "\(c.year ?? 0)年" + monthDay
+        let isThisYear = c.year == calendar.component(.year, from: today)
+        switch language {
+        case .zh:
+            let monthDay = "\(c.month ?? 0)月\(c.day ?? 0)日"
+            return isThisYear ? monthDay : "\(c.year ?? 0)年" + monthDay
+        case .en:
+            let monthDay = "\(englishMonth(c.month, short: true)) \(c.day ?? 0)"
+            return isThisYear ? monthDay : monthDay + ", \(c.year ?? 0)"
+        }
     }
 
-    /// 标题：「今天」「昨天」「9月20日 周日」「2025年12月31日 周三」
-    static func dayTitle(for day: Date, today: Date, calendar: Calendar = DayMath.calendar) -> String {
+    /// 日期加星期：中文「9月20日 周日」，英文「Sun, Sep 20」
+    private static func dateWithWeekday(_ day: Date, today: Date, calendar: Calendar, language: AppLanguage) -> String {
+        let date = shortDate(day, today: today, calendar: calendar, language: language)
+        let weekday = weekdayNames(in: language)[weekdayIndex(of: day, calendar: calendar)]
+        switch language {
+        case .zh: return date + " " + weekday
+        case .en: return weekday + ", " + date
+        }
+    }
+
+    /// 标题：「今天」「昨天」「9月20日 周日」「2025年12月31日 周三」；英文「Today」「Yesterday」「Sun, Sep 20」
+    static func dayTitle(
+        for day: Date, today: Date, calendar: Calendar = DayMath.calendar, language: AppLanguage = .current
+    ) -> String {
         let d = startOfDay(day, calendar: calendar)
         let t = startOfDay(today, calendar: calendar)
-        if d == t { return "今天" }
+        if d == t { return language == .zh ? "今天" : "Today" }
         // 有的地方夏令时从 0 点开始（比如古巴），「今天 0 点往前一天」可能落在昨天 1 点，所以再取一次那天的 0 点
-        if d == startOfDay(addingDays(-1, to: t, calendar: calendar), calendar: calendar) { return "昨天" }
-        return shortDate(d, today: t, calendar: calendar) + " " + weekdayNames[weekdayIndex(of: d, calendar: calendar)]
+        if d == startOfDay(addingDays(-1, to: t, calendar: calendar), calendar: calendar) {
+            return language == .zh ? "昨天" : "Yesterday"
+        }
+        return dateWithWeekday(d, today: t, calendar: calendar, language: language)
     }
 
-    /// 保存按钮上的字：「保存到今日」「保存到 9月20日」
-    static func saveButtonTitle(day: Date, today: Date, calendar: Calendar = DayMath.calendar) -> String {
-        if startOfDay(day, calendar: calendar) == startOfDay(today, calendar: calendar) { return "保存到今日" }
-        return "保存到 " + shortDate(day, today: today, calendar: calendar)
+    /// 保存按钮上的字：「保存到今日」「保存到 9月20日」；英文「Save to Today」「Save to Sep 20」
+    static func saveButtonTitle(
+        day: Date, today: Date, calendar: Calendar = DayMath.calendar, language: AppLanguage = .current
+    ) -> String {
+        let isToday = startOfDay(day, calendar: calendar) == startOfDay(today, calendar: calendar)
+        switch language {
+        case .zh: return isToday ? "保存到今日" : "保存到 " + shortDate(day, today: today, calendar: calendar, language: .zh)
+        case .en: return isToday ? "Save to Today" : "Save to " + shortDate(day, today: today, calendar: calendar, language: .en)
+        }
     }
 
-    /// 查看往日时，底部提示新记录会存到哪一天：「记录到 9月28日 周一」；今天不需要提示（nil）
-    static func recordCaption(day: Date, today: Date, calendar: Calendar = DayMath.calendar) -> String? {
+    /// 查看往日时，底部提示新记录会存到哪一天：「记录到 9月28日 周一」「Logging to Mon, Sep 28」；今天不需要提示（nil）
+    static func recordCaption(
+        day: Date, today: Date, calendar: Calendar = DayMath.calendar, language: AppLanguage = .current
+    ) -> String? {
         let d = startOfDay(day, calendar: calendar)
         if d == startOfDay(today, calendar: calendar) { return nil }
-        return "记录到 " + shortDate(d, today: today, calendar: calendar) + " " + weekdayNames[weekdayIndex(of: d, calendar: calendar)]
+        let date = dateWithWeekday(d, today: today, calendar: calendar, language: language)
+        return language == .zh ? "记录到 " + date : "Logging to " + date
     }
 
-    /// 顶栏中间的月份：「2026年9月」
-    static func monthTitle(for day: Date, calendar: Calendar = DayMath.calendar) -> String {
+    /// 顶栏中间的月份：「2026年9月」「September 2026」
+    static func monthTitle(for day: Date, calendar: Calendar = DayMath.calendar, language: AppLanguage = .current) -> String {
         let c = calendar.dateComponents([.year, .month], from: day)
-        return "\(c.year ?? 0)年\(c.month ?? 0)月"
+        switch language {
+        case .zh: return "\(c.year ?? 0)年\(c.month ?? 0)月"
+        case .en: return "\(englishMonth(c.month, short: false)) \(c.year ?? 0)"
+        }
     }
 
     /// 周横条格子里的数字：「1」「28」
@@ -215,22 +289,37 @@ nonisolated enum DayMath {
         "\(calendar.component(.day, from: day))"
     }
 
-    /// 旁白（VoiceOver）念的进度：「占目标 42%」；没吃就是「没有记录」。念的数字不封顶，画圆环时才封顶
-    static func percentText(kcal: Double, target: Double) -> String {
-        if kcal <= 0 { return "没有记录" }
-        guard target > 0 else { return "已记录" }
-        return "占目标 \(Int((kcal / target * 100).rounded()))%"
+    /// 旁白（VoiceOver）念的进度：「占目标 42%」「42% of target」；没吃就是「没有记录」。念的数字不封顶，画圆环时才封顶
+    static func percentText(kcal: Double, target: Double, language: AppLanguage = .current) -> String {
+        if kcal <= 0 { return language == .zh ? "没有记录" : "No entries" }
+        guard target > 0 else { return language == .zh ? "已记录" : "Logged" }
+        let percent = Int((kcal / target * 100).rounded())
+        return language == .zh ? "占目标 \(percent)%" : "\(percent)% of target"
     }
 
-    /// 周横条一个格子的旁白文字：「今天，9月29日 周二，已记录 300 千卡，占目标 15%」「9月30日 周三，未来的日期」
-    static func cellAccessibilityLabel(day: Date, today: Date, kcal: Double, target: Double, calendar: Calendar = DayMath.calendar) -> String {
+    /// 周横条一个格子的旁白文字：「今天，9月29日 周二，已记录 300 千卡，占目标 15%」「9月30日 周三，未来的日期」；
+    /// 英文「Today, Tue, Sep 29, 300 kcal logged, 15% of target」「Wed, Sep 30, future date」
+    static func cellAccessibilityLabel(
+        day: Date, today: Date, kcal: Double, target: Double, calendar: Calendar = DayMath.calendar,
+        language: AppLanguage = .current
+    ) -> String {
         let d = startOfDay(day, calendar: calendar)
         let t = startOfDay(today, calendar: calendar)
-        var text = (d == t ? "今天，" : "") + shortDate(d, today: t, calendar: calendar) + " " + weekdayNames[weekdayIndex(of: d, calendar: calendar)]
-        if d > t { return text + "，未来的日期" }
-        if kcal <= 0 { return text + "，没有记录" }
-        text += "，已记录 \(NumberText.text(from: kcal.rounded())) 千卡，" + percentText(kcal: kcal, target: target)
-        return text
+        let date = dateWithWeekday(d, today: t, calendar: calendar, language: language)
+        let kcalText = NumberText.text(from: kcal.rounded())
+        let percent = percentText(kcal: kcal, target: target, language: language)
+        switch language {
+        case .zh:
+            let text = (d == t ? "今天，" : "") + date
+            if d > t { return text + "，未来的日期" }
+            if kcal <= 0 { return text + "，没有记录" }
+            return text + "，已记录 \(kcalText) 千卡，" + percent
+        case .en:
+            let text = (d == t ? "Today, " : "") + date
+            if d > t { return text + ", future date" }
+            if kcal <= 0 { return text + ", no entries" }
+            return text + ", \(kcalText) kcal logged, " + percent
+        }
     }
 }
 

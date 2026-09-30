@@ -20,9 +20,9 @@ struct TargetsSummaryView: View {
                     .foregroundStyle(.secondary)
             }
             HStack {
-                NutrientColumn(name: "蛋白质", grams: targets.proteinG, color: .blue)
-                NutrientColumn(name: "碳水", grams: targets.carbsG, color: .orange)
-                NutrientColumn(name: "脂肪", grams: targets.fatG, color: .pink)
+                NutrientColumn(name: String(localized: "蛋白质"), grams: targets.proteinG, color: .blue)
+                NutrientColumn(name: String(localized: "碳水"), grams: targets.carbsG, color: .orange)
+                NutrientColumn(name: String(localized: "脂肪"), grams: targets.fatG, color: .pink)
             }
         }
         .padding(.vertical, 4)

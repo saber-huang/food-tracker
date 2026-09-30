@@ -96,8 +96,8 @@ struct AIDataDisclosure: View {
         }
     }
 
-    /// 一条说明：左边一个图标，右边一段话
-    private func item(_ systemImage: String, _ text: String) -> some View {
+    /// 一条说明：左边一个图标，右边一段话（text 是可翻译的文字，写在调用处的中文会自动进入翻译）
+    private func item(_ systemImage: String, _ text: LocalizedStringKey) -> some View {
         Label {
             Text(text)
         } icon: {

@@ -33,10 +33,10 @@ struct EntryRow: View {
     /// 三种营养素都是 0（只填了热量）时省略营养素，免得看起来像「没有蛋白质、碳水、脂肪」
     private var detail: String {
         var parts: [String] = []
-        if entry.source == .recipe { parts.append("来自食谱") }
-        if let weight = entry.weightG { parts.append("约 \(weight.oneDecimal) 克") }
+        if entry.source == .recipe { parts.append(String(localized: "来自食谱")) }
+        if let weight = entry.weightG { parts.append(String(localized: "约 \(weight.oneDecimal) 克")) }
         if entry.proteinG > 0 || entry.carbsG > 0 || entry.fatG > 0 {
-            parts.append("蛋白质 \(entry.proteinG.oneDecimal) · 碳水 \(entry.carbsG.oneDecimal) · 脂肪 \(entry.fatG.oneDecimal) 克")
+            parts.append(String(localized: "蛋白质 \(entry.proteinG.oneDecimal) · 碳水 \(entry.carbsG.oneDecimal) · 脂肪 \(entry.fatG.oneDecimal) 克"))
         }
         return parts.joined(separator: " · ")
     }

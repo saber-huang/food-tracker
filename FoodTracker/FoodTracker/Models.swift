@@ -45,9 +45,9 @@ nonisolated enum Confidence: String, Codable, Hashable {
     /// 显示在界面上的文字
     var label: String {
         switch self {
-        case .high: "把握高"
-        case .medium: "把握中"
-        case .low: "请核对"
+        case .high: String(localized: "把握高")
+        case .medium: String(localized: "把握中")
+        case .low: String(localized: "请核对")
         }
     }
 }

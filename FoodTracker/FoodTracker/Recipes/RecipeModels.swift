@@ -15,9 +15,9 @@ nonisolated enum MealSlot: String, Codable, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .breakfast: "早餐"
-        case .lunch: "午餐"
-        case .dinner: "晚餐"
+        case .breakfast: String(localized: "早餐")
+        case .lunch: String(localized: "午餐")
+        case .dinner: String(localized: "晚餐")
         }
     }
 
@@ -95,7 +95,7 @@ extension RecipeRequest {
             maxCookingMinutes: cookingMinutes,
             meals: meals,
             excludeNames: excludeNames,
-            lang: "zh"  // 界面目前只有中文；以后做英文版时再跟随手机语言
+            lang: AppLanguage.current.apiCode  // 菜名、食材和做法用 App 现在显示的语言
         )
     }
 }
