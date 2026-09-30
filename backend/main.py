@@ -30,7 +30,9 @@ from typing import Annotated, Literal
 from fastapi import FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 
 from food_ai import MAX_UPLOAD_BYTES, MODEL, ON_RENDER, AIError, AnalyzeResult, analyze_food_photo
+import messages
 from limits import Busy, Gate, Gatekeeper, Guard, LimitExceeded, ResultCache, Ticket
+from messages import Lang
 from recipes_ai import RecipeRequest, RecipesResult, generate_recipes
 
 # 让各模块的日志（用时、token 用量）显示在终端里
@@ -154,41 +156,44 @@ def keys_for(request: Request, device_id: str | None) -> tuple[str, str]:
     return ip_key, ip_key
 
 
-def acquire(guard: Guard, request: Request, device_id: str | None, what: str) -> Ticket:
-    """扣一次次数；任何一道限制用完了就返回 429，不调用 AI"""
+def request_lang(request: Request) -> Lang:
+    """提示用中文还是英文：看 App 在 X-App-Lang 请求头里说的语言，没说就用中文（见 messages.py）"""
+    return messages.lang_from_header(request.headers.get("x-app-lang"))
+
+
+def acquire(guard: Guard, request: Request, device_id: str | None, feature: str) -> Ticket:
+    """扣一次次数；任何一道限制用完了就返回 429，不调用 AI。feature 是 "analyze" 或 "recipes"。"""
     device_key, ip_key = keys_for(request, device_id)
     try:
         return guard.acquire(device_key, ip_key)
     except LimitExceeded as e:
         hours = max(1, -(-e.retry_after // 3600))  # 向上取整
-        detail = {
-            "burst": f"{what}太频繁了，请稍等一分钟再试",
-            "device": f"今天的{what}次数用完了（每 24 小时最多 {guard.per_device} 次），大约 {hours} 小时后可以再用",
-            "ip": f"当前网络下今天的{what}次数用完了，大约 {hours} 小时后可以再用",
-            "site": f"今天全站的{what}次数已经用完，请明天再试",
-        }[e.scope]
+        detail = messages.text(
+            f"limit_{e.scope}", request_lang(request), feature=feature, limit=guard.per_device, hours=hours
+        )
         raise HTTPException(status_code=429, detail=detail, headers={"Retry-After": str(e.retry_after)})
 
 
-def run_ai(guard: Guard, tickets: list[Ticket], work):
+def run_ai(guard: Guard, tickets: list[Ticket], work, lang: Lang):
     """在并发闸门里执行 AI 调用。tickets 是这次请求扣掉的次数凭证（食谱重做时会有两张）。
-    没花钱的失败把最后一次的次数还回去；前面已经完成的调用花过钱了，不退。"""
+    没花钱的失败把最后一次的次数还回去；前面已经完成的调用花过钱了，不退。
+    lang 是出错说明用的语言。"""
     try:
         with gate.enter():
             return work()
     except Busy:
         for ticket in tickets:
             guard.refund(ticket)
-        raise HTTPException(status_code=503, detail="服务器正忙，请稍后再试", headers={"Retry-After": "20"})
+        raise HTTPException(status_code=503, detail=messages.text("busy", lang), headers={"Retry-After": "20"})
     except AIError as e:
         if not e.billed:
             guard.refund(tickets[-1])
         # 出错时统一返回 {"detail": "给用户看的说明"}，App 直接显示这句话就行
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+        raise HTTPException(status_code=e.status_code, detail=e.message_for(lang))
     except Exception:
         # 意料之外的错误：记进日志，对外仍然用统一的格式；不确定花没花钱，次数不退
         logger.exception("处理请求时出错")
-        raise HTTPException(status_code=500, detail="服务器出错，请稍后再试")
+        raise HTTPException(status_code=500, detail=messages.text("server_error", lang))
 
 
 @app.get("/")
@@ -225,19 +230,19 @@ def analyze(
     device_id: DeviceID = None,
 ):
     """识别照片里的食物，返回每种食物的营养数据和整餐合计。"""
-    ticket = acquire(analyze_guard, request, device_id, "拍照识别")
+    ticket = acquire(analyze_guard, request, device_id, "analyze")
 
     def work():
         # 读照片放在闸门里做：同时最多 2 个请求把照片读进内存
         # 多读 1 个字节：如果读到的比上限还多，说明照片太大。读不到合格的照片就把次数还回去
         data = photo.file.read(MAX_UPLOAD_BYTES + 1)
         if not data:
-            raise AIError(400, "没有收到照片", billed=False)
+            raise AIError(400, "no_photo", billed=False)
         if len(data) > MAX_UPLOAD_BYTES:
-            raise AIError(413, f"照片太大了，请上传 {MAX_UPLOAD_BYTES // 1024 // 1024} MB 以内的照片", billed=False)
+            raise AIError(413, "photo_too_big", billed=False, mb=MAX_UPLOAD_BYTES // 1024 // 1024)
         return analyze_food_photo(data, lang)
 
-    return run_ai(analyze_guard, [ticket], work)
+    return run_ai(analyze_guard, [ticket], work, request_lang(request))
 
 
 @app.post("/recipes", response_model=RecipesResult)
@@ -250,7 +255,7 @@ def recipes(body: RecipeRequest, request: Request, device_id: DeviceID = None):
     if cache_key and (cached := recipe_cache.get(cache_key)) is not None:
         return cached.model_copy(update={"from_cache": True, "remaining_today": recipe_guard.remaining(device_key, ip_key)})
 
-    tickets = [acquire(recipe_guard, request, device_id, "食谱推荐")]
+    tickets = [acquire(recipe_guard, request, device_id, "recipes")]
 
     def allow_retry() -> bool:
         # AI 没避开忌口时可以重做一次，但重做也是一次调用，也要算次数；次数不够就不重做
@@ -260,7 +265,7 @@ def recipes(body: RecipeRequest, request: Request, device_id: DeviceID = None):
         except LimitExceeded:
             return False
 
-    result = run_ai(recipe_guard, tickets, lambda: generate_recipes(body, allow_retry=allow_retry))
+    result = run_ai(recipe_guard, tickets, lambda: generate_recipes(body, allow_retry=allow_retry), request_lang(request))
     result.remaining_today = recipe_guard.remaining(device_key, ip_key)
     if cache_key:
         recipe_cache.set(cache_key, result)

@@ -28,6 +28,8 @@ from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 
+import messages
+
 DAY = 24 * 3600
 
 
@@ -248,27 +250,28 @@ class Gatekeeper:
         if self.secret and path not in self.open_paths:
             given = headers.get(b"x-app-key", b"")
             if not given or not hmac.compare_digest(given, self.secret):
-                return await self._reject(send, 401, "请更新 App 到最新版本")
+                return await self._reject(send, 401, "update_app", headers)
 
         # 2. 请求体大小
         if scope.get("method") in ("POST", "PUT", "PATCH"):
             limit = self.body_limits.get(path, self.default_body_limit)
             length = headers.get(b"content-length")
             if length is None:
-                return await self._reject(send, 411, "请求缺少 Content-Length")
+                return await self._reject(send, 411, "missing_length", headers)
             try:
                 declared = int(length)
             except ValueError:
                 declared = limit + 1
             if declared > limit:
-                return await self._reject(send, 413, "请求太大了")
+                return await self._reject(send, 413, "request_too_large", headers)
 
         await self.app(scope, receive, send)
 
     @staticmethod
-    async def _reject(send, status: int, detail: str) -> None:
-        """直接回一个和 FastAPI 一样格式的错误：{"detail": "..."}"""
-        body = json.dumps({"detail": detail}, ensure_ascii=False).encode("utf-8")
+    async def _reject(send, status: int, key: str, headers: dict[bytes, bytes]) -> None:
+        """直接回一个和 FastAPI 一样格式的错误：{"detail": "..."}。说明按 X-App-Lang 请求头用中文或英文"""
+        lang = messages.lang_from_header(headers.get(b"x-app-lang", b"").decode("latin-1"))
+        body = json.dumps({"detail": messages.text(key, lang)}, ensure_ascii=False).encode("utf-8")
         await send({
             "type": "http.response.start",
             "status": status,

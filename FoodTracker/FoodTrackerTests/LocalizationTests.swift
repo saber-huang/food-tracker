@@ -165,5 +165,13 @@ struct LocalizationTests {
         // 相机权限的说明也有英文
         #expect(text("NSCameraUsageDescription", table: "InfoPlist").contains("photos of your meals"))
     }
+
+    @Test("每个发给后端的请求都带上 App 的语言，后端的出错说明用同一种语言")
+    @MainActor
+    func requestCarriesLanguage() {
+        let request = APIClient.makeRequest(path: "quota", method: "GET", timeout: 10)
+        #expect(request.value(forHTTPHeaderField: "X-App-Lang") == AppLanguage.current.apiCode)
+        #expect(request.value(forHTTPHeaderField: "X-Device-ID") != nil)
+    }
 }
 

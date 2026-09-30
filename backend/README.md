@@ -53,6 +53,8 @@ uv run fastapi dev main.py --host 0.0.0.0
 - `/docs` 会自动关闭（Render 会设置环境变量 `RENDER=true`）。
 - 除了首页 `/` 和 `/health`，所有请求都要带 `X-App-Key` 请求头，值等于环境变量 `APP_SHARED_SECRET`。
 - 错误提示只给通用说明，具体原因看 Render 的日志（服务页面的 Logs）。
+- 错误提示有中文和英文两种（`messages.py`）：App 在请求头 `X-App-Lang` 里说明自己的语言（`zh` 或 `en`），没带这个头的请求用中文。
+- 改了后端以后，可以先在电脑上跑一遍离线检查（不调用 AI、不花钱）：`uv run --no-sync python offline_checks.py`。
 
 ### 第一次部署的步骤
 

@@ -226,7 +226,7 @@ def ask_claude(req: RecipeRequest, violation_note: str = "") -> tuple[list[Recip
         content=[{"type": "text", "text": build_user_prompt(req, violation_note)}],
         output_format=plan_model(req.meals),
         max_tokens=MAX_TOKENS_RECIPES,
-        what="生成食谱",
+        feature="recipes",
     )
     recipes = []
     for meal in req.meals:
@@ -260,4 +260,4 @@ def generate_recipes(req: RecipeRequest, allow_retry: Callable[[], bool] = lambd
             logger.warning("次数不够，不再重做")
             break
 
-    raise AIError(502, "AI 没能完全避开你的忌口，请稍后重试或调整忌口写法")
+    raise AIError(502, "recipe_restrictions_failed")

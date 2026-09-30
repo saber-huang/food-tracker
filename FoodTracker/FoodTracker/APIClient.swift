@@ -73,12 +73,14 @@ enum APIClient {
 
     // MARK: - 公共部分
 
-    /// 准备一个请求：拼上后端地址，带上设备 ID 和 App 密钥
-    private static func makeRequest(path: String, method: String, timeout: TimeInterval) -> URLRequest {
+    /// 准备一个请求：拼上后端地址，带上设备 ID、App 密钥和 App 现在显示的语言
+    static func makeRequest(path: String, method: String, timeout: TimeInterval) -> URLRequest {
         var request = URLRequest(url: AppConfig.backendURL.appending(path: path))
         request.httpMethod = method
         request.timeoutInterval = timeout
         request.setValue(DeviceID.current, forHTTPHeaderField: "X-Device-ID")
+        // 后端的出错说明（比如次数用完了）按这个语言写；没带这个头的旧版 App 收到的是中文
+        request.setValue(AppLanguage.current.apiCode, forHTTPHeaderField: "X-App-Lang")
         if !AppConfig.appKey.isEmpty {
             request.setValue(AppConfig.appKey, forHTTPHeaderField: "X-App-Key")
         }

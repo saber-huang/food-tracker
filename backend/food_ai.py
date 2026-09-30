@@ -21,6 +21,9 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from pillow_heif import register_heif_opener
 from pydantic import BaseModel, Field
 
+import messages
+from messages import Lang
+
 # 读取 backend/.env 文件里的配置（API Key 等），放进环境变量。
 # override=True：如果电脑上已经有同名的环境变量，以 .env 里写的为准
 load_dotenv(override=True)
@@ -103,22 +106,30 @@ class AnalyzeResult(BaseModel):
 
 
 class AIError(Exception):
-    """识别过程中出的错。status_code 是返回给 App 的 HTTP 状态码，message 是给用户看的说明。
+    """识别或生成食谱时出的错。status_code 是返回给 App 的 HTTP 状态码。
+
+    key 是给用户看的说明（messages.py 里的一条），params 是要填进说明里的数字和名字；
+    说明用中文还是英文，要到回复 App 的时候才按请求头决定（message_for）。
 
     billed 表示这次失败有没有可能已经花了钱：没花钱的（比如照片读不了、连不上 AI）
     会把用户当天的次数还回去；可能已经花了钱的（比如超时、返回格式不对）不还。
+
+    dev 是只在本地开发时显示的详细排查提示（中文）；部署到网上后只给通用说明，不向陌生人透露内部配置。
     """
 
-    def __init__(self, status_code: int, message: str, billed: bool = True):
-        super().__init__(message)
+    def __init__(self, status_code: int, key: str, *, billed: bool = True, dev: str | None = None, **params):
+        super().__init__(key)
         self.status_code = status_code
-        self.message = message
+        self.key = key
         self.billed = billed
+        self.dev = dev
+        self.params = params
 
-
-def explain(dev_message: str, public_message: str) -> str:
-    """本地开发时给详细的排查提示；部署到网上后只给通用说明，不向陌生人透露内部配置"""
-    return public_message if ON_RENDER else dev_message
+    def message_for(self, lang: Lang) -> str:
+        """给用户看的说明，lang 是 zh 或 en"""
+        if self.dev and not ON_RENDER:
+            return self.dev
+        return messages.text(self.key, lang, **self.params)
 
 
 # ---------- 第 1 步：整理照片 ----------
@@ -129,13 +140,13 @@ def prepare_image(data: bytes) -> bytes:
     try:
         image = Image.open(io.BytesIO(data))  # 这一步只读文件头，还没有解压整张图
         if image.width * image.height > MAX_IMAGE_PIXELS:
-            raise AIError(400, "这张照片的像素太多了，请换一张，或先压缩后再上传", billed=False)
+            raise AIError(400, "too_many_pixels", billed=False)
         # 手机拍的照片常常只带一个「旋转」标记，这里把像素真正转正，AI 才不会看到歪的图
         image = ImageOps.exif_transpose(image)
         # 统一转成 RGB（去掉透明背景），因为 JPEG 不支持透明
         image = image.convert("RGB")
     except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
-        raise AIError(400, "无法读取这张图片，请上传 JPG、PNG 或 HEIC 格式的照片", billed=False)
+        raise AIError(400, "unreadable_image", billed=False)
 
     # 等比例缩小，长边不超过 MAX_IMAGE_SIDE（本来就小的图不会被放大）
     image.thumbnail((MAX_IMAGE_SIDE, MAX_IMAGE_SIDE))
@@ -176,12 +187,7 @@ def get_client() -> anthropic.Anthropic:
         if not api_key:
             logger.error("没有配置 ANTHROPIC_API_KEY")
             raise AIError(
-                500,
-                explain(
-                    "服务器没有配置 ANTHROPIC_API_KEY，请在 backend/.env 里填写后重启后端",
-                    "服务暂时不可用，请稍后再试",
-                ),
-                billed=False,
+                500, "unavailable", billed=False, dev="服务器没有配置 ANTHROPIC_API_KEY，请在 backend/.env 里填写后重启后端"
             )
         _client = anthropic.Anthropic(
             api_key=api_key,
@@ -209,10 +215,10 @@ def model_options(model: str) -> dict:
     }
 
 
-def call_claude(*, system: str, content: list, output_format: type, max_tokens: int, what: str):
+def call_claude(*, system: str, content: list, output_format: type, max_tokens: int, feature: str):
     """调用 Claude，并把回答解析成 output_format 指定的格式。识别和食谱共用这一个函数：
     统一处理各种出错情况、打印用量日志，并限制单次最多输出多少 token（控制单次最高花费）。
-    what 是给用户看的动作名，比如「识别」「生成食谱」。返回（解析好的结果，实际回答的模型名）。"""
+    feature 是 "analyze"（识别）或 "recipes"（生成食谱），用在日志和出错说明里。返回（解析好的结果，实际回答的模型名）。"""
     client = get_client()
     started = time.monotonic()
     try:
@@ -229,53 +235,45 @@ def call_claude(*, system: str, content: list, output_format: type, max_tokens: 
     # 详细原因只写进服务器日志；对外只给通用说明，不向陌生人透露内部信息
     except pydantic.ValidationError:
         # AI 返回的内容不是合格的 JSON（很少见，比如回答被截断）
-        raise AIError(502, f"AI 返回的结果格式不对，请重试")
+        raise AIError(502, "ai_bad_format")
     except anthropic.AuthenticationError:
         logger.error("ANTHROPIC_API_KEY 无效")
-        raise AIError(
-            500,
-            explain("ANTHROPIC_API_KEY 无效，请检查 backend/.env 里的 Key", "服务暂时不可用，请稍后再试"),
-            billed=False,
-        )
+        raise AIError(500, "unavailable", billed=False, dev="ANTHROPIC_API_KEY 无效，请检查 backend/.env 里的 Key")
     except anthropic.PermissionDeniedError:
         logger.error("这个 API Key 没有权限使用模型 %s", MODEL)
-        raise AIError(500, explain("这个 API Key 没有权限使用该模型", "服务暂时不可用，请稍后再试"), billed=False)
+        raise AIError(500, "unavailable", billed=False, dev="这个 API Key 没有权限使用该模型")
     except anthropic.NotFoundError:
         logger.error("找不到模型 %s", MODEL)
-        raise AIError(
-            500,
-            explain(f"找不到模型 {MODEL}，请检查 .env 里的 FOOD_AI_MODEL", "服务暂时不可用，请稍后再试"),
-            billed=False,
-        )
+        raise AIError(500, "unavailable", billed=False, dev=f"找不到模型 {MODEL}，请检查 .env 里的 FOOD_AI_MODEL")
     except anthropic.RateLimitError:
         # Anthropic 那边限速，或者账号的每月花费上限到了（这种情况没有 retry-after）
         logger.error("Claude 限速或达到花费上限")
-        raise AIError(429, "AI 服务太忙了，请稍后再试", billed=False)
+        raise AIError(429, "ai_busy", billed=False)
     except anthropic.BadRequestError as e:
         # 你自己在控制台设的每月花费上限用完、账户余额不足等，都会走到这里
         message = (e.message or "").lower()
         logger.error("Claude 拒绝了请求：%s", e.message)
         if "specified" in message and "limit" in message:
-            raise AIError(503, "今天的 AI 额度已经用完了，请明天再试", billed=False)
+            raise AIError(503, "ai_quota_used_up", billed=False)
         if "credit balance" in message:
-            raise AIError(503, "服务暂时不可用，请稍后再试", billed=False)
-        raise AIError(502, f"AI 服务暂时无法处理这个请求，请稍后再试", billed=False)
+            raise AIError(503, "unavailable", billed=False)
+        raise AIError(502, "ai_cannot_process", billed=False)
     except anthropic.APITimeoutError:
-        raise AIError(504, f"AI {what}超时，请重试")
+        raise AIError(504, "ai_timeout", feature=feature)
     except anthropic.APIConnectionError:
-        raise AIError(503, "连接不上 AI 服务，请稍后再试", billed=False)
+        raise AIError(503, "ai_connect_failed", billed=False)
     except anthropic.APIStatusError as e:
         logger.error("Claude 服务出错：%s %s", e.status_code, e.message)
-        raise AIError(502, "AI 服务出错，请稍后再试")
+        raise AIError(502, "ai_error")
     except anthropic.APIError as e:
         # SDK 里其他没单独处理的错误（比如返回的内容不符合预期），也当作服务出错
         logger.error("Claude 调用出错：%s", e)
-        raise AIError(502, "AI 服务出错，请稍后再试")
+        raise AIError(502, "ai_error")
 
     # 在日志里打印这次的用时和 token 用量，方便你估算费用
     logger.info(
         "%s完成：模型 %s，用时 %.1f 秒，输入 %d token，输出 %d token，结束原因 %s",
-        what,
+        messages.ACTIONS[feature]["zh"],
         response.model,
         time.monotonic() - started,
         response.usage.input_tokens,
@@ -285,11 +283,11 @@ def call_claude(*, system: str, content: list, output_format: type, max_tokens: 
 
     # 先看 AI 为什么停下，再读结果
     if response.stop_reason == "refusal":
-        raise AIError(422, "AI 无法处理这个请求，请换一个试试")
+        raise AIError(422, "ai_refusal")
     if response.stop_reason == "max_tokens":
-        raise AIError(502, "AI 的回答被截断了，请重试")
+        raise AIError(502, "ai_truncated")
     if response.parsed_output is None:
-        raise AIError(502, f"AI 没有返回结果，请重试")
+        raise AIError(502, "ai_empty")
     # response.model 是实际回答的模型（触发备用模型时会和 MODEL 不同）
     return response.parsed_output, response.model
 
@@ -312,18 +310,19 @@ def ask_claude(jpeg: bytes, lang: str) -> tuple[AIResult, str]:
         ],
         output_format=AIResult,
         max_tokens=MAX_TOKENS_ANALYZE,
-        what="识别",
+        feature="analyze",
     )
 
 
 # ---------- 第 3 步：检查结果、计算合计 ----------
 
 
-def build_result(ai: AIResult, model: str) -> AnalyzeResult:
-    """整理 AI 的结果：数值取整、负数改成 0、去掉空名字，并由后端自己加总整餐合计。"""
+def build_result(ai: AIResult, model: str, lang: Lang = "zh") -> AnalyzeResult:
+    """整理 AI 的结果：数值取整、负数改成 0、去掉空名字，并由后端自己加总整餐合计。
+    AI 没写名字、没写总结时补上的默认文字，用结果的语言 lang。"""
     items = [
         FoodItem(
-            name=item.name.strip() or "未知食物",
+            name=item.name.strip() or messages.text("unknown_food", lang),
             weight_g=round(max(item.weight_g, 0)),
             calories_kcal=round(max(item.calories_kcal, 0)),
             protein_g=round(max(item.protein_g, 0), 1),
@@ -337,9 +336,9 @@ def build_result(ai: AIResult, model: str) -> AnalyzeResult:
     message = ai.message.strip()
     if not ai.is_food:
         items = []  # 不是食物时，不返回任何食物项
-        message = message or "这张照片里好像没有食物"
+        message = message or messages.text("result_not_food", lang)
     elif not items:
-        message = "没有识别出具体的食物，请换个角度再拍一张"
+        message = messages.text("result_no_items", lang)
 
     total = MealTotal(
         weight_g=round(sum(i.weight_g for i in items)),
@@ -350,15 +349,15 @@ def build_result(ai: AIResult, model: str) -> AnalyzeResult:
     )
     return AnalyzeResult(
         is_food=bool(items),
-        message=message or "识别完成",
+        message=message or messages.text("result_done", lang),
         items=items,
         total=total,
         model=model,
     )
 
 
-def analyze_food_photo(data: bytes, lang: str = "zh") -> AnalyzeResult:
-    """完整流程：整理照片 → 问 Claude → 整理结果。"""
+def analyze_food_photo(data: bytes, lang: Lang = "zh") -> AnalyzeResult:
+    """完整流程：整理照片 → 问 Claude → 整理结果。lang 是结果（食物名称和总结）用的语言"""
     jpeg = prepare_image(data)
     ai, model = ask_claude(jpeg, lang)
-    return build_result(ai, model)
+    return build_result(ai, model, lang)
