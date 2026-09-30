@@ -148,14 +148,14 @@ struct ExplanationView: View {
         var text: String =
             switch bodyInfo.goal {
             case .loseFat:
-                String(localized: "减脂时每公斤体重吃 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克蛋白质。多吃一些蛋白质，有助于在少吃的同时保住肌肉。")
+                String(localized: "减脂时每公斤体重吃 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克蛋白质。多吃一些蛋白质，有助于在少吃的同时保住肌肉")
             case .maintain:
-                String(localized: "有规律训练的人，蛋白质需求比一般人高一些，按每公斤体重 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克计算。")
+                String(localized: "有规律训练的人，蛋白质需求比一般人高一些，按每公斤体重 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克计算")
             case .gainMuscle:
-                String(localized: "增肌需要充足的蛋白质作为原料，按每公斤体重 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克计算。")
+                String(localized: "增肌需要充足的蛋白质作为原料，按每公斤体重 \(bodyInfo.goal.proteinPerKg.oneDecimal) 克计算")
             }
         if t.proteinReferenceWeightKg < bodyInfo.weightKg {
-            text += String(localized: "你的 BMI 超过 \(NutritionCalculator.proteinReferenceBMI.noDecimal)，为了避免目标高得吃不下，按 BMI \(NutritionCalculator.proteinReferenceBMI.noDecimal) 对应的体重 \(t.proteinReferenceWeightKg.oneDecimal) 公斤来算：")
+            text += String(localized: "。你的 BMI 超过 \(NutritionCalculator.proteinReferenceBMI.noDecimal)，为了避免目标高得吃不下，按 BMI \(NutritionCalculator.proteinReferenceBMI.noDecimal) 对应的体重 \(t.proteinReferenceWeightKg.oneDecimal) 公斤来算：")
         } else {
             text += String(localized: "：")
         }

@@ -29,7 +29,14 @@ struct DayProgressCard: View {
             headline
             ProgressView(value: progress.kcalFraction)
                 .accessibilityHidden(true)  // 旁白（VoiceOver）不读这条进度条：上下两行已经读出了数字
-            Text("已记录 \(progress.consumedKcal.noDecimal) · \(isToday ? "目标" : "按当前目标") \(progress.targetKcal.noDecimal) 千卡")
+            // 两种情况各写成一整句，翻译时不会漏掉中间那个词（往日也按现在的目标比较，所以写明「按当前目标」）
+            Group {
+                if isToday {
+                    Text("已记录 \(progress.consumedKcal.noDecimal) · 目标 \(progress.targetKcal.noDecimal) 千卡")
+                } else {
+                    Text("已记录 \(progress.consumedKcal.noDecimal) · 按当前目标 \(progress.targetKcal.noDecimal) 千卡")
+                }
+            }
                 .font(.caption)
                 .foregroundStyle(.secondary)
             macroLayout {

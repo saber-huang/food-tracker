@@ -22,7 +22,7 @@ nonisolated enum DayMath {
 
     /// 日期选择器、月历用的语言和地区：跟着 App 的语言，一周都从周一开始。
     /// 只写 "zh_CN" 或 "en_US" 的话，系统认为一周从周日开始，所以加上 @fw=mon（第一天是周一）
-    static var locale: Locale { locale(for: .current) }
+    static let locale: Locale = locale(for: .current)
 
     static func locale(for language: AppLanguage) -> Locale {
         switch language {
@@ -74,7 +74,7 @@ nonisolated enum DayMath {
     // MARK: - 星期
 
     /// 星期几的名字，周一在前：「周一」「Mon」
-    static var weekdayNames: [String] { weekdayNames(in: .current) }
+    static let weekdayNames: [String] = weekdayNames(in: .current)
 
     static func weekdayNames(in language: AppLanguage) -> [String] {
         switch language {
@@ -84,7 +84,7 @@ nonisolated enum DayMath {
     }
 
     /// 周横条上每一列顶上的字：「一」「M」
-    static var weekdayLetters: [String] { weekdayLetters(in: .current) }
+    static let weekdayLetters: [String] = weekdayLetters(in: .current)
 
     static func weekdayLetters(in language: AppLanguage) -> [String] {
         switch language {

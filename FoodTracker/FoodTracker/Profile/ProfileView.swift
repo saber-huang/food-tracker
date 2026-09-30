@@ -38,9 +38,9 @@ struct ProfileView: View {
 
                 Section("个人资料") {
                     LabeledContent("性别", value: bodyInfo.sex.title)
-                    LabeledContent("年龄", value: "\(bodyInfo.age) 岁")
-                    LabeledContent("身高", value: "\(bodyInfo.heightCm.oneDecimal) 厘米")
-                    LabeledContent("体重", value: "\(bodyInfo.weightKg.oneDecimal) 公斤")
+                    LabeledContent("年龄", value: String(localized: "\(bodyInfo.age) 岁"))
+                    LabeledContent("身高", value: String(localized: "\(bodyInfo.heightCm.oneDecimal) 厘米"))
+                    LabeledContent("体重", value: String(localized: "\(bodyInfo.weightKg.oneDecimal) 公斤"))
                     LabeledContent("活动量", value: bodyInfo.activity.title)
                     LabeledContent("目标", value: bodyInfo.goal.title)
                     Button("编辑资料") { isEditing = true }
@@ -67,7 +67,7 @@ struct ProfileView: View {
                     NavigationLink {
                         AIDataInfoView()
                     } label: {
-                        LabeledContent("AI 功能", value: AIConsent.isGranted(version: aiConsentVersion) ? "已同意" : "未同意")
+                        LabeledContent("AI 功能", value: AIConsent.isGranted(version: aiConsentVersion) ? String(localized: "已同意") : String(localized: "未同意"))
                     }
                     if AIConsent.isGranted(version: aiConsentVersion) {
                         // 撤回很安全：只是下次用 AI 功能前再问一次，所以不用再确认

@@ -1,0 +1,1022 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "上周以来修改过资料，上面的对比按现在的目标计算。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've updated your profile since last week, so this comparison uses your current target."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上周以来修改过资料，上面的对比按现在的目标计算。"
+          }
+        }
+      }
+    },
+    "上周小结" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Week"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上周小结"
+          }
+        }
+      }
+    },
+    "上周有 %lld 天的记录比较完整，还算不出有参考价值的平均。这完全没关系，记录多少都有用；这周想记的时候记就好。" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Last week had %lld fairly complete day of logs, not enough for a meaningful average. That's completely fine; every entry helps. Log this week whenever you like."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Last week had %lld fairly complete days of logs, not enough for a meaningful average. That's completely fine; every entry helps. Log this week whenever you like."
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上周有 %lld 天的记录比较完整，还算不出有参考价值的平均。这完全没关系，记录多少都有用；这周想记的时候记就好。"
+          }
+        }
+      }
+    },
+    "不显示任何热量提示。每日目标和记录功能不受影响。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No calorie hints are shown. Your daily targets and logging work as usual."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不显示任何热量提示。每日目标和记录功能不受影响。"
+          }
+        }
+      }
+    },
+    "为了让%@仍然是一顿像样的正餐，这里按约 %@ 千卡来推荐；稍微多一点没关系，看一周的整体就好。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To keep %1$@ a proper meal, this suggestion is based on about %2$@ kcal. A little more is fine; the week as a whole is what matters."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为了让%@仍然是一顿像样的正餐，这里按约 %@ 千卡来推荐；稍微多一点没关系，看一周的整体就好。"
+          }
+        }
+      }
+    },
+    "今天剩下约 %@ 千卡。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About %@ kcal left for today. "
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天剩下约 %@ 千卡。"
+          }
+        }
+      }
+    },
+    "今天比目标多了约 %@ 千卡。一天的数字有起伏很正常，看的是几周的平均；明天照常吃、照常记录就好。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're about %@ kcal above today's target. Daily numbers naturally go up and down; what counts is the average over a few weeks. Eat and log as usual tomorrow."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天比目标多了约 %@ 千卡。一天的数字有起伏很正常，看的是几周的平均；明天照常吃、照常记录就好。"
+          }
+        }
+      }
+    },
+    "今天比目标多了约 %@ 千卡。偶尔一天这样很正常，对整体趋势没什么影响；%@照常吃、照常记录就好。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're about %1$@ kcal above today's target. A day like this now and then is normal and barely affects your overall trend. Have %2$@ and log it as usual."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天比目标多了约 %@ 千卡。偶尔一天这样很正常，对整体趋势没什么影响；%@照常吃、照常记录就好。"
+          }
+        }
+      }
+    },
+    "今天的摄入差不多就在目标线上。%@照常吃、照常记录就好，稍微多一点也没关系。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're right around today's target. Have %@ and log it as usual; a little extra is fine."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天的摄入差不多就在目标线上。%@照常吃、照常记录就好，稍微多一点也没关系。"
+          }
+        }
+      }
+    },
+    "今天的摄入差不多就在目标线上。明天照常吃、照常记录就好。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're right around today's target. Eat and log as usual tomorrow."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天的摄入差不多就在目标线上。明天照常吃、照常记录就好。"
+          }
+        }
+      }
+    },
+    "今天的摄入已经接近目标。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're close to today's target. "
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天的摄入已经接近目标。"
+          }
+        }
+      }
+    },
+    "今天的摄入已经接近目标。%@照常吃就好，稍微多一点也没关系。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're close to today's target. Have %@ as usual; a little extra is fine."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天的摄入已经接近目标。%@照常吃就好，稍微多一点也没关系。"
+          }
+        }
+      }
+    },
+    "今天离目标还有约 %@ 千卡，可以留给%@。%@照常吃就好，稍微多一点也没关系。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About %1$@ kcal to go today, which you can save for %2$@. Have %3$@ as usual; a little extra is fine."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天离目标还有约 %@ 千卡，可以留给%@。%@照常吃就好，稍微多一点也没关系。"
+          }
+        }
+      }
+    },
+    "今天还可以生成 %lld 次（和「食谱」页共用次数）。条件不变时重新生成会直接用上次的结果，不占次数。" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld generation left today (shared with the Recipes tab). Regenerating with the same settings reuses the last result and doesn't count."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld generations left today (shared with the Recipes tab). Regenerating with the same settings reuses the last result and doesn't count."
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还可以生成 %lld 次（和「食谱」页共用次数）。条件不变时重新生成会直接用上次的结果，不占次数。"
+          }
+        }
+      }
+    },
+    "假装现在是" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pretend It's"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "假装现在是"
+          }
+        }
+      }
+    },
+    "先不用" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Now"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先不用"
+          }
+        }
+      }
+    },
+    "全部开启" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All On"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部开启"
+          }
+        }
+      }
+    },
+    "关闭" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        }
+      }
+    },
+    "取消" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        }
+      }
+    },
+    "只在每周显示一次平均摄入和目标的对比，平时不打扰。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows your average intake next to your target once a week, and stays quiet the rest of the time."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只在每周显示一次平均摄入和目标的对比，平时不打扰。"
+          }
+        }
+      }
+    },
+    "只看每周小结" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly Summary Only"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只看每周小结"
+          }
+        }
+      }
+    },
+    "好" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "好"
+          }
+        }
+      }
+    },
+    "如果觉得现在的目标有点紧，可以把它调到更容易坚持的水平。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If your current target feels a bit tight, you can adjust it to a level that's easier to keep up."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果觉得现在的目标有点紧，可以把它调到更容易坚持的水平。"
+          }
+        }
+      }
+    },
+    "完成" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
+      }
+    },
+    "平均每天比目标低约 %@ 千卡。吃够也很重要：目标本身就是为你算好的量，不用再往下压；如果只是有几餐没记录，那也很常见。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On average you were about %@ kcal a day below your target. Eating enough matters too: the target is already set for you, so there's no need to go lower. If a few meals just weren't logged, that's common too."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平均每天比目标低约 %@ 千卡。吃够也很重要：目标本身就是为你算好的量，不用再往下压；如果只是有几餐没记录，那也很常见。"
+          }
+        }
+      }
+    },
+    "平均每天比目标高约 %@ 千卡。一周有起伏很正常，看整体趋势比盯着某一天更有用；这周照常吃、照常记录就好。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On average you were about %@ kcal a day above your target. Ups and downs within a week are normal, and the overall trend tells you more than any single day. Eat and log as usual this week."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平均每天比目标高约 %@ 千卡。一周有起伏很正常，看整体趋势比盯着某一天更有用；这周照常吃、照常记录就好。"
+          }
+        }
+      }
+    },
+    "平均每天约 %@ 千卡（目标 %@）· 按记录较完整的 %lld 天计算" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About %1$@ kcal a day on average (target %2$@) · complete days logged: %3$lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平均每天约 %@ 千卡（目标 %@）· 按记录较完整的 %lld 天计算"
+          }
+        }
+      }
+    },
+    "开发者（仅测试版）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Developer (Test Builds Only)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开发者（仅测试版）"
+          }
+        }
+      }
+    },
+    "打开一份按今天剩下的热量推荐的食谱" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens a recipe suggestion based on what's left of today's target"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开一份按今天剩下的热量推荐的食谱"
+          }
+        }
+      }
+    },
+    "打开编辑资料页面" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens Edit Profile"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开编辑资料页面"
+          }
+        }
+      }
+    },
+    "按今天剩下的热量，为你推荐一份约 %@ 千卡的%@，份量已经算好了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Based on what's left for today, here's a %2$@ of about %1$@ kcal, with portions already worked out."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按今天剩下的热量，为你推荐一份约 %@ 千卡的%@，份量已经算好了。"
+          }
+        }
+      }
+    },
+    "接近目标、到达目标和连续几天明显偏高的提示只在目标为「减脂」时显示；每周小结在「减脂」和「维持」时显示。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hints about nearing or reaching your target, and about several clearly high days in a row, appear only when your goal is Lose Fat. The weekly summary appears for Lose Fat and Maintain."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接近目标、到达目标和连续几天明显偏高的提示只在目标为「减脂」时显示；每周小结在「减脂」和「维持」时显示。"
+          }
+        }
+      }
+    },
+    "接近目标时提前告诉你还剩多少，并按剩下的量推荐下一餐；每周一次小结；连续几天明显高于目标时，问一句要不要调整目标。所有提示只说明情况、给出下一步的选择。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lets you know what's left as you near your target and suggests a next meal to fit, gives a weekly summary, and after several clearly high days in a row asks whether you'd like to adjust your target. Hints only describe where things stand and offer a next step."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接近目标时提前告诉你还剩多少，并按剩下的量推荐下一餐；每周一次小结；连续几天明显高于目标时，问一句要不要调整目标。所有提示只说明情况、给出下一步的选择。"
+          }
+        }
+      }
+    },
+    "推荐%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推荐%@"
+          }
+        }
+      }
+    },
+    "推荐下一餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggest Next Meal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推荐下一餐"
+          }
+        }
+      }
+    },
+    "提示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hints"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提示"
+          }
+        }
+      }
+    },
+    "早餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breakfast"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "早餐"
+          }
+        }
+      }
+    },
+    "晚餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dinner"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "晚餐"
+          }
+        }
+      }
+    },
+    "暂时没能生成" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Generate Right Now"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂时没能生成"
+          }
+        }
+      }
+    },
+    "最近 %lld 天的摄入都明显高于目标。这更可能说明目标定得有点紧，或者这几天的节奏和平时不一样。把目标调到更容易坚持的水平，长期看更有用。要不要看看目标设置？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your intake has been well above your target for the last %lld days. That more likely means the target is a bit tight, or these days were different from usual. A target that's easier to keep up works better in the long run. Want to review your target?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 %lld 天的摄入都明显高于目标。这更可能说明目标定得有点紧，或者这几天的节奏和平时不一样。把目标调到更容易坚持的水平，长期看更有用。要不要看看目标设置？"
+          }
+        }
+      }
+    },
+    "正在生成，通常需要 10～20 秒…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generating, usually 10–20 seconds…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在生成，通常需要 10～20 秒…"
+          }
+        }
+      }
+    },
+    "测试时间：%@（在「我的」→「开发者」里可以改回真实时间）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test time: %@ (switch back to the real time under Profile → Developer)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测试时间：%@（在「我的」→「开发者」里可以改回真实时间）"
+          }
+        }
+      }
+    },
+    "清除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
+          }
+        }
+      }
+    },
+    "清除全部饮食记录" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear All Food Entries"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除全部饮食记录"
+          }
+        }
+      }
+    },
+    "演示%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "演示%@"
+          }
+        }
+      }
+    },
+    "演示：上周只记了 2 天" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo: Only 2 Days Logged Last Week"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "演示：上周只记了 2 天"
+          }
+        }
+      }
+    },
+    "演示：上周记录 5 天（和目标一致）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo: 5 Days Last Week (On Target)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "演示：上周记录 5 天（和目标一致）"
+          }
+        }
+      }
+    },
+    "演示：上周记录 7 天（明显偏高）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo: 7 Days Last Week (Clearly High)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "演示：上周记录 7 天（明显偏高）"
+          }
+        }
+      }
+    },
+    "演示：今天吃到 90%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo: 90% of Today's Target"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "演示：今天吃到 90%"
+          }
+        }
+      }
+    },
+    "演示：今天比目标多 150 千卡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo: 150 kcal Above Target Today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "演示：今天比目标多 150 千卡"
+          }
+        }
+      }
+    },
+    "演示：最近 3 天明显偏高" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo: 3 Clearly High Days in a Row"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "演示：最近 3 天明显偏高"
+          }
+        }
+      }
+    },
+    "热量提示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calorie Hints"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "热量提示"
+          }
+        }
+      }
+    },
+    "生成%@推荐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggest %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生成%@推荐"
+          }
+        }
+      }
+    },
+    "用真实时间" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Real Time"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用真实时间"
+          }
+        }
+      }
+    },
+    "知道了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got It"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "知道了"
+          }
+        }
+      }
+    },
+    "确定要清除全部饮食记录吗？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear all food entries?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定要清除全部饮食记录吗？"
+          }
+        }
+      }
+    },
+    "调整目标" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust Target"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调整目标"
+          }
+        }
+      }
+    },
+    "这一周走得很稳，平均和目标基本一致。保持现在的节奏就好，不需要做任何调整。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A steady week: your average was right in line with your target. Keep your current rhythm; no changes needed."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这一周走得很稳，平均和目标基本一致。保持现在的节奏就好，不需要做任何调整。"
+          }
+        }
+      }
+    },
+    "这一餐约 %@ 千卡 · 蛋白质 %lld · 碳水 %lld · 脂肪 %lld 克" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This meal: about %1$@ kcal · protein %2$lld · carbs %3$lld · fat %4$lld g"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这一餐约 %@ 千卡 · 蛋白质 %lld · 碳水 %lld · 脂肪 %lld 克"
+          }
+        }
+      }
+    },
+    "这些按钮只在测试版里出现。「演示」按钮按「假装现在是」的时间写入示例记录，会替换那几天原有的记录（所以多按几次结果一样），并把资料修改时间改到 30 天前，让前几天的记录也能参与计算。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These buttons appear only in test builds. Demo buttons write sample entries at the \"Pretend It's\" time, replacing any existing entries on those days (so pressing again gives the same result), and move the profile's last-changed date back 30 days so earlier days are counted."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这些按钮只在测试版里出现。「演示」按钮按「假装现在是」的时间写入示例记录，会替换那几天原有的记录（所以多按几次结果一样），并把资料修改时间改到 30 天前，让前几天的记录也能参与计算。"
+          }
+        }
+      }
+    },
+    "重置提示状态（知道了 / 先不用）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Hint State (Got It / Not Now)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置提示状态（知道了 / 先不用）"
+          }
+        }
+      }
+    },
+    "食谱生成的次数暂时用完了，过一阵再来看看。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've used all of today's recipe generations for now. Check back a bit later."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "食谱生成的次数暂时用完了，过一阵再来看看。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

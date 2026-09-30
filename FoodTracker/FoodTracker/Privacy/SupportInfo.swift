@@ -27,11 +27,12 @@ nonisolated enum SupportInfo {
         return URL(string: "mailto:\(contactEmail)?subject=\(subject)")
     }
 
-    /// 版本号，例如「1.0（1）」：前面是给用户看的版本，括号里是第几次构建
+    /// 版本号，例如「1.0（1）」「1.0 (1)」：前面是给用户看的版本，括号里是第几次构建
     static var versionText: String {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"
-        return "\(version)（\(build)）"
+        // 括号跟着语言：中文用全角「1.0（1）」，英文用半角「1.0 (1)」
+        return AppLanguage.current == .zh ? "\(version)（\(build)）" : "\(version) (\(build))"
     }
 }

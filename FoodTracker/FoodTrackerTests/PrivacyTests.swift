@@ -60,6 +60,20 @@ struct PrivacyPolicyTests {
         #expect(blocks.first == .title("隐私政策"))
     }
 
+    @Test("英文版隐私政策也在，而且和中文版写到同样的关键几点")
+    func englishPolicy() throws {
+        let text = try #require(PrivacyPolicy.markdown(language: .en))
+        for fact in ["Anthropic", "30 days", "not used to train", "Delete All Data", "Withdraw", "18", "device ID"] {
+            #expect(text.contains(fact), "英文隐私政策里应该写到「\(fact)」")
+        }
+        #expect(text.range(of: "\\p{Han}", options: .regularExpression) == nil, "英文隐私政策里不应该有中文")
+        // 两种语言的小标题一样多，说明内容是对应的
+        let zhHeadings = PrivacyPolicy.blocks(language: .zh, contact: "x").filter { if case .heading = $0 { true } else { false } }
+        let enHeadings = PrivacyPolicy.blocks(language: .en, contact: "x").filter { if case .heading = $0 { true } else { false } }
+        #expect(zhHeadings.count == enHeadings.count)
+        #expect(PrivacyPolicy.blocks(language: .en, contact: "x").first == .title("Privacy Policy"))
+    }
+
     @Test("联系方式的占位符会被换掉")
     func contactPlaceholder() {
         let blocks = PrivacyPolicy.blocks(contact: "test@example.com")

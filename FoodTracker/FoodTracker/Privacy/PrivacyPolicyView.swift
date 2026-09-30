@@ -2,9 +2,10 @@
 //  PrivacyPolicyView.swift
 //  FoodTracker
 //
-//  隐私政策页面。正文写在同一个文件夹的 PrivacyPolicy.md 里（打包进 App，不联网也能看）；
-//  以后放到网上时，直接用同一份文件，两边的内容保证一样。
-//  改正文只改 PrivacyPolicy.md，改完记得更新里面的「最后更新」日期。
+//  隐私政策页面。正文写在同一个文件夹里（打包进 App，不联网也能看）：
+//  中文 PrivacyPolicy.md，英文 PrivacyPolicy.en.md，按 App 的语言显示其中一份。
+//  网页版也用同样的两份文件生成（site/build_site.py），两边的内容保证一样。
+//  改正文时两份一起改，改完记得更新里面的「最后更新」日期。
 //
 
 import SwiftUI
@@ -13,15 +14,22 @@ nonisolated enum PrivacyPolicy {
     /// 正文里的占位符，显示时换成 SupportInfo 里的联系方式
     static let contactPlaceholder = "{{contact}}"
 
-    /// 读出打包在 App 里的 PrivacyPolicy.md；读不到时是 nil
-    static func markdown(bundle: Bundle = .main) -> String? {
-        guard let url = bundle.url(forResource: "PrivacyPolicy", withExtension: "md") else { return nil }
+    /// 某种语言的正文文件名（不含 .md）
+    static func fileName(for language: AppLanguage) -> String {
+        language == .zh ? "PrivacyPolicy" : "PrivacyPolicy.en"
+    }
+
+    /// 读出打包在 App 里的正文；读不到时是 nil
+    static func markdown(bundle: Bundle = .main, language: AppLanguage = .current) -> String? {
+        guard let url = bundle.url(forResource: fileName(for: language), withExtension: "md") else { return nil }
         return try? String(contentsOf: url, encoding: .utf8)
     }
 
     /// 拆好块、填好联系方式的正文
-    static func blocks(bundle: Bundle = .main, contact: String = SupportInfo.contactLine) -> [MarkdownBlock] {
-        let text = markdown(bundle: bundle) ?? String(localized: "隐私政策暂时读不出来，请更新 App 后再试。")
+    static func blocks(
+        bundle: Bundle = .main, language: AppLanguage = .current, contact: String = SupportInfo.contactLine
+    ) -> [MarkdownBlock] {
+        let text = markdown(bundle: bundle, language: language) ?? String(localized: "隐私政策暂时读不出来，请更新 App 后再试。")
         return MarkdownBlocks.parse(text.replacingOccurrences(of: contactPlaceholder, with: contact))
     }
 }

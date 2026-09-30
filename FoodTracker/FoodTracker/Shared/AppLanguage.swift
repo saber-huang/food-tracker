@@ -15,8 +15,9 @@ import Foundation
 nonisolated enum AppLanguage: String, CaseIterable {
     case zh, en
 
-    /// App 现在显示的语言。系统在 App 启动时按手机设置选好，运行中不会变（改了手机语言，App 会重新启动）
-    static var current: AppLanguage { from(Bundle.main.preferredLocalizations.first) }
+    /// App 现在显示的语言。系统在 App 启动时按手机设置选好，运行中不会变（改了手机语言，App 会重新启动），
+    /// 所以只算一次记下来：日期计算用得非常频繁，每次都去问系统会让 App 明显变慢
+    static let current: AppLanguage = from(Bundle.main.preferredLocalizations.first)
 
     /// 把系统给的语言代码（zh-Hans、en、es……）换成 App 支持的两种之一：中文开头的算中文，其他都算英文
     static func from(_ identifier: String?) -> AppLanguage {
