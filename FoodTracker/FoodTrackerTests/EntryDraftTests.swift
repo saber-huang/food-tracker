@@ -252,6 +252,18 @@ struct EntryDraftTests {
         #expect(draft.caloriesText == "6")
     }
 
+    // 从食谱记的一餐是整份（373 克）；只吃了一半，把重量改成 186.5 克，数字正好减半
+    @Test("食谱记录改成半份：按比例换算")
+    func halfRecipePortion() {
+        let item = EditableItem(
+            id: UUID(), name: "清蒸鸡胸肉配西兰花糙米饭", weightG: 373,
+            values: NutrientValues(caloriesKcal: 590, proteinG: 48, carbsG: 63, fatG: 16), confidence: nil, meal: .lunch,
+            day: day)
+        let draft = EntryDraft(item: item)
+        type(weight: "186.5", draft)
+        #expect(nutrientTexts(draft) == ["295", "24", "31.5", "8"])
+    }
+
     @Test("输入检查的提示")
     func errorsAndWarnings() {
         let draft = EntryDraft(meal: .lunch, day: day)

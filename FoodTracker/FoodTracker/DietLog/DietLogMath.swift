@@ -40,6 +40,11 @@ nonisolated extension NutrientValues {
     init(item: FoodItem) {
         self.init(caloriesKcal: item.caloriesKcal, proteinG: item.proteinG, carbsG: item.carbsG, fatG: item.fatG)
     }
+
+    /// 一道食谱（整份）
+    init(recipe: Recipe) {
+        self.init(caloriesKcal: recipe.caloriesKcal, proteinG: recipe.proteinG, carbsG: recipe.carbsG, fatG: recipe.fatG)
+    }
 }
 
 // MARK: - 可以修改的一项食物
@@ -123,6 +128,12 @@ nonisolated enum DietLogMath {
 
     static func rounded(_ v: NutrientValues) -> NutrientValues {
         NutrientValues(caloriesKcal: round0(v.caloriesKcal), proteinG: round1(v.proteinG), carbsG: round1(v.carbsG), fatG: round1(v.fatG))
+    }
+
+    /// 一道食谱的重量：食材生重加起来，保留 1 位小数；加起来是 0 就当作不知道重量（nil）
+    static func weight(of recipe: Recipe) -> Double? {
+        let grams = round1(recipe.ingredients.map(\.grams).reduce(0, +))
+        return grams > 0 ? grams : nil
     }
 
     /// 按三大营养素算出来的热量：蛋白质和碳水每克 4 千卡，脂肪每克 9 千卡

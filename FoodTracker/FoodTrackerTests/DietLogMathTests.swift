@@ -98,6 +98,25 @@ struct DietLogMathTests {
         #expect(isClose(DietLogMath.macroKcal(NutrientValues(caloriesKcal: 0, proteinG: 50, carbsG: 50, fatG: 20)), 580))
     }
 
+    // 示例食谱：鸡胸肉 170 + 糙米 45 + 西兰花 150 + 橄榄油 8 = 373 克，590 千卡
+    @Test("从食谱记一餐：重量是食材生重合计，营养数据是整份的")
+    func recipeMapping() {
+        let recipe = Recipe(
+            meal: .lunch, name: "清蒸鸡胸肉配西兰花糙米饭",
+            ingredients: [
+                Ingredient(name: "鸡胸肉", grams: 170), Ingredient(name: "糙米", grams: 45),
+                Ingredient(name: "西兰花", grams: 150), Ingredient(name: "橄榄油", grams: 8),
+            ],
+            steps: [], cookingMinutes: 30, caloriesKcal: 590, proteinG: 48, carbsG: 63, fatG: 16)
+        #expect(DietLogMath.weight(of: recipe) == 373)
+        #expect(NutrientValues(recipe: recipe) == NutrientValues(caloriesKcal: 590, proteinG: 48, carbsG: 63, fatG: 16))
+        // 没有食材克数：当作不知道重量
+        let noWeight = Recipe(
+            meal: .dinner, name: "x", ingredients: [Ingredient(name: "盐", grams: 0)], steps: [], cookingMinutes: 5,
+            caloriesKcal: 10, proteinG: 0, carbsG: 0, fatG: 0)
+        #expect(DietLogMath.weight(of: noWeight) == nil)
+    }
+
     @Test("热量和三大营养素对不上时的提醒")
     func kcalMismatch() {
         #expect(EntryValidator.kcalMismatchWarning(rice) == nil)  // 174 和 172.5 很接近

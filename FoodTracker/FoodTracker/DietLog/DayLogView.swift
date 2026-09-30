@@ -92,6 +92,8 @@ struct DayLogView<BelowCard: View>: View {
             EntryEditView(
                 draft: EntryDraft(item: EditableItem(entry: entry)), title: "修改记录", showsMealPicker: true,
                 showsDayPicker: true,
+                // 从食谱记的一餐：重量是食材生重加起来的，提醒一下（改重量时数字会按比例换算）
+                note: entry.source == .recipe ? "重量按食材生重合计。" : nil,
                 onSave: { item in
                     // 改到别的餐或别的日期也在这里：这条记录会从这一天消失，出现在新的那天
                     entry.apply(item)

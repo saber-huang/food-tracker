@@ -31,13 +31,14 @@ nonisolated enum MealSlot: String, Codable, CaseIterable, Identifiable {
 }
 
 /// 一种食材和用量
-struct Ingredient: Codable, Hashable {
+/// nonisolated：纯数据，不需要限定在主线程，计算模块和单元测试都能直接用
+nonisolated struct Ingredient: Codable, Hashable {
     let name: String
     let grams: Double
 }
 
 /// 一道菜（一餐）
-struct Recipe: Codable, Hashable, Identifiable {
+nonisolated struct Recipe: Codable, Hashable, Identifiable {
     let meal: MealSlot
     let name: String
     let ingredients: [Ingredient]

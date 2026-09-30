@@ -14,6 +14,7 @@ struct EntryEditView: View {
     let showsMealPicker: Bool  // 是否显示「记到哪一餐」
     let showsDate: Bool  // 是否显示「记录日期」（只显示，不能改：新记录固定记到正在看的那天）
     let showsDayPicker: Bool  // 是否显示可以改的「日期」（修改已保存的记录时用）
+    let note: String?  // 分量下面的一行灰字（比如从食谱记的一餐：「重量按食材生重合计。」）
     let onSave: (EditableItem) -> Void
     let onDelete: (() -> Void)?  // 有值时多一个「删除这一项」按钮
 
@@ -25,13 +26,15 @@ struct EntryEditView: View {
 
     init(
         draft: EntryDraft, title: String, showsMealPicker: Bool = false, showsDate: Bool = false,
-        showsDayPicker: Bool = false, onSave: @escaping (EditableItem) -> Void, onDelete: (() -> Void)? = nil
+        showsDayPicker: Bool = false, note: String? = nil, onSave: @escaping (EditableItem) -> Void,
+        onDelete: (() -> Void)? = nil
     ) {
         _draft = State(initialValue: draft)
         self.title = title
         self.showsMealPicker = showsMealPicker
         self.showsDate = showsDate
         self.showsDayPicker = showsDayPicker
+        self.note = note
         self.onSave = onSave
         self.onDelete = onDelete
     }
@@ -103,6 +106,11 @@ struct EntryEditView: View {
                     }
                     if let warning = draft.macrosExceedWeightWarning {
                         Label(warning, systemImage: "info.circle")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    if let note {
+                        Text(note)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
