@@ -170,7 +170,10 @@ async function install(name, paletteName) {
   const files = {};
   for (const variant of VARIANTS) {
     const file = `AppIcon-1024-${variant}.png`;
-    writeFileSync(join(APPICON_DIR, file), await renderPng(draw(variant)));
+    let png = await renderPng(draw(variant));
+    // App Store 要求 light 版不能带透明通道（哪怕全部不透明也会被拒），这里去掉；dark / tinted 版必须保留透明
+    if (variant === "light") png = await sharp(png).removeAlpha().png().toBuffer();
+    writeFileSync(join(APPICON_DIR, file), png);
     files[variant] = file;
   }
   const contents = {
