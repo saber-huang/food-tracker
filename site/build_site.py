@@ -3,19 +3,23 @@
 生成公开的支持网页和隐私政策网页。
 
 网页放在 GitHub 的公开仓库 saber-huang/food-tracker-support 里，用 GitHub Pages 免费发布：
-  支持页：   https://saber-huang.github.io/food-tracker-support/
-  隐私政策： https://saber-huang.github.io/food-tracker-support/privacy.html
-App Store Connect 里的「隐私政策网址」和「技术支持网址」填的就是这两个。
+  中文支持页：   https://saber-huang.github.io/food-tracker-support/
+  中文隐私政策： https://saber-huang.github.io/food-tracker-support/privacy.html
+  英文支持页：   https://saber-huang.github.io/food-tracker-support/en.html
+  英文隐私政策： https://saber-huang.github.io/food-tracker-support/privacy-en.html
+App Store Connect 里每种语言各填一套「隐私政策网址」和「技术支持网址」。每一页右上角可以切换到另一种语言。
 
 内容和 App 用同一份，不要直接改公开仓库里的网页：
-  - 隐私政策：FoodTracker/FoodTracker/Privacy/PrivacyPolicy.md（App 里「我的」→「隐私政策」显示的也是它）
+  - 隐私政策：FoodTracker/FoodTracker/Privacy/PrivacyPolicy.md（中文）和 PrivacyPolicy.en.md（英文），
+    App 里「我的」→「隐私政策」显示的也是它们
   - 联系邮箱：FoodTracker/FoodTracker/Privacy/SupportInfo.swift 里的 contactEmail
-  - 支持页：  site/support.md
+  - 支持页：  site/support.md（中文）和 site/support.en.md（英文）
 
 改了上面任何一个之后，更新网页的步骤：
   1. 在 food-tracker 文件夹里运行：python3 site/build_site.py ~/Desktop/food-tracker-support-files
   2. 打开 https://github.com/saber-huang/food-tracker-support ，点「Add file」→「Upload files」，
-     把文件夹里的 index.html、privacy.html、README.md 拖进去（同名文件会被替换），点「Commit changes」
+     把文件夹里的全部文件（index.html、privacy.html、en.html、privacy-en.html、README.md）拖进去
+     （同名文件会被替换），点「Commit changes」
   大约一分钟后网页就会更新。第一次发布（2026-09-30）也是这样在网站上上传的；
   公开仓库要由你本人在网站上操作，Claude Code 的权限检查不允许它自己发布公开内容。
 
@@ -29,11 +33,43 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent  # food-tracker 文件夹
-PRIVACY_MD = ROOT / "FoodTracker/FoodTracker/Privacy/PrivacyPolicy.md"
 SUPPORT_INFO = ROOT / "FoodTracker/FoodTracker/Privacy/SupportInfo.swift"
-SUPPORT_MD = ROOT / "site/support.md"
 CONTACT_PLACEHOLDER = "{{contact}}"  # 和 App 里 PrivacyPolicy.contactPlaceholder 一样
-APP_NAME = "饮食记录 App"  # 正式名字定了以后改这里（App 里意见反馈邮件的标题也用这个名字）
+
+# 两种语言各自的文件和网页上的固定文字。App 的正式名字定了以后改 app_name
+# （App 里意见反馈邮件的标题也用这个名字，见 Localizable.xcstrings 里的「饮食记录 App 反馈」）
+LANGUAGES = {
+    "zh": {
+        "support_md": ROOT / "site/support.md",
+        "privacy_md": ROOT / "FoodTracker/FoodTracker/Privacy/PrivacyPolicy.md",
+        "support_file": "index.html",
+        "privacy_file": "privacy.html",
+        "html_lang": "zh-Hans",
+        "app_name": "饮食记录 App",
+        "nav_label": "网页导航",
+        "nav_support": "支持",
+        "nav_privacy": "隐私政策",
+        "contact_label": "联系邮箱",
+        "support_title": "{app} · 支持",
+        "privacy_title": "隐私政策 · {app}",
+    },
+    "en": {
+        "support_md": ROOT / "site/support.en.md",
+        "privacy_md": ROOT / "FoodTracker/FoodTracker/Privacy/PrivacyPolicy.en.md",
+        "support_file": "en.html",
+        "privacy_file": "privacy-en.html",
+        "html_lang": "en",
+        "app_name": "Food Log App",
+        "nav_label": "Site navigation",
+        "nav_support": "Support",
+        "nav_privacy": "Privacy Policy",
+        "contact_label": "Contact",
+        "support_title": "{app} · Support",
+        "privacy_title": "Privacy Policy · {app}",
+    },
+}
+# 切换语言的链接上写的是另一种语言自己的名字
+SWITCH_LABEL = {"zh": "English", "en": "中文"}
 
 
 def contact_email() -> str:
@@ -100,11 +136,12 @@ def body_html(blocks: list[tuple[str, str]]) -> str:
 
 
 PAGE = """<!doctype html>
-<html lang="zh-Hans">
+<html lang="{html_lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
+<link rel="alternate" hreflang="{other_lang}" href="{other_href}">
 <style>
   :root {{ --bg: #ffffff; --fg: #1d1d1f; --muted: #6e6e73; --accent: #0066cc; --line: #e5e5ea; color-scheme: light dark; }}
   @media (prefers-color-scheme: dark) {{
@@ -118,6 +155,7 @@ PAGE = """<!doctype html>
   nav {{ display: flex; gap: 20px; padding-top: 20px; font-size: 15px; }}
   nav a {{ color: var(--muted); text-decoration: none; }}
   nav a[aria-current="page"] {{ color: var(--fg); font-weight: 600; }}
+  nav .switch {{ margin-left: auto; }}
   h1 {{ font-size: 28px; line-height: 1.3; margin: 28px 0 12px; }}
   h2 {{ font-size: 20px; line-height: 1.4; margin: 32px 0 8px; }}
   p, li {{ margin: 8px 0; }}
@@ -128,58 +166,80 @@ PAGE = """<!doctype html>
 </style>
 </head>
 <body>
-<nav aria-label="网页导航">
-  <a href="./"{support_current}>支持</a>
-  <a href="privacy.html"{privacy_current}>隐私政策</a>
+<nav aria-label="{nav_label}">
+  <a href="{support_href}"{support_current}>{nav_support}</a>
+  <a href="{privacy_href}"{privacy_current}>{nav_privacy}</a>
+  <a class="switch" href="{other_href}" lang="{other_lang}" hreflang="{other_lang}">{switch_label}</a>
 </nav>
 <main>
 {body}
 </main>
-<footer>{app_name} · 联系邮箱 <a href="mailto:{email}">{email}</a></footer>
+<footer>{app_name} · {contact_label} <a href="mailto:{email}">{email}</a></footer>
 </body>
 </html>
 """
 
 
-def page(markdown: str, *, title: str, current: str, email: str) -> str:
+def page(lang: str, kind: str, *, email: str) -> str:
+    """一页网页。lang 是 zh 或 en，kind 是 support（支持页）或 privacy（隐私政策）"""
+    conf = LANGUAGES[lang]
+    other = "en" if lang == "zh" else "zh"
+    markdown = conf[f"{kind}_md"].read_text(encoding="utf-8")
     # 网页上把联系邮箱做成可以点的邮件链接（App 里显示成普通文字）
     markdown = markdown.replace(CONTACT_PLACEHOLDER, f"[{email}](mailto:{email})")
     if "{{" in markdown:
-        sys.exit(f"{title}：还有没替换的占位符")
+        sys.exit(f"{conf[f'{kind}_md'].name}：还有没替换的占位符")
     current_attr = ' aria-current="page"'
+    support_href = "./" if conf["support_file"] == "index.html" else conf["support_file"]
+    other_file = LANGUAGES[other][f"{kind}_file"]
     return PAGE.format(
-        title=html.escape(title),
+        html_lang=conf["html_lang"],
+        title=html.escape(conf[f"{kind}_title"].format(app=conf["app_name"])),
         body=body_html(parse_blocks(markdown)),
-        support_current=current_attr if current == "support" else "",
-        privacy_current=current_attr if current == "privacy" else "",
-        app_name=html.escape(APP_NAME),
+        nav_label=html.escape(conf["nav_label"]),
+        nav_support=html.escape(conf["nav_support"]),
+        nav_privacy=html.escape(conf["nav_privacy"]),
+        support_href=support_href,
+        privacy_href=conf["privacy_file"],
+        support_current=current_attr if kind == "support" else "",
+        privacy_current=current_attr if kind == "privacy" else "",
+        other_lang=LANGUAGES[other]["html_lang"],
+        other_href="./" if other_file == "index.html" else other_file,
+        switch_label=SWITCH_LABEL[lang],
+        app_name=html.escape(conf["app_name"]),
+        contact_label=html.escape(conf["contact_label"]),
         email=html.escape(email, quote=True),
     )
 
 
-README = """# {app_name} · 支持网页
+README = """# Food Log App · 饮食记录 App
 
-这个仓库只放 {app_name} 的支持网页和隐私政策，用 GitHub Pages 发布：
+Support pages and privacy policy for the Food Log App, published with GitHub Pages.
+这个仓库只放饮食记录 App 的支持网页和隐私政策，用 GitHub Pages 发布：
 
+- Support: https://saber-huang.github.io/food-tracker-support/en.html
+- Privacy Policy: https://saber-huang.github.io/food-tracker-support/privacy-en.html
 - 支持页：https://saber-huang.github.io/food-tracker-support/
 - 隐私政策：https://saber-huang.github.io/food-tracker-support/privacy.html
 
+These pages are generated from the main project; please don't edit them here.
 网页由主项目里的 site/build_site.py 生成，请不要直接修改这里的文件。
 """
 
 
 def main():
     if len(sys.argv) != 2:
-        sys.exit("用法：python3 site/build_site.py <输出文件夹，比如 ../food-tracker-support>")
+        sys.exit("用法：python3 site/build_site.py <输出文件夹，比如 ~/Desktop/food-tracker-support-files>")
     out = Path(sys.argv[1]).expanduser().resolve()
     out.mkdir(parents=True, exist_ok=True)
     email = contact_email()
     files = {
-        "index.html": page(SUPPORT_MD.read_text(encoding="utf-8"), title=f"{APP_NAME} · 支持", current="support", email=email),
-        "privacy.html": page(PRIVACY_MD.read_text(encoding="utf-8"), title=f"隐私政策 · {APP_NAME}", current="privacy", email=email),
-        "README.md": README.format(app_name=APP_NAME),
+        "README.md": README,
         ".nojekyll": "",  # 告诉 GitHub Pages 原样发布这些文件，不用 Jekyll 再处理一遍
     }
+    for lang, conf in LANGUAGES.items():
+        files[conf["support_file"]] = page(lang, "support", email=email)
+        files[conf["privacy_file"]] = page(lang, "privacy", email=email)
     for name, content in files.items():
         (out / name).write_text(content, encoding="utf-8")
         print("写好了", out / name)
