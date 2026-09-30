@@ -24,7 +24,7 @@ struct HomeView: View {
     @State private var pickerItem: PhotosPickerItem?  // 相册里选中的项目
     @State private var showCamera = false  // 是否打开相机
     @State private var isAnalyzing = false  // 是否正在识别
-    @State private var result: AnalyzeResult?  // 识别结果，有值时自动跳到结果页
+    @State private var resultRoute: ResultRoute?  // 识别结果 + 记到哪一天，有值时自动跳到结果页
     @State private var showError = false  // 是否显示出错提示
     @State private var errorMessage = ""  // 出错提示的内容
     @State private var showNoCamera = false  // 是否提示「没有相机」
@@ -40,9 +40,13 @@ struct HomeView: View {
                 .safeAreaInset(edge: .bottom) {
                     actionBar
                 }
-                // result 有值时跳到结果页；从结果页返回时 result 会自动变回 nil
-                .navigationDestination(item: $result) { result in
-                    ResultView(result: result, photo: photo)
+                // resultRoute 有值时跳到结果页；用户按「返回」时它会自动变回 nil
+                .navigationDestination(item: $resultRoute) { route in
+                    ResultView(result: route.result, photo: photo, day: route.day, today: today) {
+                        // 保存成功：关掉结果页、清掉照片，同一餐不会不小心识别两次
+                        resultRoute = nil
+                        photo = nil
+                    }
                 }
                 .toolbar {
                     #if DEBUG && targetEnvironment(simulator)
@@ -54,6 +58,8 @@ struct HomeView: View {
                                 SampleData.insertSampleEntries(into: modelContext, day: today)
                                 try? modelContext.save()
                             }
+                            Button("用示例结果") { showSampleResult(SampleData.analyzeResult) }
+                            Button("用示例结果（不是食物）") { showSampleResult(SampleData.notFoodResult) }
                         }
                     }
                     #endif
@@ -221,9 +227,14 @@ struct HomeView: View {
         isAnalyzing = true
         defer { isAnalyzing = false }  // 不管成功还是失败，最后都关掉加载动画
 
+        // 识别要好几秒，先把「记到哪一天」定下来：就算等待时刚好过了午夜，这餐也还是记在按下按钮的那天
+        refreshToday()
+        let day = today
         do {
             // 界面目前只有中文，所以固定要中文结果；以后做英文版时再跟随手机语言
-            result = try await APIClient.analyze(jpegData: jpegData, lang: "zh")
+            let result = try await APIClient.analyze(jpegData: jpegData, lang: "zh")
+            refreshToday()
+            resultRoute = ResultRoute(result: result, day: day)
         } catch {
             showError(message: error.localizedDescription)
         }
@@ -233,6 +244,20 @@ struct HomeView: View {
         errorMessage = message
         showError = true
     }
+
+    #if DEBUG && targetEnvironment(simulator)
+    /// 调试菜单：不识别，直接用示例结果打开结果页
+    private func showSampleResult(_ result: AnalyzeResult) {
+        refreshToday()
+        resultRoute = ResultRoute(result: result, day: today)
+    }
+    #endif
+}
+
+/// 跳到结果页需要的两样东西：识别结果，以及这餐要记到哪一天
+private struct ResultRoute: Hashable {
+    let result: AnalyzeResult
+    let day: Date
 }
 
 /// 按钮上图标在上、文字在下（系统没有现成的这种样式，自己定义一个）

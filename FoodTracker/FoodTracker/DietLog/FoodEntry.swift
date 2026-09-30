@@ -77,6 +77,24 @@ final class FoodEntry {
         if newKey != dayKey { dayKey = newKey }
     }
 
+    /// 把一餐里的几项食物一起存进数据库（识别结果页的「保存到今日」、调试菜单的示例记录都用它）。
+    /// 每一项自己记的餐次和日期在这里用不上：整餐记到同一餐、同一天，由调用的地方决定。
+    /// 同一次保存的几条记录 createdAt 相差 1 毫秒，保证显示顺序和保存前的列表一样。
+    /// 这里不调用 save()，什么时候真正写进数据库由调用的地方决定
+    @discardableResult
+    static func insert(
+        _ items: [EditableItem], meal: MealType, day: Date, source: EntrySource, into context: ModelContext,
+        now: Date = .now, calendar: Calendar = DayMath.calendar
+    ) -> [FoodEntry] {
+        items.enumerated().map { index, item in
+            let entry = FoodEntry(
+                day: day, meal: meal, name: item.name, weightG: item.weightG, values: DietLogMath.rounded(item.values),
+                source: source, createdAt: now.addingTimeInterval(Double(index) * 0.001), calendar: calendar)
+            context.insert(entry)
+            return entry
+        }
+    }
+
     // MARK: - 查询条件
     // 所有按日期查记录的地方都用这两个函数。数字在 #Predicate 外面先算好：查询条件里不能调用日历
 

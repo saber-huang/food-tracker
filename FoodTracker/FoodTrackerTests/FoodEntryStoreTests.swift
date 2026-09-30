@@ -138,6 +138,26 @@ struct FoodEntryStoreTests {
         #expect(entry.dayKey == 20260927)
     }
 
+    // 结果页点「保存到今日」：两项一起存，顺序和列表一样，都记到选好的那一餐、那一天
+    @Test("保存识别结果：几项一起存，顺序不变")
+    func insertMeal() throws {
+        var items = SampleData.analyzeResult.items.map { EditableItem($0, meal: .snack, day: date(2026, 9, 1, shanghai)) }
+        items[0].values.proteinG = 3.94  // 用户改过的数字，存之前要取整
+        let day = date(2026, 9, 29, shanghai)
+        let now = Date(timeIntervalSince1970: 1_790_000_000)
+        let saved = FoodEntry.insert(items, meal: .dinner, day: day, source: .photo, into: context, now: now, calendar: shanghai)
+        try context.save()
+
+        #expect(saved.count == 2)
+        // 每一项自己记的餐次（加餐）和日期（9 月 1 日）不算：以整餐选的为准
+        #expect(saved.allSatisfy { $0.meal == .dinner && $0.dayKey == 20260929 && $0.source == .photo })
+        #expect(saved[0].createdAt == now)
+        #expect(saved[1].createdAt == now.addingTimeInterval(0.001))
+        #expect(saved[0].proteinG == 3.9)
+        #expect(saved[1].caloriesKcal == 398)
+        #expect(try names(on: day, shanghai) == ["米饭", "宫保鸡丁"])
+    }
+
     @Test("修改表单里显示的内容和记录一致")
     func editableItemFromEntry() {
         let entry = FoodEntry(

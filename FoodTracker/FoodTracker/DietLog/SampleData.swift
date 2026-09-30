@@ -35,17 +35,11 @@ enum SampleData {
     static let profile = UserProfile(
         body: BodyInfo(sex: .male, age: 30, heightCm: 178, weightKg: 75, activity: .moderate, goal: .maintain))
 
-    /// 在 day 那天的午餐插入两条示例记录（米饭、宫保鸡丁）
+    /// 在 day 那天的午餐插入两条示例记录（米饭、宫保鸡丁），和结果页「保存到今日」走同一个函数
     static func insertSampleEntries(into context: ModelContext, day: Date) {
-        let base = Date.now
-        for (index, item) in analyzeResult.items.enumerated() {
-            context.insert(
-                FoodEntry(
-                    day: day, meal: .lunch, name: item.name, weightG: item.weightG, values: NutrientValues(item: item),
-                    source: .photo,
-                    // 同一次保存的几条记录相差 1 毫秒，保证显示顺序和识别结果一样
-                    createdAt: base.addingTimeInterval(Double(index) * 0.001)))
-        }
+        FoodEntry.insert(
+            analyzeResult.items.map { EditableItem($0, meal: .lunch, day: day) },
+            meal: .lunch, day: day, source: .photo, into: context)
     }
 
     /// 预览用的数据库：只在内存里，关掉预览就没了。已经放好一份资料和今天的两条记录
