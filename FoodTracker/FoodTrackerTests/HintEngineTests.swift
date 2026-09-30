@@ -329,6 +329,32 @@ struct HintEngineTests {
         }
     }
 
+    // MARK: - 推荐下一餐发给后端的请求
+
+    // 例 2 的晚餐只剩约 213 千卡：按 320 千卡推荐，只要晚餐这一餐，数字是缩小后的每日目标
+    @MainActor
+    @Test("推荐下一餐：只请求这一餐，发的是缩小后的每日目标")
+    func nextMealRequest() {
+        let targets = NutritionCalculator.targets(
+            for: BodyInfo(sex: .female, age: 28, heightCm: 165, weightKg: 60, activity: .light, goal: .loseFat))
+        let budget = NextMealBudget(meal: .dinner, remainingKcal: 213.28, targets: targets)
+        let request = RecipeRequest.make(
+            goal: .loseFat, targets: budget.requestTargets, preferencesText: "  清淡  ", allergiesText: "花生、虾",
+            dislikesText: "", cookingMinutes: 30, meals: [budget.meal], excludeNames: [])
+        #expect(request.meals == [.dinner])
+        #expect(request.goal == "loseFat")
+        #expect(abs(request.dailyCalories - 1066.67) < 0.01)  // × 30% = 320 千卡
+        #expect(abs(request.dailyCalories * 0.30 - 320) < 0.01)
+        #expect(request.preferences == "清淡")
+        #expect(request.allergies == ["花生", "虾"])
+        #expect(request.dislikes.isEmpty)
+        // 「食谱」页用的是原样的每日目标
+        let full = RecipeRequest.make(
+            goal: .loseFat, targets: RequestTargets(targets), preferencesText: "", allergiesText: "", dislikesText: "",
+            cookingMinutes: 30, meals: MealSlot.allCases, excludeNames: [])
+        #expect(full.dailyCalories == targets.calories && full.dailyProteinG == targets.proteinG)
+    }
+
     // MARK: - 推荐下一餐的预算
 
     @Test("推荐下一餐：不少于 320 千卡、不多于平时这一餐；发给后端的数在它接受的范围内")

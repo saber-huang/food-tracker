@@ -143,15 +143,11 @@ struct HomeView: View {
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
                     refreshToday(appBecameActive: false)
                 }
-                // 热量提示里的按钮：推荐下一餐（第 10 步做真正的页面，现在先占位）、编辑资料
+                // 热量提示里的按钮：推荐下一餐、编辑资料
                 .sheet(item: $hintSheet) { sheet in
                     switch sheet {
                     case .nextMeal(let budget):
-                        NavigationStack {
-                            Text(HintCopy.nextMealTitle(mealName: budget.meal.title))
-                                .navigationTitle(HintCopy.nextMealTitle(mealName: budget.meal.title))
-                                .navigationBarTitleDisplayMode(.inline)
-                        }
+                        NextMealSheet(profile: profile, budget: budget)
                     case .editProfile:
                         ProfileEditView(profile: profile)
                     }

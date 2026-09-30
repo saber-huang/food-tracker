@@ -50,7 +50,7 @@ struct RecipesView: View {
             }
             // 固定在页面最底部的提示
             .safeAreaInset(edge: .bottom) {
-                Text("食谱与营养数据为 AI 估算，仅供参考；如有疾病、处于孕期或有特殊饮食需求，请咨询医生或营养师")
+                Text(RecipeCopy.disclaimer)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -151,17 +151,7 @@ struct RecipesView: View {
             NavigationLink {
                 RecipeDetailView(recipe: recipe)
             } label: {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(recipe.name)
-                        .font(.headline)
-                    Text("\(recipe.caloriesKcal.noDecimal) 千卡 · 蛋白质 \(recipe.proteinG.oneDecimal) · 碳水 \(recipe.carbsG.oneDecimal) · 脂肪 \(recipe.fatG.oneDecimal) 克")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("约 \(recipe.cookingMinutes) 分钟 · \(recipe.ingredients.count) 种食材")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.vertical, 2)
+                RecipeSummaryLabel(recipe: recipe)
             }
 
             Button {
@@ -184,23 +174,12 @@ struct RecipesView: View {
 
     // MARK: - 功能
 
-    /// 组装发给后端的请求
+    /// 组装发给后端的请求：按用户的每日目标（和「推荐下一餐」共用同一个组装函数）
     private func makeRequest(meals: [MealSlot], excludeNames: [String]) -> RecipeRequest {
-        let t = profile.targets
-        return RecipeRequest(
-            goal: profile.bodyInfo.goal.rawValue,
-            dailyCalories: t.calories,
-            dailyProteinG: t.proteinG,
-            dailyCarbsG: t.carbsG,
-            dailyFatG: t.fatG,
-            preferences: preferencesText.trimmingCharacters(in: .whitespacesAndNewlines),
-            allergies: allergiesText.asTermList,
-            dislikes: dislikesText.asTermList,
-            maxCookingMinutes: cookingMinutes,
-            meals: meals,
-            excludeNames: excludeNames,
-            lang: "zh"  // 界面目前只有中文；以后做英文版时再跟随手机语言
-        )
+        RecipeRequest.make(
+            goal: profile.bodyInfo.goal, targets: RequestTargets(profile.targets), preferencesText: preferencesText,
+            allergiesText: allergiesText, dislikesText: dislikesText, cookingMinutes: cookingMinutes, meals: meals,
+            excludeNames: excludeNames)
     }
 
     /// 生成整套三餐
@@ -257,6 +236,32 @@ struct RecipesView: View {
             let saved = try? JSONDecoder().decode([Recipe].self, from: lastPlanData)
         else { return }
         recipes = saved
+    }
+}
+
+/// 「食谱」页、食谱详情和「推荐下一餐」共用的文字
+enum RecipeCopy {
+    static let disclaimer = "食谱与营养数据为 AI 估算，仅供参考；如有疾病、处于孕期或有特殊饮食需求，请咨询医生或营养师"
+}
+
+/// 一道菜的摘要：菜名、热量和营养素、时间和食材数（「食谱」页和「推荐下一餐」的卡片共用）
+struct RecipeSummaryLabel: View {
+    let recipe: Recipe
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(recipe.name)
+                .font(.headline)
+            Text(
+                "\(recipe.caloriesKcal.noDecimal) 千卡 · 蛋白质 \(recipe.proteinG.oneDecimal) · 碳水 \(recipe.carbsG.oneDecimal) · 脂肪 \(recipe.fatG.oneDecimal) 克"
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            Text("约 \(recipe.cookingMinutes) 分钟 · \(recipe.ingredients.count) 种食材")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 2)
     }
 }
 

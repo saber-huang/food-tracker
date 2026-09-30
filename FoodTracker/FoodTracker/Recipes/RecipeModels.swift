@@ -75,6 +75,30 @@ struct RecipeRequest: Encodable {
     let lang: String
 }
 
+extension RecipeRequest {
+    /// 组装发给后端的请求。「食谱」页和「推荐下一餐」都用它，两边发出去的格式保证一样。
+    /// targets 是「每日目标」：食谱页直接用用户的每日目标；推荐下一餐用按剩余热量缩小后的目标
+    static func make(
+        goal: Goal, targets: RequestTargets, preferencesText: String, allergiesText: String, dislikesText: String,
+        cookingMinutes: Int, meals: [MealSlot], excludeNames: [String]
+    ) -> RecipeRequest {
+        RecipeRequest(
+            goal: goal.rawValue,
+            dailyCalories: targets.calories,
+            dailyProteinG: targets.proteinG,
+            dailyCarbsG: targets.carbsG,
+            dailyFatG: targets.fatG,
+            preferences: preferencesText.trimmingCharacters(in: .whitespacesAndNewlines),
+            allergies: allergiesText.asTermList,
+            dislikes: dislikesText.asTermList,
+            maxCookingMinutes: cookingMinutes,
+            meals: meals,
+            excludeNames: excludeNames,
+            lang: "zh"  // 界面目前只有中文；以后做英文版时再跟随手机语言
+        )
+    }
+}
+
 /// 后端 /quota 返回的内容：今天还能用几次
 struct Quota: Codable {
     let analyzeRemaining: Int
