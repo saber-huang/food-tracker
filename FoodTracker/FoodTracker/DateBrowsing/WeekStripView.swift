@@ -24,7 +24,7 @@ struct WeekStripView: View {
                 ForEach(DayMath.weekOffsetRange, id: \.self) { offset in
                     WeekPageView(
                         weekStart: DayMath.weekStart(offset: offset, from: thisWeekStart), selectedDay: $selectedDay,
-                        today: today, kcalTarget: kcalTarget
+                        today: today, kcalTarget: kcalTarget, onPage: page(by:)
                     )
                     .containerRelativeFrame(.horizontal)  // 每一页和横条一样宽
                 }
@@ -47,6 +47,13 @@ struct WeekStripView: View {
         }
         .sensoryFeedback(.selection, trigger: selectedDay)  // 换了一天轻轻震一下
     }
+
+    /// 翻到上一页（-1）或下一页（+1）：给旁白（VoiceOver）用户的「上一周」「下一周」动作用，滑不动的边界就不动
+    private func page(by delta: Int) {
+        let target = (visibleWeekOffset ?? 0) + delta
+        guard DayMath.weekOffsetRange.contains(target) else { return }
+        visibleWeekOffset = target
+    }
 }
 
 /// 一周的 7 个格子。每一页自己查这一周的记录，算出每天吃了多少
@@ -55,14 +62,16 @@ struct WeekPageView: View {
     @Binding var selectedDay: Date
     let today: Date
     let kcalTarget: Double
+    let onPage: (Int) -> Void  // 旁白用户在格子上做「上一周」「下一周」动作
 
     @Query private var entries: [FoodEntry]
 
-    init(weekStart: Date, selectedDay: Binding<Date>, today: Date, kcalTarget: Double) {
+    init(weekStart: Date, selectedDay: Binding<Date>, today: Date, kcalTarget: Double, onPage: @escaping (Int) -> Void) {
         self.weekStart = weekStart
         _selectedDay = selectedDay
         self.today = today
         self.kcalTarget = kcalTarget
+        self.onPage = onPage
         // 查这一周的记录（周一 0 点起，到下周一 0 点之前）；有新记录时 SwiftData 会自动刷新，圆环马上跟着变
         _entries = Query(filter: FoodEntry.predicate(from: weekStart, to: DayMath.addingDays(7, to: weekStart)))
     }
@@ -73,7 +82,7 @@ struct WeekPageView: View {
             ForEach(DayMath.days(inWeekStarting: weekStart), id: \.self) { day in
                 DayCell(
                     day: day, today: today, isSelected: day == selectedDay, kcal: kcalByDay[day] ?? 0,
-                    kcalTarget: kcalTarget
+                    kcalTarget: kcalTarget, onPage: onPage
                 ) {
                     selectedDay = day
                 }
@@ -90,6 +99,7 @@ private struct DayCell: View {
     let isSelected: Bool
     let kcal: Double
     let kcalTarget: Double
+    let onPage: (Int) -> Void
     let onTap: () -> Void
 
     // 跟着系统字体大小一起变
@@ -134,6 +144,9 @@ private struct DayCell: View {
         // 旁白（VoiceOver）念的是一整句话，比如「9月28日 周一，已记录 750 千卡，占目标 42%」
         .accessibilityLabel(DayMath.cellAccessibilityLabel(day: day, today: today, kcal: kcal, target: kcalTarget))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        // 旁白用户不方便左右滑动翻页，给两个动作（在格子上上下滑动就能选到）
+        .accessibilityAction(named: "上一周") { onPage(-1) }
+        .accessibilityAction(named: "下一周") { onPage(1) }
     }
 }
 

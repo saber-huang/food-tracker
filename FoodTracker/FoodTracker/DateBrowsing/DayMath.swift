@@ -122,6 +122,26 @@ nonisolated enum DayMath {
         return min(sameWeekday, startOfDay(today, calendar: calendar))
     }
 
+    // MARK: - 月历（系统的 UICalendarView）
+
+    /// 月历能显示、能选的范围：最早一天的 0 点 ～ 今天的最后一秒（DateInterval 包含结束时刻，所以减 1 秒，不含明天 0 点）
+    static func availableRange(today: Date, calendar: Calendar = DayMath.calendar) -> DateInterval {
+        let t = startOfDay(today, calendar: calendar)
+        return DateInterval(
+            start: oldestDay(today: t, calendar: calendar), end: addingDays(1, to: t, calendar: calendar).addingTimeInterval(-1))
+    }
+
+    /// 给月历用的年月日（月历按它自己的日历理解这三个数）
+    static func components(of day: Date, calendar: Calendar = DayMath.calendar) -> DateComponents {
+        calendar.dateComponents([.year, .month, .day], from: day)
+    }
+
+    /// 月历给回来的年月日 → 这一天的 0 点。只看年月日，带着别的时区信息也不影响
+    static func day(from components: DateComponents, calendar: Calendar = DayMath.calendar) -> Date? {
+        guard let year = components.year, let month = components.month, let day = components.day else { return nil }
+        return calendar.date(from: DateComponents(year: year, month: month, day: day))
+    }
+
     // MARK: - 今天可能换了（过了午夜、回到 App、换了时区）
 
     /// 今天变了以后该显示哪一天。按顺序判断：

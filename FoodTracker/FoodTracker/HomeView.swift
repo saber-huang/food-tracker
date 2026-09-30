@@ -33,6 +33,7 @@ struct HomeView: View {
     @State private var errorMessage = ""  // 出错提示的内容
     @State private var showNoCamera = false  // 是否提示「没有相机」
     @State private var showManualEntry = false  // 是否打开「手动添加」
+    @State private var showMonthPicker = false  // 是否打开月历
 
     init(profile: UserProfile) {
         self.profile = profile
@@ -76,10 +77,25 @@ struct HomeView: View {
                     }
                 }
                 .toolbar {
-                    // 顶栏中间：正在看的那天所在的月份
+                    // 顶栏中间：正在看的那天所在的月份，点一下打开月历；识别中只显示文字，不能点
                     ToolbarItem(placement: .principal) {
-                        Text(DayMath.monthTitle(for: selectedDay))
-                            .font(.headline)
+                        if isAnalyzing {
+                            Text(DayMath.monthTitle(for: selectedDay))
+                                .font(.headline)
+                        } else {
+                            Button {
+                                showMonthPicker = true
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Text(DayMath.monthTitle(for: selectedDay))
+                                        .font(.headline)
+                                    Image(systemName: "chevron.down")
+                                        .font(.caption.weight(.semibold))
+                                }
+                                .foregroundStyle(.primary)
+                            }
+                            .accessibilityHint("打开月历，选择日期")
+                        }
                     }
                     // 条件写在 ToolbarItem 外面：看今天或识别中时，整个按钮都不出现
                     if !isToday && !isAnalyzing {
@@ -120,6 +136,12 @@ struct HomeView: View {
                 }
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
                     refreshToday(appBecameActive: false)
+                }
+                // 月历：选了一天就跳过去
+                .sheet(isPresented: $showMonthPicker) {
+                    MonthPickerSheet(selectedDay: selectedDay, today: today) { day in
+                        jump(to: day)
+                    }
                 }
                 // 手动添加：填好后存成一条记录，记到正在看的那一天
                 .sheet(isPresented: $showManualEntry) {
@@ -272,6 +294,12 @@ struct HomeView: View {
     private func goToToday() {
         selectedDay = today
         visibleWeekOffset = 0
+    }
+
+    /// 月历里选了一天：选中它，周横条滚到那一周
+    private func jump(to day: Date) {
+        selectedDay = DayMath.startOfDay(day)
+        visibleWeekOffset = DayMath.weekOffset(of: selectedDay, relativeTo: today)
     }
 
     /// 从相册选中的项目里读出照片

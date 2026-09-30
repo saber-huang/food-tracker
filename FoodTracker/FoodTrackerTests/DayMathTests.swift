@@ -189,6 +189,23 @@ struct DayMathTests {
         #expect(DayMath.selection(afterShowingWeekStarting: d(2025, 12, 29, cal), previous: d(2026, 1, 11, cal), today: today, calendar: cal) == d(2026, 1, 4, cal))
     }
 
+    @Test("月历的可选范围和年月日换算", arguments: zones)
+    func calendarBridge(zone: String) {
+        let cal = calendar(zone)
+        let today = d(2026, 9, 29, hour: 10, cal)
+        let range = DayMath.availableRange(today: today, calendar: cal)
+        #expect(range.start == d(2016, 10, 10, cal))
+        #expect(range.contains(d(2026, 9, 29, hour: 12, cal)))
+        #expect(!range.contains(d(2026, 9, 30, cal)))  // 明天 0 点不在范围内
+        #expect(DayMath.day(from: DayMath.components(of: d(2026, 9, 29, cal), calendar: cal), calendar: cal) == d(2026, 9, 29, cal))
+        #expect(DayMath.day(from: DayMath.components(of: d(2024, 2, 29, cal), calendar: cal), calendar: cal) == d(2024, 2, 29, cal))
+        #expect(DayMath.day(from: DateComponents(), calendar: cal) == nil)
+        // 带着别的时区的年月日：还是同一个年月日
+        var foreign = DateComponents(year: 2026, month: 9, day: 29)
+        foreign.timeZone = TimeZone(identifier: "Pacific/Auckland")
+        #expect(DayMath.day(from: foreign, calendar: cal) == d(2026, 9, 29, cal))
+    }
+
     @Test("今天变了以后该显示哪一天", arguments: zones)
     func dayToShow(zone: String) {
         let cal = calendar(zone)
