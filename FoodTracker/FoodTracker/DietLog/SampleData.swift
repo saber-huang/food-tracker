@@ -42,6 +42,20 @@ enum SampleData {
             meal: .lunch, day: day, source: .photo, into: context)
     }
 
+    /// 往前 days 天（不含今天）每天插入示例记录：单数天午餐 + 晚餐各一份（1144 千卡），双数天只有午餐（572 千卡）。
+    /// 用来在模拟器里看周横条上的圆环
+    static func insertRecentDays(into context: ModelContext, today: Date, days: Int = 14) {
+        for n in 1...days {
+            let day = DayMath.addingDays(-n, to: today)
+            let meals: [MealType] = n % 2 == 1 ? [.lunch, .dinner] : [.lunch]
+            for meal in meals {
+                FoodEntry.insert(
+                    analyzeResult.items.map { EditableItem($0, meal: meal, day: day) },
+                    meal: meal, day: day, source: .photo, into: context)
+            }
+        }
+    }
+
     /// 预览用的数据库：只在内存里，关掉预览就没了。已经放好一份资料和今天的两条记录
     static let previewContainer: ModelContainer = {
         let container = try! ModelContainer(

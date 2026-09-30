@@ -39,7 +39,7 @@ struct EntryEditView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("食物") {
+                Section {
                     TextField("名称", text: $draft.name, prompt: Text("例如：米饭"))
                         .focused($focusedField, equals: .name)
                         // 数字键盘没有「完成」键，在键盘上方加一个。只挂在这一行上，挂多了会出现好几个「完成」
@@ -69,6 +69,12 @@ struct EntryEditView: View {
                         // 只能选到今天为止，不能记到未来。日期按中文显示（2026年9月29日），弹出的月历从周一开始
                         DatePicker("日期", selection: $draft.day, in: ...Date.now, displayedComponents: .date)
                             .environment(\.locale, DayMath.locale)
+                    }
+                } header: {
+                    Text("食物")
+                } footer: {
+                    if showsDate {
+                        Text("新记录会保存到「今日」页正在看的这一天；要记到别的日期，先在「今日」页切换日期。")
                     }
                 }
 

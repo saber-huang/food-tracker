@@ -64,11 +64,92 @@ nonisolated enum DayMath {
     // MARK: - 星期
 
     static let weekdayNames = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+    /// 周横条上每一列顶上的字
+    static let weekdayLetters = ["一", "二", "三", "四", "五", "六", "日"]
 
     /// 周一 = 0，周二 = 1 … 周日 = 6
     static func weekdayIndex(of date: Date, calendar: Calendar = DayMath.calendar) -> Int {
         // 系统的 weekday 是周日 = 1、周一 = 2 … 周六 = 7，这里换算成从周一开始
         (calendar.component(.weekday, from: date) + 5) % 7
+    }
+
+    // MARK: - 周（周横条用）
+    // 周横条的每一页是一周，用「离本周几周」这个整数当页码：0 = 本周，-1 = 上周 … 最早到 -520
+
+    /// 最多往前翻多少周（10 年）
+    static let weeksBack = 520
+    static var weekOffsetRange: ClosedRange<Int> { -weeksBack...0 }
+
+    /// 这一天所在那一周的周一 0 点
+    static func weekStart(containing date: Date, calendar: Calendar = DayMath.calendar) -> Date {
+        calendar.dateInterval(of: .weekOfYear, for: date)?.start ?? startOfDay(date, calendar: calendar)
+    }
+
+    /// 从周一开始的 7 天
+    static func days(inWeekStarting start: Date, calendar: Calendar = DayMath.calendar) -> [Date] {
+        (0..<7).map { addingDays($0, to: start, calendar: calendar) }
+    }
+
+    /// 从本周的周一往前（或往后）数 offset 周的周一
+    static func weekStart(offset: Int, from thisWeekStart: Date, calendar: Calendar = DayMath.calendar) -> Date {
+        calendar.date(byAdding: .weekOfYear, value: offset, to: thisWeekStart) ?? thisWeekStart
+    }
+
+    /// 这一天在第几页：0 = 本周，-1 = 上周 …
+    static func weekOffset(of day: Date, relativeTo today: Date, calendar: Calendar = DayMath.calendar) -> Int {
+        calendar.dateComponents(
+            [.weekOfYear], from: weekStart(containing: today, calendar: calendar), to: weekStart(containing: day, calendar: calendar)
+        ).weekOfYear ?? 0
+    }
+
+    /// 能翻到的最早一天（520 周前的周一）
+    static func oldestDay(today: Date, calendar: Calendar = DayMath.calendar) -> Date {
+        weekStart(offset: -weeksBack, from: weekStart(containing: today, calendar: calendar), calendar: calendar)
+    }
+
+    /// 这一天能不能选：不能是未来，也不能早于能翻到的最早一天
+    static func isSelectable(_ day: Date, today: Date, calendar: Calendar = DayMath.calendar) -> Bool {
+        let d = startOfDay(day, calendar: calendar)
+        return d >= oldestDay(today: today, calendar: calendar) && d <= startOfDay(today, calendar: calendar)
+    }
+
+    /// 翻到新的一周后该选中哪一天：原来选的那天还在这一周就不动；
+    /// 否则选同一个星期几，但不能超过今天（比如从上周六翻回本周，本周六还没到，就选今天）
+    static func selection(afterShowingWeekStarting start: Date, previous: Date, today: Date, calendar: Calendar = DayMath.calendar) -> Date {
+        let end = addingDays(7, to: start, calendar: calendar)
+        if previous >= start && previous < end { return previous }
+        let sameWeekday = addingDays(weekdayIndex(of: previous, calendar: calendar), to: start, calendar: calendar)
+        return min(sameWeekday, startOfDay(today, calendar: calendar))
+    }
+
+    // MARK: - 今天可能换了（过了午夜、回到 App、换了时区）
+
+    /// 今天变了以后该显示哪一天。按顺序判断：
+    /// 1. 正在看的那天不再是当地的 0 点 → 手机换了时区，直接看新的今天
+    /// 2. 是回到 App（不是在前台过午夜），而且用户最后选的是「今天」→ 跟到新的今天
+    /// 3. 其他情况保持不动，只有时钟被往回调时才退回到新的今天（不能停在未来）
+    static func dayToShow(
+        newToday: Date, selectedDay: Date, followsToday: Bool, appBecameActive: Bool, calendar: Calendar = DayMath.calendar
+    ) -> Date {
+        if startOfDay(selectedDay, calendar: calendar) != selectedDay { return newToday }
+        if appBecameActive && followsToday { return newToday }
+        return min(selectedDay, newToday)
+    }
+
+    // MARK: - 圆环
+
+    /// 圆环画多满：吃了多少 ÷ 目标，限制在 0～1 之间（超过目标也只画满一圈）
+    static func ringFraction(kcal: Double, target: Double) -> Double {
+        target > 0 ? min(1, max(0, kcal / target)) : 0
+    }
+
+    /// 把一条条记录按天加总：[那天的 0 点: 热量]
+    static func kcalByDay(_ samples: [DayKcal], calendar: Calendar = DayMath.calendar) -> [Date: Double] {
+        var result: [Date: Double] = [:]
+        for sample in samples {
+            result[startOfDay(sample.day, calendar: calendar), default: 0] += sample.kcal
+        }
+        return result
     }
 
     // MARK: - 显示用的文字（直接拼数字，不用系统的日期格式，结果固定，也不会出现「2,026」）
@@ -101,4 +182,39 @@ nonisolated enum DayMath {
         if d == startOfDay(today, calendar: calendar) { return nil }
         return "记录到 " + shortDate(d, today: today, calendar: calendar) + " " + weekdayNames[weekdayIndex(of: d, calendar: calendar)]
     }
+
+    /// 顶栏中间的月份：「2026年9月」
+    static func monthTitle(for day: Date, calendar: Calendar = DayMath.calendar) -> String {
+        let c = calendar.dateComponents([.year, .month], from: day)
+        return "\(c.year ?? 0)年\(c.month ?? 0)月"
+    }
+
+    /// 周横条格子里的数字：「1」「28」
+    static func dayNumber(_ day: Date, calendar: Calendar = DayMath.calendar) -> String {
+        "\(calendar.component(.day, from: day))"
+    }
+
+    /// 旁白（VoiceOver）念的进度：「占目标 42%」；没吃就是「没有记录」。念的数字不封顶，画圆环时才封顶
+    static func percentText(kcal: Double, target: Double) -> String {
+        if kcal <= 0 { return "没有记录" }
+        guard target > 0 else { return "已记录" }
+        return "占目标 \(Int((kcal / target * 100).rounded()))%"
+    }
+
+    /// 周横条一个格子的旁白文字：「今天，9月29日 周二，已记录 300 千卡，占目标 15%」「9月30日 周三，未来的日期」
+    static func cellAccessibilityLabel(day: Date, today: Date, kcal: Double, target: Double, calendar: Calendar = DayMath.calendar) -> String {
+        let d = startOfDay(day, calendar: calendar)
+        let t = startOfDay(today, calendar: calendar)
+        var text = (d == t ? "今天，" : "") + shortDate(d, today: t, calendar: calendar) + " " + weekdayNames[weekdayIndex(of: d, calendar: calendar)]
+        if d > t { return text + "，未来的日期" }
+        if kcal <= 0 { return text + "，没有记录" }
+        text += "，已记录 \(NumberText.text(from: kcal.rounded())) 千卡，" + percentText(kcal: kcal, target: target)
+        return text
+    }
+}
+
+/// 一条记录的「哪一天 + 多少热量」，给 kcalByDay 用
+nonisolated struct DayKcal: Equatable {
+    let day: Date
+    let kcal: Double
 }

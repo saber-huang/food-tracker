@@ -2,8 +2,9 @@
 //  HomeView.swift
 //  FoodTracker
 //
-//  「今日」页：上面是今天的饮食记录（和目标比较的卡片 + 各餐的记录），
-//  底部是记录用的按钮：拍照、从相册选择、手动添加。
+//  「今日」页：顶部是周横条（左右滑动翻周、点一天看那一天），中间是那一天的饮食记录
+//  （和目标比较的卡片 + 各餐的记录），底部是记录用的按钮：拍照、从相册选择、手动添加。
+//  新记录（拍照识别或手动添加）都记到正在看的那一天，所以忘了记的往日也能补。
 //  选了照片后点「开始识别」，识别成功后自动跳到结果页；手动添加不需要联网，识别次数用完了也能记。
 //
 
@@ -19,7 +20,10 @@ struct HomeView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     // @State 是这个页面自己记住的数据，数据一变，界面会自动刷新
-    @State private var today = DayMath.startOfDay(.now)  // 今天的 0 点；过了午夜会更新
+    @State private var today: Date  // 今天的 0 点；过了午夜会更新
+    @State private var selectedDay: Date  // 正在看的那一天（0 点）
+    @State private var followsToday = true  // 用户最后一次选的是不是「今天」；过了午夜也不会被改掉
+    @State private var visibleWeekOffset: Int? = 0  // 周横条现在显示哪一页：0 = 本周，-1 = 上周 …
     @State private var photo: UIImage?  // 当前选中的照片
     @State private var pickerItem: PhotosPickerItem?  // 相册里选中的项目
     @State private var showCamera = false  // 是否打开相机
@@ -30,12 +34,35 @@ struct HomeView: View {
     @State private var showNoCamera = false  // 是否提示「没有相机」
     @State private var showManualEntry = false  // 是否打开「手动添加」
 
+    init(profile: UserProfile) {
+        self.profile = profile
+        // 只读一次时钟：「今天」和「正在看的那天」一定是同一天（分开读的话，恰好跨午夜时会差一天）
+        let now = DayMath.startOfDay(.now)
+        _today = State(initialValue: now)
+        _selectedDay = State(initialValue: now)
+    }
+
+    /// 正在看的是不是今天
+    private var isToday: Bool { selectedDay == today }
+
     var body: some View {
         NavigationStack {
-            DayLogView(day: today, today: today, bodyInfo: profile.bodyInfo)
+            DayLogView(day: selectedDay, today: today, bodyInfo: profile.bodyInfo)
                 // 换了一天就整个重新创建，保证列表查的是新的一天
-                .id(today)
-                .navigationTitle("今日")
+                .id(selectedDay)
+                .navigationTitle("今日")  // 只用在结果页的「返回」按钮上；顶栏中间显示的是月份
+                .navigationBarTitleDisplayMode(.inline)
+                // 顶部固定的周横条
+                .safeAreaInset(edge: .top) {
+                    WeekStripView(
+                        selectedDay: $selectedDay, visibleWeekOffset: $visibleWeekOffset, today: today,
+                        kcalTarget: profile.targets.calories
+                    )
+                    .id(DayMath.weekStart(containing: today))  // 新的一周开始（或换了时区）时整条重建
+                    .disabled(isAnalyzing)  // 识别中不能切换日期
+                    .scrollDisabled(isAnalyzing)
+                    .background(.bar)
+                }
                 // 底部固定的按钮区域
                 .safeAreaInset(edge: .bottom) {
                     actionBar
@@ -49,13 +76,28 @@ struct HomeView: View {
                     }
                 }
                 .toolbar {
+                    // 顶栏中间：正在看的那天所在的月份
+                    ToolbarItem(placement: .principal) {
+                        Text(DayMath.monthTitle(for: selectedDay))
+                            .font(.headline)
+                    }
+                    // 条件写在 ToolbarItem 外面：看今天或识别中时，整个按钮都不出现
+                    if !isToday && !isAnalyzing {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("回到今天") { goToToday() }
+                        }
+                    }
                     #if DEBUG && targetEnvironment(simulator)
                     // 只在模拟器里出现的调试菜单：不用拍照、不花识别次数就能测试记录功能。
                     // 装到手机上的版本里没有这个菜单，不会弄乱真实数据
                     ToolbarItem(placement: .topBarLeading) {
                         Menu("调试") {
-                            Button("插入两条示例记录") {
-                                SampleData.insertSampleEntries(into: modelContext, day: today)
+                            Button("在这一天插入两条示例记录") {
+                                SampleData.insertSampleEntries(into: modelContext, day: selectedDay)
+                                try? modelContext.save()
+                            }
+                            Button("最近两周每天插入示例记录") {
+                                SampleData.insertRecentDays(into: modelContext, today: today)
                                 try? modelContext.save()
                             }
                             Button("用示例结果") { showSampleResult(SampleData.analyzeResult) }
@@ -68,17 +110,22 @@ struct HomeView: View {
                 .onChange(of: pickerItem) { _, newItem in
                     Task { await loadPhoto(from: newItem) }
                 }
-                // 回到 App 时，以及系统通知「日期变了」（比如过了午夜）时，检查今天是不是已经换了一天
+                // 真的换了一天才会运行：记住用户最后选的是不是「今天」
+                .onChange(of: selectedDay) { _, day in
+                    followsToday = (day == today)
+                }
+                // 回到 App 时，以及系统通知「时间有大变化」（过了午夜、夏令时切换）时，检查今天是不是已经换了一天
                 .onChange(of: scenePhase) { _, phase in
-                    if phase == .active { refreshToday() }
+                    if phase == .active { refreshToday(appBecameActive: true) }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
-                    refreshToday()
+                    refreshToday(appBecameActive: false)
                 }
-                // 手动添加：填好后存成一条记录
+                // 手动添加：填好后存成一条记录，记到正在看的那一天
                 .sheet(isPresented: $showManualEntry) {
                     EntryEditView(
-                        draft: EntryDraft(meal: suggestedMeal, day: today), title: "手动添加", showsMealPicker: true, showsDate: true
+                        draft: EntryDraft(meal: suggestedMeal, day: selectedDay), title: "手动添加", showsMealPicker: true,
+                        showsDate: true
                     ) { item in
                         modelContext.insert(
                             FoodEntry(
@@ -112,9 +159,14 @@ struct HomeView: View {
 
     // MARK: - 界面的各个部分
 
-    /// 底部的按钮区域：选了照片时，上面多一行（照片缩略图 + 开始识别）
+    /// 底部的按钮区域：选了照片时，上面多一行（照片缩略图 + 开始识别）；看往日时先写明记到哪一天
     private var actionBar: some View {
         VStack(spacing: 12) {
+            if let caption = DayMath.recordCaption(day: selectedDay, today: today) {
+                Label(caption, systemImage: "calendar")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
             if let photo {
                 HStack(spacing: 12) {
                     Image(uiImage: photo)
@@ -200,14 +252,26 @@ struct HomeView: View {
 
     /// 打开「手动添加」表单
     private func openManualEntry() {
-        refreshToday()  // 打开前确认一下今天是哪天（可能刚过午夜）
+        refreshToday(appBecameActive: false)  // 打开前确认一下今天是哪天（可能刚过午夜）
         showManualEntry = true
     }
 
-    /// 如果已经过了午夜，把「今天」换成新的一天
-    private func refreshToday() {
+    /// 检查今天是不是换了一天（过了午夜、换了时区、时钟被调过），需要的话更新「今天」和正在看的那天。
+    /// appBecameActive：是不是「回到 App」触发的。规则见 DayMath.dayToShow
+    private func refreshToday(appBecameActive: Bool) {
         let newToday = DayMath.startOfDay(.now)
-        if newToday != today { today = newToday }
+        let newDay = DayMath.dayToShow(
+            newToday: newToday, selectedDay: selectedDay, followsToday: followsToday, appBecameActive: appBecameActive)
+        guard newToday != today || newDay != selectedDay else { return }
+        today = newToday
+        selectedDay = newDay  // 值没变就不会触发 onChange，所以在前台过午夜时 followsToday 不会被改掉
+        visibleWeekOffset = DayMath.weekOffset(of: newDay, relativeTo: newToday)
+    }
+
+    /// 「回到今天」：选中今天，周横条滚回本周
+    private func goToToday() {
+        selectedDay = today
+        visibleWeekOffset = 0
     }
 
     /// 从相册选中的项目里读出照片
@@ -234,13 +298,13 @@ struct HomeView: View {
         isAnalyzing = true
         defer { isAnalyzing = false }  // 不管成功还是失败，最后都关掉加载动画
 
-        // 识别要好几秒，先把「记到哪一天」定下来：就算等待时刚好过了午夜，这餐也还是记在按下按钮的那天
-        refreshToday()
-        let day = today
+        // 识别要好几秒，先把「记到哪一天」定下来：记到正在看的那天；就算等待时刚好过了午夜，也还是按下按钮时的那天
+        refreshToday(appBecameActive: false)
+        let day = selectedDay
         do {
             // 界面目前只有中文，所以固定要中文结果；以后做英文版时再跟随手机语言
             let result = try await APIClient.analyze(jpegData: jpegData, lang: "zh")
-            refreshToday()
+            refreshToday(appBecameActive: false)
             resultRoute = ResultRoute(result: result, day: day)
         } catch {
             showError(message: error.localizedDescription)
@@ -253,10 +317,10 @@ struct HomeView: View {
     }
 
     #if DEBUG && targetEnvironment(simulator)
-    /// 调试菜单：不识别，直接用示例结果打开结果页
+    /// 调试菜单：不识别，直接用示例结果打开结果页（记到正在看的那天）
     private func showSampleResult(_ result: AnalyzeResult) {
-        refreshToday()
-        resultRoute = ResultRoute(result: result, day: today)
+        refreshToday(appBecameActive: false)
+        resultRoute = ResultRoute(result: result, day: selectedDay)
     }
     #endif
 }
