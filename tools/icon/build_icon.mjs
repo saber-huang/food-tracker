@@ -1,14 +1,16 @@
 // 把 concepts.mjs 里的图标方案渲染成 PNG，拼一张对比图，选定后装进 Xcode 的图标资源。
 // 在 tools/icon 文件夹里运行（第一次先 npm install）：
-//   node build_icon.mjs                 渲染全部方案到 out/，并生成 out/contact-sheet.png 对比图
-//   node build_icon.mjs --install heart 把 heart 方案的三张图装进 App 的 AppIcon.appiconset
+//   node build_icon.mjs                              渲染全部方案到 out/，并生成 out/contact-sheet.png 对比图
+//   node build_icon.mjs --palettes                   把 lens 和 bowl 用 PALETTES 里的每套配色各渲染一遍，生成 out/palette-sheet.png
+//   node build_icon.mjs --install heart              把 heart 方案的三张图装进 App 的 AppIcon.appiconset
+//   node build_icon.mjs --install bowl --palette ink 同上，但用 ink 这套配色（只有 lens 和 bowl 支持）
 // 渲染用的是 sharp（GitHub 上三万多星的 Node 图片库，内置 SVG 渲染）。
 
 import sharp from "sharp";
-import { copyFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { CONCEPTS } from "./concepts.mjs";
+import { CONCEPTS, PALETTES, PALETTE_CONCEPTS } from "./concepts.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "out");
@@ -106,13 +108,67 @@ async function contactSheet(rendered) {
   console.log(`contact sheet: ${join(OUT, "contact-sheet.png")}`);
 }
 
-/** 把选定方案的三张图装进 Xcode 的图标资源，并写好 Contents.json */
-function install(name) {
+/** 配色对比图：每行一套配色，列是 lens 和 bowl 各自的 light、dark 和主屏幕大小 */
+async function paletteSheet() {
+  mkdirSync(OUT, { recursive: true });
+  const names = Object.keys(PALETTES);
+  const big = 180, small = 60, gap = 24, labelW = 250, top = 70;
+  const columns = [big, big, small, big, big, small];
+  const width = labelW + columns.reduce((a, b) => a + b + gap, 0) + gap + 24;
+  const rowH = big + gap;
+  const height = top + names.length * rowH + gap + 40;
+  const dark = { r: 28, g: 28, b: 30, alpha: 1 };
+  const light = { r: 242, g: 242, b: 247, alpha: 1 };
+  const layers = [];
+  const labels = [];
+  const headers = ["D lens", "D dark *", "60 pt", "E bowl", "E dark *", "60 pt"];
+  let x = labelW;
+  columns.forEach((w, i) => {
+    labels.push(`<text x="${x}" y="44" font-size="20" fill="#3c3c43">${headers[i]}</text>`);
+    x += w + gap;
+  });
+  labels.push(`<text x="24" y="${height - 24}" font-size="16" fill="#6e6e73">* Dark icons have a transparent background; iOS adds the dark background itself (simulated here).</text>`);
+  for (const [row, name] of names.entries()) {
+    const y = top + row * rowH;
+    const p = PALETTES[name];
+    labels.push(`<text x="24" y="${y + 40}" font-size="26" font-weight="bold" fill="#1d1d1f">${row + 1}. ${name}</text>`);
+    labels.push(`<text x="24" y="${y + 72}" font-size="17" fill="#6e6e73">${p.title}</text>`);
+    labels.push(`<text x="24" y="${y + 100}" font-size="15" fill="#8e8e93">${p.lens.bg.join(" → ")}</text>`);
+    let cx = labelW;
+    for (const concept of ["lens", "bowl"]) {
+      const draw = PALETTE_CONCEPTS[concept];
+      const lightPng = await renderPng(draw("light", p));
+      const darkPng = await renderPng(draw("dark", p));
+      writeFileSync(join(OUT, `palette-${name}-${concept}-light.png`), lightPng);
+      writeFileSync(join(OUT, `palette-${name}-${concept}-dark.png`), darkPng);
+      const cells = [await preview(lightPng, big), await preview(darkPng, big, { background: dark }), await preview(lightPng, small)];
+      const widths = [big, big, small];
+      cells.forEach((cell, i) => {
+        layers.push({ input: cell, left: cx, top: y + Math.round((big - widths[i]) / 2) });
+        cx += widths[i] + gap;
+      });
+    }
+  }
+  layers.unshift({ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" font-family="Helvetica, Arial, sans-serif">${labels.join("")}</svg>`), left: 0, top: 0 });
+  const sheet = await sharp({ create: { width, height, channels: 4, background: light } }).composite(layers).png().toBuffer();
+  writeFileSync(join(OUT, "palette-sheet.png"), sheet);
+  console.log(`palette sheet: ${join(OUT, "palette-sheet.png")}`);
+}
+
+/** 把选定方案的三张图装进 Xcode 的图标资源，并写好 Contents.json。paletteName 只对 lens 和 bowl 有效 */
+async function install(name, paletteName) {
   if (!CONCEPTS[name]) throw new Error(`没有叫 ${name} 的方案，可选：${Object.keys(CONCEPTS).join(", ")}`);
+  let draw = (variant) => CONCEPTS[name].svg(variant);
+  if (paletteName) {
+    if (!PALETTE_CONCEPTS[name]) throw new Error(`${name} 不支持换配色，只有 ${Object.keys(PALETTE_CONCEPTS).join(", ")} 支持`);
+    if (!PALETTES[paletteName]) throw new Error(`没有叫 ${paletteName} 的配色，可选：${Object.keys(PALETTES).join(", ")}`);
+    draw = (variant) => PALETTE_CONCEPTS[name](variant, PALETTES[paletteName]);
+  }
+  mkdirSync(APPICON_DIR, { recursive: true });
   const files = {};
   for (const variant of VARIANTS) {
     const file = `AppIcon-1024-${variant}.png`;
-    copyFileSync(join(OUT, `${name}-${variant}.png`), join(APPICON_DIR, file));
+    writeFileSync(join(APPICON_DIR, file), await renderPng(draw(variant)));
     files[variant] = file;
   }
   const contents = {
@@ -124,12 +180,15 @@ function install(name) {
     info: { author: "xcode", version: 1 },
   };
   writeFileSync(join(APPICON_DIR, "Contents.json"), JSON.stringify(contents, null, 2) + "\n");
-  console.log(`installed ${name} into ${APPICON_DIR}`);
+  console.log(`installed ${name}${paletteName ? ` (${paletteName})` : ""} into ${APPICON_DIR}`);
 }
 
 const args = process.argv.slice(2);
 if (args[0] === "--install") {
-  install(args[1]);
+  const paletteIndex = args.indexOf("--palette");
+  await install(args[1], paletteIndex >= 0 ? args[paletteIndex + 1] : undefined);
+} else if (args[0] === "--palettes") {
+  await paletteSheet();
 } else {
   const rendered = await renderAll();
   await contactSheet(rendered);
