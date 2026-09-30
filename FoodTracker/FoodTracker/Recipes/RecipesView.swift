@@ -265,5 +265,5 @@ struct RecipesView: View {
         profile: UserProfile(
             body: BodyInfo(sex: .female, age: 28, heightCm: 165, weightKg: 60, activity: .light, goal: .loseFat))
     )
-    .modelContainer(for: UserProfile.self, inMemory: true)
+    .modelContainer(for: AppModels.all, inMemory: true)
 }

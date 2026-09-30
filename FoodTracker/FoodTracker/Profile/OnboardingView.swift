@@ -185,5 +185,5 @@ private struct ResultStep: View {
 
 #Preview {
     OnboardingView()
-        .modelContainer(for: UserProfile.self, inMemory: true)
+        .modelContainer(for: AppModels.all, inMemory: true)
 }

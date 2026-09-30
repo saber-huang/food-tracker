@@ -2,8 +2,8 @@
 //  HomeView.swift
 //  FoodTracker
 //
-//  「今日」页：顶部显示每日目标；下面可以拍照或从相册选一张餐食照片，
-//  点「开始识别」后交给 AI 识别，识别成功后自动跳到结果页。
+//  「今日」页：上面是今天的饮食记录（和目标比较的卡片 + 各餐的记录），
+//  底部是记录用的按钮：拍照、从相册选择。选了照片后点「开始识别」，识别成功后自动跳到结果页。
 //
 
 import PhotosUI
@@ -11,10 +11,14 @@ import SwiftData
 import SwiftUI
 
 struct HomeView: View {
-    /// 用户的个人资料，用来显示每日目标
+    /// 用户的个人资料，用来算每日目标
     let profile: UserProfile
 
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
+
     // @State 是这个页面自己记住的数据，数据一变，界面会自动刷新
+    @State private var today = DayMath.startOfDay(.now)  // 今天的 0 点；过了午夜会更新
     @State private var photo: UIImage?  // 当前选中的照片
     @State private var pickerItem: PhotosPickerItem?  // 相册里选中的项目
     @State private var showCamera = false  // 是否打开相机
@@ -26,80 +30,100 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                TargetsCard(bodyInfo: profile.bodyInfo)
-                photoArea
-                pickButtons
-                analyzeButton
-            }
-            .padding()
-            .navigationTitle("今日")
-            // result 有值时跳到结果页；从结果页返回时 result 会自动变回 nil
-            .navigationDestination(item: $result) { result in
-                ResultView(result: result, photo: photo)
-            }
-            // 从相册选了照片之后，把它读出来
-            .onChange(of: pickerItem) { _, newItem in
-                Task { await loadPhoto(from: newItem) }
-            }
-            // 全屏打开相机
-            .fullScreenCover(isPresented: $showCamera) {
-                CameraPicker { newPhoto in
-                    photo = newPhoto
+            DayLogView(day: today, today: today, bodyInfo: profile.bodyInfo)
+                // 换了一天就整个重新创建，保证列表查的是新的一天
+                .id(today)
+                .navigationTitle("今日")
+                // 底部固定的按钮区域
+                .safeAreaInset(edge: .bottom) {
+                    actionBar
                 }
-                .ignoresSafeArea()
-            }
-            .alert("识别失败", isPresented: $showError) {
-                Button("重试") { Task { await analyze() } }
-                Button("好", role: .cancel) {}
-            } message: {
-                Text(errorMessage)
-            }
-            .alert("没有可用的相机", isPresented: $showNoCamera) {
-                Button("好", role: .cancel) {}
-            } message: {
-                Text("这台设备现在不能拍照，请点「从相册选择」。")
-            }
+                // result 有值时跳到结果页；从结果页返回时 result 会自动变回 nil
+                .navigationDestination(item: $result) { result in
+                    ResultView(result: result, photo: photo)
+                }
+                .toolbar {
+                    #if DEBUG && targetEnvironment(simulator)
+                    // 只在模拟器里出现的调试菜单：不用拍照、不花识别次数就能测试记录功能。
+                    // 装到手机上的版本里没有这个菜单，不会弄乱真实数据
+                    ToolbarItem(placement: .topBarLeading) {
+                        Menu("调试") {
+                            Button("插入两条示例记录") {
+                                SampleData.insertSampleEntries(into: modelContext, day: today)
+                                try? modelContext.save()
+                            }
+                        }
+                    }
+                    #endif
+                }
+                // 从相册选了照片之后，把它读出来
+                .onChange(of: pickerItem) { _, newItem in
+                    Task { await loadPhoto(from: newItem) }
+                }
+                // 回到 App 时，以及系统通知「日期变了」（比如过了午夜）时，检查今天是不是已经换了一天
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active { refreshToday() }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+                    refreshToday()
+                }
+                // 全屏打开相机
+                .fullScreenCover(isPresented: $showCamera) {
+                    CameraPicker { newPhoto in
+                        photo = newPhoto
+                    }
+                    .ignoresSafeArea()
+                }
+                .alert("识别失败", isPresented: $showError) {
+                    Button("重试") { Task { await analyze() } }
+                    Button("好", role: .cancel) {}
+                } message: {
+                    Text(errorMessage)
+                }
+                .alert("没有可用的相机", isPresented: $showNoCamera) {
+                    Button("好", role: .cancel) {}
+                } message: {
+                    Text("这台设备现在不能拍照，请点「从相册选择」。")
+                }
         }
     }
 
     // MARK: - 界面的各个部分
 
-    /// 照片区域：没选照片时显示提示，选了就显示照片；识别中盖一层加载动画
-    private var photoArea: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color(.secondarySystemBackground))
-
+    /// 底部的按钮区域：选了照片时，上面多一行（照片缩略图 + 开始识别）
+    private var actionBar: some View {
+        VStack(spacing: 12) {
             if let photo {
-                Image(uiImage: photo)
-                    .resizable()
-                    .scaledToFit()
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-            } else {
-                VStack(spacing: 12) {
-                    Image(systemName: "fork.knife.circle")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.tint)
-                    Text("拍一张餐食照片\nAI 帮你估算热量和营养")
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
+                HStack(spacing: 12) {
+                    Image(uiImage: photo)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 72, height: 72)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay {
+                            if isAnalyzing {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(.black.opacity(0.4))
+                                    ProgressView()
+                                        .tint(.white)
+                                }
+                            }
+                        }
+                    VStack(alignment: .leading, spacing: 6) {
+                        analyzeButton
+                        if isAnalyzing {
+                            Text("正在识别，通常需要 5～10 秒…")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
             }
-
-            if isAnalyzing {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(.black.opacity(0.4))
-                VStack(spacing: 12) {
-                    ProgressView()
-                        .controlSize(.large)
-                        .tint(.white)
-                    Text("正在识别，通常需要 5～10 秒…")
-                        .foregroundStyle(.white)
-                }
-            }
+            pickButtons
         }
-        .frame(maxHeight: .infinity)
+        .padding()
+        .background(.bar)
     }
 
     /// 拍照 / 从相册选择 两个按钮
@@ -128,7 +152,7 @@ struct HomeView: View {
         .disabled(isAnalyzing)
     }
 
-    /// 开始识别按钮：选了照片才能点，识别中不能重复点
+    /// 开始识别按钮：识别中不能重复点
     private var analyzeButton: some View {
         Button {
             Task { await analyze() }
@@ -138,10 +162,16 @@ struct HomeView: View {
         }
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
-        .disabled(photo == nil || isAnalyzing)
+        .disabled(isAnalyzing)
     }
 
     // MARK: - 功能
+
+    /// 如果已经过了午夜，把「今天」换成新的一天
+    private func refreshToday() {
+        let newToday = DayMath.startOfDay(.now)
+        if newToday != today { today = newToday }
+    }
 
     /// 从相册选中的项目里读出照片
     private func loadPhoto(from item: PhotosPickerItem?) async {
@@ -182,9 +212,6 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView(
-        profile: UserProfile(
-            body: BodyInfo(sex: .male, age: 30, heightCm: 178, weightKg: 75, activity: .moderate, goal: .maintain))
-    )
-    .modelContainer(for: UserProfile.self, inMemory: true)
+    HomeView(profile: SampleData.profile)
+        .modelContainer(SampleData.previewContainer)
 }
