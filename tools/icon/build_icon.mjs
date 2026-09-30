@@ -3,6 +3,7 @@
 //   node build_icon.mjs                              渲染全部方案到 out/，并生成 out/contact-sheet.png 对比图
 //   node build_icon.mjs --only kWhite,kBlack         只渲染这几个方案，对比图也只放它们
 //   node build_icon.mjs --palettes                   把 lens 和 bowl 用 PALETTES 里的每套配色各渲染一遍，生成 out/palette-sheet.png
+//   node build_icon.mjs --bowl-colors                扁平的碗按 BOWL_COLORS 里的每种颜色渲染，生成 out/bowl-colors.png
 //   node build_icon.mjs --install heart              把 heart 方案的三张图装进 App 的 AppIcon.appiconset
 //   node build_icon.mjs --install bowl --palette ink 同上，但用 ink 这套配色（只有 lens 和 bowl 支持）
 // 渲染用的是 sharp（GitHub 上三万多星的 Node 图片库，内置 SVG 渲染）。
@@ -11,7 +12,7 @@ import sharp from "sharp";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { CONCEPTS, PALETTES, PALETTE_CONCEPTS } from "./concepts.mjs";
+import { BOWL_COLORS, CONCEPTS, PALETTES, PALETTE_CONCEPTS, bowlFlatSvg } from "./concepts.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "out");
@@ -157,6 +158,54 @@ async function paletteSheet() {
   console.log(`palette sheet: ${join(OUT, "palette-sheet.png")}`);
 }
 
+/** 碗的颜色对比图：每行一种颜色，列是纯白底、米白底、两个主屏幕大小、深色外观 */
+async function bowlColorSheet() {
+  mkdirSync(OUT, { recursive: true });
+  const names = Object.keys(BOWL_COLORS);
+  const big = 180, small = 60, gap = 24, labelW = 250, top = 70;
+  const columns = [big, big, small, small, big];
+  const width = labelW + columns.reduce((a, b) => a + b + gap, 0) + gap + 24;
+  const rowH = big + gap;
+  const height = top + names.length * rowH + gap + 40;
+  const dark = { r: 28, g: 28, b: 30, alpha: 1 };
+  const light = { r: 242, g: 242, b: 247, alpha: 1 };
+  const layers = [];
+  const labels = [];
+  const headers = ["Pure white", "Off-white", "60 pt", "60 pt", "Dark *"];
+  let x = labelW;
+  columns.forEach((w, i) => {
+    labels.push(`<text x="${x}" y="44" font-size="20" fill="#3c3c43">${headers[i]}</text>`);
+    x += w + gap;
+  });
+  labels.push(`<text x="24" y="${height - 24}" font-size="16" fill="#6e6e73">* Dark icons have a transparent background; iOS adds the dark background itself (simulated here).</text>`);
+  for (const [row, name] of names.entries()) {
+    const y = top + row * rowH;
+    const c = BOWL_COLORS[name];
+    labels.push(`<text x="24" y="${y + 40}" font-size="26" font-weight="bold" fill="#1d1d1f">${row + 1}. ${name}</text>`);
+    labels.push(`<text x="24" y="${y + 72}" font-size="17" fill="#6e6e73">${c.title}</text>`);
+    labels.push(`<text x="24" y="${y + 100}" font-size="15" fill="#8e8e93">bowl ${c.bowl} · rim ${c.rim}</text>`);
+    const onWhite = await renderPng(bowlFlatSvg("light", c, "#FFFFFF"));
+    const onCream = await renderPng(bowlFlatSvg("light", c, "#FBF6EF"));
+    const darkPng = await renderPng(bowlFlatSvg("dark", c));
+    writeFileSync(join(OUT, `bowl-${name}-white.png`), onWhite);
+    writeFileSync(join(OUT, `bowl-${name}-cream.png`), onCream);
+    const cells = [
+      await preview(onWhite, big), await preview(onCream, big),
+      await preview(onWhite, small), await preview(onCream, small),
+      await preview(darkPng, big, { background: dark }),
+    ];
+    let cx = labelW;
+    cells.forEach((cell, i) => {
+      layers.push({ input: cell, left: cx, top: y + Math.round((big - columns[i]) / 2) });
+      cx += columns[i] + gap;
+    });
+  }
+  layers.unshift({ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" font-family="Helvetica, Arial, sans-serif">${labels.join("")}</svg>`), left: 0, top: 0 });
+  const sheet = await sharp({ create: { width, height, channels: 4, background: light } }).composite(layers).png().toBuffer();
+  writeFileSync(join(OUT, "bowl-colors.png"), sheet);
+  console.log(`bowl color sheet: ${join(OUT, "bowl-colors.png")}`);
+}
+
 /** 把选定方案的三张图装进 Xcode 的图标资源，并写好 Contents.json。paletteName 只对 lens 和 bowl 有效 */
 async function install(name, paletteName) {
   if (!CONCEPTS[name]) throw new Error(`没有叫 ${name} 的方案，可选：${Object.keys(CONCEPTS).join(", ")}`);
@@ -194,6 +243,8 @@ if (args[0] === "--install") {
   await install(args[1], paletteIndex >= 0 ? args[paletteIndex + 1] : undefined);
 } else if (args[0] === "--palettes") {
   await paletteSheet();
+} else if (args[0] === "--bowl-colors") {
+  await bowlColorSheet();
 } else {
   // --only a,b,c 只渲染这几个方案（对比图也只放它们）
   const onlyIndex = args.indexOf("--only");

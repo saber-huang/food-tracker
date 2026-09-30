@@ -197,24 +197,46 @@ const FLAT = {
   <path ${stroke} stroke="${fat}" d="${arc(512, 512, 300, 316, 384)}"/>`);
     },
   },
-  // J. 米白底 + 扁平的橙色碗和笑脸，两种橙色（FitHub 的思路：浅底，一个简单的物件）
+  // J. 浅底 + 扁平的碗和笑脸（FitHub 的思路：浅底，一个简单的物件）。颜色见 BOWL_COLORS，默认橙色
   bowlFlat: {
-    title: "Flat orange bowl on off-white",
+    title: "Flat bowl on a light background",
     svg(v) {
-      const bowl = pick(v, "#FF7A3D", "#FF8A55", "#FFFFFF");
-      const rim = pick(v, "#E8622A", "#F07040", "#D0D0D0");
-      const shadow = v === "light" ? `<ellipse cx="512" cy="812" rx="250" ry="26" fill="#EFE5D6"/>` : "";
-      return svg(v, ["#FBF6EF", "#FBF6EF"], `
+      return bowlFlatSvg(v, BOWL_COLORS.orange);
+    },
+  },
+};
+
+// MARK: - 扁平的碗：可以换颜色
+
+/** 每种颜色：bg 背景，bowl 碗身，rim 碗沿（深一点），smile 笑脸，shadow 碗下面的浅影子；dark 是深色外观用的亮一点的颜色 */
+export const BOWL_COLORS = {
+  orange: { title: "Orange (current)", bg: "#FBF6EF", bowl: "#FF7A3D", rim: "#E8622A", smile: "#FF7A3D", shadow: "#EFE5D6", dark: { bowl: "#FF8A55", rim: "#F07040", smile: "#FF8A55" } },
+  teal: { title: "Teal", bg: "#FFFFFF", bowl: "#2BB3A3", rim: "#1F8F83", smile: "#2BB3A3", shadow: "#E6F3F1", dark: { bowl: "#3CC6B5", rim: "#2AA697", smile: "#3CC6B5" } },
+  sage: { title: "Sage green", bg: "#FFFFFF", bowl: "#6FAE6E", rim: "#558E54", smile: "#6FAE6E", shadow: "#E9F1E8", dark: { bowl: "#84C283", rim: "#6AA669", smile: "#84C283" } },
+  navy: { title: "Navy", bg: "#FFFFFF", bowl: "#2F4F9E", rim: "#22397A", smile: "#2F4F9E", shadow: "#E8ECF5", dark: { bowl: "#5B7BD6", rim: "#4463B8", smile: "#5B7BD6" } },
+  charcoal: { title: "Charcoal (like 不背单词)", bg: "#FFFFFF", bowl: "#2E2A26", rim: "#161311", smile: "#2E2A26", shadow: "#ECEAE7", dark: { bowl: "#F2EFEA", rim: "#D9D4CC", smile: "#F2EFEA" } },
+  brick: { title: "Brick red", bg: "#FFFFFF", bowl: "#C94F3D", rim: "#A63D2E", smile: "#C94F3D", shadow: "#F5E8E5", dark: { bowl: "#E0664F", rim: "#C9503C", smile: "#E0664F" } },
+  rose: { title: "Rose", bg: "#FFFFFF", bowl: "#F06A8A", rim: "#D6547A", smile: "#F06A8A", shadow: "#FBE9EE", dark: { bowl: "#FF7FA0", rim: "#E86A8E", smile: "#FF7FA0" } },
+  sky: { title: "Sky blue", bg: "#FFFFFF", bowl: "#3F97E0", rim: "#2E7BC0", smile: "#3F97E0", shadow: "#E6F0F9", dark: { bowl: "#5AAEF5", rim: "#3F97E0", smile: "#5AAEF5" } },
+  plum: { title: "Plum", bg: "#FFFFFF", bowl: "#7B4E96", rim: "#5F3A78", smile: "#7B4E96", shadow: "#EFE9F3", dark: { bowl: "#9B6DB8", rim: "#7B4E96", smile: "#9B6DB8" } },
+  latte: { title: "Latte brown", bg: "#FFFFFF", bowl: "#A6754C", rim: "#875C3A", smile: "#A6754C", shadow: "#F1EBE5", dark: { bowl: "#C08E62", rim: "#A6754C", smile: "#C08E62" } },
+};
+
+/** 碗的画法（bowlFlat 和换颜色的对比图共用）。background 可以覆盖颜色表里的背景，用来比较纯白和米白 */
+export function bowlFlatSvg(v, c, background = c.bg) {
+  const bowl = pick(v, c.bowl, c.dark.bowl, "#FFFFFF");
+  const rim = pick(v, c.rim, c.dark.rim, "#D0D0D0");
+  const smile = pick(v, c.smile, c.dark.smile, "#FFFFFF");
+  const shadow = v === "light" ? `<ellipse cx="512" cy="812" rx="250" ry="26" fill="${c.shadow}"/>` : "";
+  return svg(v, [background, background], `
   <defs>${biteMask("biteJ", 838, 450, 92)}</defs>
   ${shadow}
-  <path fill="none" stroke="${bowl}" stroke-width="58" stroke-linecap="round" d="M388 292Q512 408 636 292"/>
+  <path fill="none" stroke="${smile}" stroke-width="58" stroke-linecap="round" d="M388 292Q512 408 636 292"/>
   <g mask="url(#biteJ)">
     <path fill="${bowl}" d="M202 470H822A310 310 0 0 1 512 780A310 310 0 0 1 202 470Z"/>
     <rect x="182" y="436" width="660" height="64" rx="32" fill="${rim}"/>
   </g>`);
-    },
-  },
-};
+}
 
 // MARK: - 全部方案（扁平的新方案排在前面）
 
