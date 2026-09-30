@@ -8,3 +8,7 @@ DerivedData/
 
 # App 的云端地址和密钥，每台电脑自己填，不上传
 FoodTracker/Config/Secrets.xcconfig
+
+# 图标工具的依赖和渲染结果（tools/icon）
+tools/icon/node_modules/
+tools/icon/out/
