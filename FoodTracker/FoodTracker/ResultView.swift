@@ -35,7 +35,7 @@ struct ResultView: View {
         self.today = today
         self.onSaved = onSaved
         // 按现在几点默认选一餐；识别结果先复制成可以修改的一份，用户改的是这份，原始结果不动
-        let meal = DietLogMath.suggestedMeal(hour: DayMath.calendar.component(.hour, from: .now))
+        let meal = DietLogMath.suggestedMeal(at: .now)
         _meal = State(initialValue: meal)
         _items = State(initialValue: result.items.map { EditableItem($0, meal: meal, dayKey: dayKey) })
     }
@@ -59,6 +59,12 @@ struct ResultView: View {
             }
 
             if showsList {
+                // 记到哪一天：打开这页时就定好了，这里只显示
+                Section {
+                    LabeledContent("记录日期", value: DayMath.dayTitle(for: day, today: today))
+                }
+
+                // 下面这句说明只说餐次，所以这一组里只放餐次
                 Section {
                     Picker("记到哪一餐", selection: $meal) {
                         ForEach(MealType.allCases) { meal in
@@ -66,7 +72,6 @@ struct ResultView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    LabeledContent("记录日期", value: DayMath.dayTitle(for: day, today: today))
                 } header: {
                     Text("记到哪一餐")
                 } footer: {

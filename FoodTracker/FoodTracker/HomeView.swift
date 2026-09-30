@@ -309,7 +309,7 @@ struct HomeView: View {
 
     /// 按现在几点，默认选中这一餐（用户可以改）
     private var suggestedMeal: MealType {
-        DietLogMath.suggestedMeal(hour: DayMath.calendar.component(.hour, from: .now))
+        DietLogMath.suggestedMeal(at: .now)
     }
 
     /// 打开「手动添加」表单

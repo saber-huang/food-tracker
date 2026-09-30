@@ -164,14 +164,22 @@ nonisolated enum DietLogMath {
         )
     }
 
-    /// 按现在几点，猜这一顿是哪一餐（记录时默认选中它，用户可以改）
-    static func suggestedMeal(hour: Int) -> MealType {
-        switch hour {
-        case 5...9: .breakfast
-        case 10...13: .lunch
-        case 17...20: .dinner
+    /// 按现在几点几分，猜这一顿是哪一餐（记录时默认选中它，用户可以改）。时间段和产品规划一致：
+    /// 4:00–10:30 早餐，10:30–14:30 午餐，17:00–21:30 晚餐，其他时间加餐。
+    /// 吃完饭过一会儿才记也常见，所以午餐、晚餐的时间段留得宽一些
+    static func suggestedMeal(hour: Int, minute: Int = 0) -> MealType {
+        switch hour * 60 + minute {
+        case (4 * 60)..<(10 * 60 + 30): .breakfast
+        case (10 * 60 + 30)..<(14 * 60 + 30): .lunch
+        case (17 * 60)..<(21 * 60 + 30): .dinner
         default: .snack
         }
+    }
+
+    /// 按某个时刻猜是哪一餐（用手机现在的时区）
+    static func suggestedMeal(at date: Date, calendar: Calendar = DayMath.calendar) -> MealType {
+        let time = calendar.dateComponents([.hour, .minute], from: date)
+        return suggestedMeal(hour: time.hour ?? 0, minute: time.minute ?? 0)
     }
 }
 

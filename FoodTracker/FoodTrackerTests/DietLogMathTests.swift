@@ -188,13 +188,25 @@ struct DietLogMathTests {
         #expect(zero.kcalFraction.isFinite)
     }
 
+    // 每个时间段的开头和结尾都测一下：4:00–10:30 早餐，10:30–14:30 午餐，17:00–21:30 晚餐，其他时间加餐
     @Test(
         "按时间猜餐次",
         arguments: zip(
-            [4, 5, 9, 10, 13, 14, 16, 17, 20, 21, 23, 0],
+            ["03:59", "04:00", "10:29", "10:30", "14:29", "14:30", "16:59", "17:00", "21:29", "21:30", "23:00", "00:00"],
             [MealType.snack, .breakfast, .breakfast, .lunch, .lunch, .snack, .snack, .dinner, .dinner, .snack, .snack, .snack]))
-    func suggestedMeal(hour: Int, expected: MealType) {
-        #expect(DietLogMath.suggestedMeal(hour: hour) == expected)
+    func suggestedMeal(time: String, expected: MealType) {
+        let parts = time.split(separator: ":").compactMap { Int($0) }
+        #expect(DietLogMath.suggestedMeal(hour: parts[0], minute: parts[1]) == expected)
+    }
+
+    @Test("按某个时刻猜餐次：用传进来的日历算几点")
+    func suggestedMealAtDate() {
+        var shanghai = Calendar(identifier: .gregorian)
+        shanghai.timeZone = TimeZone(identifier: "Asia/Shanghai")!
+        let lunchTime = shanghai.date(from: DateComponents(year: 2026, month: 9, day: 30, hour: 14, minute: 5))!
+        #expect(DietLogMath.suggestedMeal(at: lunchTime, calendar: shanghai) == .lunch)  // 14:05 记午餐，以前会默认成加餐
+        let lateDinner = shanghai.date(from: DateComponents(year: 2026, month: 9, day: 30, hour: 21, minute: 10))!
+        #expect(DietLogMath.suggestedMeal(at: lateDinner, calendar: shanghai) == .dinner)
     }
 
     // 这些英文会存进手机的数据库，改了就读不出以前的记录，所以用测试固定下来
