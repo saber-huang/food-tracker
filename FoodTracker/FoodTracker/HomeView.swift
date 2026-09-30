@@ -221,6 +221,19 @@ struct HomeView: View {
                                 }
                             }
                         }
+                        // 右上角的小叉：选错了照片，或看完结果不想再识别，点它收起这一行（识别中不显示）
+                        .overlay(alignment: .topTrailing) {
+                            if !isAnalyzing {
+                                // 这里要写 self.photo：外面的 if let photo 里，photo 指的是照片本身，不能改
+                                Button("移除照片", systemImage: "xmark.circle.fill") { self.photo = nil }
+                                    .labelStyle(.iconOnly)
+                                    .font(.title3)
+                                    // 白色的叉 + 半透明黑底，放在什么颜色的照片上都看得清
+                                    .symbolRenderingMode(.palette)
+                                    .foregroundStyle(.white, .black.opacity(0.5))
+                                    .padding(4)
+                            }
+                        }
                     VStack(alignment: .leading, spacing: 6) {
                         analyzeButton
                         if isAnalyzing {
@@ -235,6 +248,8 @@ struct HomeView: View {
         }
         .padding()
         .background(.bar)
+        // 字号最多放大到「特特大」：再大这一栏会占掉小半个屏幕（和系统的标签栏一样；长按按钮可以看放大的文字）
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
     /// 拍照 / 从相册选择 / 手动添加 三个按钮（图标在上、文字在下，小屏幕的手机也放得下）
@@ -264,6 +279,10 @@ struct HomeView: View {
         }
         .labelStyle(IconAboveTitleLabelStyle())
         .buttonStyle(.bordered)
+        // 用特大字号的人长按按钮，会弹出放大的图标和文字（这一栏的字号有上限，见 actionBar）
+        .accessibilityShowsLargeContentViewer()
+        // 这一行的高度 = 最高的那个按钮：字号变大、「从相册选择」换行时，三个按钮还是一样高
+        .fixedSize(horizontal: false, vertical: true)
         .disabled(isAnalyzing)
     }
 
@@ -383,7 +402,7 @@ private struct IconAboveTitleLabelStyle: LabelStyle {
             configuration.title
                 .font(.caption)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)  // 撑满这一行的宽和高（高度由上面的 fixedSize 定）
         .padding(.vertical, 4)
     }
 }

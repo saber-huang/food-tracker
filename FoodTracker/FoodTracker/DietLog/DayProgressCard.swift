@@ -14,17 +14,25 @@ struct DayProgressCard: View {
     let bodyInfo: BodyInfo
     let isToday: Bool  // 看的是不是今天：文字不一样
 
+    @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = 40  // 大数字跟着系统字号一起变大
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     private var targets: DailyTargets { NutritionCalculator.targets(for: bodyInfo) }
     private var progress: DayProgress { DietLogMath.progress(consumed: consumed, targets: targets) }
 
     var body: some View {
+        // 字号特别大时三种营养素改成上下排，免得挤在一行里显示不全
+        let macroLayout =
+            dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(alignment: .bottom))
         VStack(alignment: .leading, spacing: 12) {
             headline
             ProgressView(value: progress.kcalFraction)
+                .accessibilityHidden(true)  // 旁白（VoiceOver）不读这条进度条：上下两行已经读出了数字
             Text("已记录 \(progress.consumedKcal.noDecimal) · \(isToday ? "目标" : "按当前目标") \(progress.targetKcal.noDecimal) 千卡")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            HStack {
+            macroLayout {
                 MacroProgress(name: "蛋白质", consumed: consumed.proteinG, target: targets.proteinG, fraction: progress.proteinFraction, color: .blue)
                 MacroProgress(name: "碳水", consumed: consumed.carbsG, target: targets.carbsG, fraction: progress.carbsFraction, color: .orange)
                 MacroProgress(name: "脂肪", consumed: consumed.fatG, target: targets.fatG, fraction: progress.fatFraction, color: .pink)
@@ -41,16 +49,14 @@ struct DayProgressCard: View {
             Text("刚好达到目标")
                 .font(.title2.bold())
         } else {
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(remaining > 0 ? (isToday ? "还可以吃" : "比目标少") : "比目标多")
-                    .foregroundStyle(.secondary)
-                Text(abs(remaining).noDecimal)
-                    .font(.system(size: 40, weight: .bold, design: .rounded))
-                    // 多了的时候数字也用灰色，不用红色
-                    .foregroundStyle(remaining > 0 ? Color.primary : Color.secondary)
-                Text("千卡")
-                    .foregroundStyle(.secondary)
-            }
+            let number = Text(abs(remaining).noDecimal)
+                .font(.system(size: heroSize, weight: .bold, design: .rounded))
+                // 多了的时候数字也用灰色，不用红色
+                .foregroundStyle(remaining > 0 ? Color.primary : Color.secondary)
+            let label = remaining > 0 ? (isToday ? "还可以吃" : "比目标少") : "比目标多"
+            // 整句是一段文字：字号很大时像句子一样换行，数字不会被拆开；旁白也一次读完
+            Text("\(label) \(number) 千卡")
+                .foregroundStyle(.secondary)
         }
     }
 }
@@ -75,6 +81,9 @@ private struct MacroProgress: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+        // 旁白把这一列读成一句「蛋白质 29 克，目标 120 克」（进度条不单独读）
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(name) \(consumed.noDecimal) 克，目标 \(target.noDecimal) 克")
     }
 }
 

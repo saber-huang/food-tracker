@@ -37,6 +37,8 @@ struct WeekStripView: View {
         .scrollIndicators(.hidden)
         // 横向滚动的视图默认会把竖向的空间也全占掉；这里只要格子那么高
         .fixedSize(horizontal: false, vertical: true)
+        // 字号最多放大到「特大」：再大一行就放不下 7 天了（和系统的标签栏一样；长按格子可以看放大的日期）
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         // 翻到了新的一周：选中同一个星期几（不能超过今天）
         .onChange(of: visibleWeekOffset) { _, offset in
             guard let offset else { return }
@@ -147,6 +149,10 @@ private struct DayCell: View {
         // 旁白用户不方便左右滑动翻页，给两个动作（在格子上上下滑动就能选到）
         .accessibilityAction(named: "上一周") { onPage(-1) }
         .accessibilityAction(named: "下一周") { onPage(1) }
+        // 用特大字号的人长按格子，会弹出放大的日期（横条的字号有上限，见 WeekStripView）
+        .accessibilityShowsLargeContentViewer {
+            Text(DayMath.dayTitle(for: day, today: today))
+        }
     }
 }
 

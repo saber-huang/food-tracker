@@ -43,8 +43,9 @@ struct EntryEditView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("名称", text: $draft.name, prompt: Text("例如：米饭"))
+                    TextField("名称", text: $draft.name, prompt: Text("必填，例如：米饭"))
                         .focused($focusedField, equals: .name)
+                        .accessibilityLabel("名称")
                         // 数字键盘没有「完成」键，在键盘上方加一个。只挂在这一行上，挂多了会出现好几个「完成」
                         .toolbar {
                             ToolbarItemGroup(placement: .keyboard) {
@@ -56,14 +57,6 @@ struct EntryEditView: View {
                         Text(error)
                             .font(.caption)
                             .foregroundStyle(.red)
-                    }
-                    if showsMealPicker {
-                        Picker("记到哪一餐", selection: $draft.meal) {
-                            ForEach(MealType.allCases) { meal in
-                                Text(meal.title).tag(meal)
-                            }
-                        }
-                        .pickerStyle(.segmented)
                     }
                     if showsDate {
                         LabeledContent("记录日期", value: DayMath.dayTitle(for: draft.day, today: .now))
@@ -81,22 +74,42 @@ struct EntryEditView: View {
                     }
                 }
 
+                if showsMealPicker {
+                    // 分段样式不显示 Picker 自己的标题，所以用这一组的标题（和识别结果页一样）
+                    Section {
+                        Picker("记到哪一餐", selection: $draft.meal) {
+                            ForEach(MealType.allCases) { meal in
+                                Text(meal.title).tag(meal)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    } header: {
+                        Text("记到哪一餐")
+                    } footer: {
+                        // 只有新记录的餐次是按时间猜的；修改已保存的记录时选中的是原来的餐次，不加这句
+                        if showsDate {
+                            Text("按现在的时间默认推荐，可以改。")
+                        }
+                    }
+                }
+
                 Section {
+                    // 名称和热量必须填，其他可以不填：输入框里的灰字直接写明
                     NumberRow(
                         title: "重量", unit: "克", text: $draft.weightText, keyboard: .decimalPad,
-                        error: draft.weightError, focus: $focusedField, field: .weight)
+                        error: draft.weightError, focus: $focusedField, field: .weight, prompt: "选填")
                     NumberRow(
                         title: "热量", unit: "千卡", text: $draft.caloriesText, keyboard: .decimalPad,
-                        error: draft.caloriesError, focus: $focusedField, field: .calories)
+                        error: draft.caloriesError, focus: $focusedField, field: .calories, prompt: "必填")
                     NumberRow(
                         title: "蛋白质", unit: "克", text: $draft.proteinText, keyboard: .decimalPad,
-                        error: draft.proteinError, focus: $focusedField, field: .protein)
+                        error: draft.proteinError, focus: $focusedField, field: .protein, prompt: "选填")
                     NumberRow(
                         title: "碳水", unit: "克", text: $draft.carbsText, keyboard: .decimalPad,
-                        error: draft.carbsError, focus: $focusedField, field: .carbs)
+                        error: draft.carbsError, focus: $focusedField, field: .carbs, prompt: "选填")
                     NumberRow(
                         title: "脂肪", unit: "克", text: $draft.fatText, keyboard: .decimalPad,
-                        error: draft.fatError, focus: $focusedField, field: .fat)
+                        error: draft.fatError, focus: $focusedField, field: .fat, prompt: "选填")
 
                     // 灰色提醒：可能填错了，但不阻止保存
                     if let warning = draft.kcalMismatchWarning {
@@ -117,10 +130,14 @@ struct EntryEditView: View {
                 } header: {
                     Text("分量与营养")
                 } footer: {
+                    // 第一句一直显示；第二句看现在能不能按比例换算；
+                    // 最后一句：国内包装上的「能量」按规定用千焦标示，照着抄很容易把千焦当成千卡
                     Text(
-                        draft.per100 == nil
-                            ? "名称和热量必须填，其他可以不填。先填重量、再填热量，之后改重量才会按比例换算。"
-                            : "改了重量，热量和三大营养素会按比例一起变；直接改某一项，就只改那一项。")
+                        "名称和热量必须填，其他可以不填。"
+                            + (draft.per100 == nil
+                                ? "先填重量、再填热量，之后改重量才会按比例换算。"
+                                : "改了重量，热量和三大营养素会按比例一起变；直接改某一项，就只改那一项。")
+                            + "包装上的「能量」一般是千焦（kJ），除以 4.2 大约就是千卡。")
                 }
 
                 if let onDelete {
