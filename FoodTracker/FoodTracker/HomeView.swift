@@ -28,6 +28,7 @@ struct HomeView: View {
     @State private var pickerItem: PhotosPickerItem?  // 相册里选中的项目
     @State private var showCamera = false  // 是否打开相机
     @State private var isAnalyzing = false  // 是否正在识别
+    @State private var analyzeRemaining: Int?  // 今天还能拍照识别几次；问不到（没网、服务器在唤醒）就不显示
     @State private var resultRoute: ResultRoute?  // 识别结果 + 记到哪一天，有值时自动跳到结果页
     @State private var showError = false  // 是否显示出错提示
     @State private var errorMessage = ""  // 出错提示的内容
@@ -131,6 +132,12 @@ struct HomeView: View {
                 // 从相册选了照片之后，把它读出来
                 .onChange(of: pickerItem) { _, newItem in
                     Task { await loadPhoto(from: newItem) }
+                }
+                // 选好照片（拍照或从相册）时，顺便问一下今天还能识别几次
+                .onChange(of: photo) { _, newPhoto in
+                    if newPhoto != nil {
+                        Task { await refreshAnalyzeRemaining() }
+                    }
                 }
                 // 真的换了一天才会运行：记住用户最后选的是不是「今天」
                 .onChange(of: selectedDay) { _, day in
@@ -244,6 +251,11 @@ struct HomeView: View {
                         analyzeButton
                         if isAnalyzing {
                             Text("正在识别，通常需要 5～10 秒…")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else if let remaining = analyzeRemaining {
+                            // 按下「开始识别」前告诉用户还剩几次；用完了也不挡着按钮，后端会给出明确的说明
+                            Text(remaining > 0 ? "今天还可以识别 \(remaining) 次" : "今天的识别次数用完了，可以先用「手动添加」")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -377,6 +389,16 @@ struct HomeView: View {
             resultRoute = ResultRoute(result: result, dayKey: dayKey)
         } catch {
             showError(message: error.localizedDescription)
+        }
+        // 识别用掉了一次（失败时后端可能还回去了），重新问一下还剩几次。
+        // 另起一个任务去问：不然上面的 defer 要等它问完才关掉加载状态，按钮会一直是灰的
+        Task { await refreshAnalyzeRemaining() }
+    }
+
+    /// 问后端今天还能识别几次（不花钱、不占次数）；问不到就不显示，不打扰用户
+    private func refreshAnalyzeRemaining() async {
+        if let quota = try? await APIClient.quota() {
+            analyzeRemaining = quota.analyzeRemaining
         }
     }
 
