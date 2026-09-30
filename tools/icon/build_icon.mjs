@@ -1,6 +1,7 @@
 // 把 concepts.mjs 里的图标方案渲染成 PNG，拼一张对比图，选定后装进 Xcode 的图标资源。
 // 在 tools/icon 文件夹里运行（第一次先 npm install）：
 //   node build_icon.mjs                              渲染全部方案到 out/，并生成 out/contact-sheet.png 对比图
+//   node build_icon.mjs --only kWhite,kBlack         只渲染这几个方案，对比图也只放它们
 //   node build_icon.mjs --palettes                   把 lens 和 bowl 用 PALETTES 里的每套配色各渲染一遍，生成 out/palette-sheet.png
 //   node build_icon.mjs --install heart              把 heart 方案的三张图装进 App 的 AppIcon.appiconset
 //   node build_icon.mjs --install bowl --palette ink 同上，但用 ink 这套配色（只有 lens 和 bowl 支持）
@@ -45,10 +46,11 @@ async function preview(png, size, { background, tint } = {}) {
   return sharp(layered).composite([{ input: roundedMask(size), blend: "dest-in" }]).png().toBuffer();
 }
 
-async function renderAll() {
+async function renderAll(only) {
   mkdirSync(OUT, { recursive: true });
   const rendered = {};
   for (const [name, concept] of Object.entries(CONCEPTS)) {
+    if (only && !only.includes(name)) continue;
     rendered[name] = {};
     for (const variant of VARIANTS) {
       const png = await renderPng(concept.svg(variant));
@@ -190,6 +192,9 @@ if (args[0] === "--install") {
 } else if (args[0] === "--palettes") {
   await paletteSheet();
 } else {
-  const rendered = await renderAll();
+  // --only a,b,c 只渲染这几个方案（对比图也只放它们）
+  const onlyIndex = args.indexOf("--only");
+  const only = onlyIndex >= 0 ? args[onlyIndex + 1].split(",") : undefined;
+  const rendered = await renderAll(only);
   await contactSheet(rendered);
 }

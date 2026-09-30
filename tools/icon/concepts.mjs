@@ -125,9 +125,101 @@ export function bowlSvg(v, palette = PALETTES.original) {
 /** 支持换配色的方案：名字 → 画图函数 */
 export const PALETTE_CONCEPTS = { lens: lensSvg, bowl: bowlSvg };
 
-// MARK: - 全部方案
+
+// MARK: - 扁平、极简的方案（参考用户喜欢的图标：Gmail、不背单词、Peloton、Apple 健身、FitHub）
+// 共同点：纯白或纯黑的底，没有渐变，中间一个粗壮的符号。
+
+/** 圆弧路径：角度从正上方开始顺时针算（度） */
+function arc(cx, cy, r, a0, a1) {
+  const rad = (a) => ((a - 90) * Math.PI) / 180;
+  const x0 = cx + r * Math.cos(rad(a0)), y0 = cy + r * Math.sin(rad(a0));
+  const x1 = cx + r * Math.cos(rad(a1)), y1 = cy + r * Math.sin(rad(a1));
+  return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+}
+
+/** 字母 K：竖笔一种颜色，两条斜笔另一种颜色，上面那条斜笔的外侧被咬了一口 */
+function letterK(stem, arms, biteId) {
+  return `
+  <defs>${biteMask(biteId, 560, 262, 74)}</defs>
+  <g fill="none" stroke-width="150" stroke-linecap="round" mask="url(#${biteId})">
+    <path stroke="${arms}" d="M400 512L700 250"/>
+    <path stroke="${arms}" d="M400 512L700 774"/>
+  </g>
+  <path fill="none" stroke="${stem}" stroke-width="150" stroke-linecap="round" d="M370 240V784"/>`;
+}
+
+const HEART_PATH = "M512 880C300 720 160 600 160 420C160 300 250 220 360 220C430 220 480 260 512 310C544 260 594 220 664 220C774 220 864 300 864 420C864 600 724 720 512 880Z";
+
+const FLAT = {
+  // F. 白底 + 两色的 K，被咬了一口（Gmail、不背单词的思路：干净的底，一个字母做标志）
+  kWhite: {
+    title: "K on white, two warm colors",
+    svg(v) {
+      const stem = pick(v, "#F4553B", "#FF7A5C", "#FFFFFF");
+      const arms = pick(v, "#FF9A3C", "#FFB25C", "#C8C8C8");
+      return svg(v, ["#FFFFFF", "#FFFFFF"], letterK(stem, arms, "biteK"));
+    },
+  },
+  // G. 黑底 + 白色的 K，一点橙色闪光（Peloton 的思路）
+  kBlack: {
+    title: "K on black with a sparkle",
+    svg(v) {
+      const k = pick(v, "#FFFFFF", "#FFFFFF", "#FFFFFF");
+      const spark = pick(v, "#FF9A3C", "#FFB25C", "#C8C8C8");
+      return svg(v, ["#0B0B0C", "#0B0B0C"], letterK(k, k, "biteK") + sparkle(790, 205, 44, spark));
+    },
+  },
+  // H. 白底 + 橙色圆章，里面一颗被咬了一口的白色爱心（不背单词的布局）
+  badge: {
+    title: "Orange badge with a bitten heart",
+    svg(v) {
+      const badge = pick(v, "#FF6A3D", "#FF7A50", "#FFFFFF");
+      const heart = pick(v, "#FFFFFF", "#FFFFFF", "#8E8E93");
+      return svg(v, ["#FFFFFF", "#FFFFFF"], `
+  <defs>${biteMask("biteH", 805, 285, 100)}</defs>
+  <circle cx="512" cy="512" r="400" fill="${badge}"/>
+  <g transform="translate(512 528) scale(0.56) translate(-512 -550)">
+    <path mask="url(#biteH)" fill="${heart}" d="${HEART_PATH}"/>
+  </g>`);
+    },
+  },
+  // I. 黑底 + 三段颜色的圆环（蛋白质蓝、碳水橙、脂肪粉，就是 App 里用的三种颜色），右上角缺一口
+  ring: {
+    title: "Three-color ring with a bite",
+    svg(v) {
+      const protein = pick(v, "#4DA3FF", "#5FAEFF", "#FFFFFF");
+      const carbs = pick(v, "#FF9F1C", "#FFAE3D", "#C8C8C8");
+      const fat = pick(v, "#FF4D6D", "#FF6683", "#9A9A9A");
+      const stroke = `fill="none" stroke-width="120" stroke-linecap="butt"`;
+      return svg(v, ["#0B0B0C", "#0B0B0C"], `
+  <path ${stroke} stroke="${protein}" d="${arc(512, 512, 300, 76, 190)}"/>
+  <path ${stroke} stroke="${carbs}" d="${arc(512, 512, 300, 196, 310)}"/>
+  <path ${stroke} stroke="${fat}" d="${arc(512, 512, 300, 316, 384)}"/>`);
+    },
+  },
+  // J. 米白底 + 扁平的橙色碗和笑脸，两种橙色（FitHub 的思路：浅底，一个简单的物件）
+  bowlFlat: {
+    title: "Flat orange bowl on off-white",
+    svg(v) {
+      const bowl = pick(v, "#FF7A3D", "#FF8A55", "#FFFFFF");
+      const rim = pick(v, "#E8622A", "#F07040", "#D0D0D0");
+      const shadow = v === "light" ? `<ellipse cx="512" cy="812" rx="250" ry="26" fill="#EFE5D6"/>` : "";
+      return svg(v, ["#FBF6EF", "#FBF6EF"], `
+  <defs>${biteMask("biteJ", 838, 450, 92)}</defs>
+  ${shadow}
+  <path fill="none" stroke="${bowl}" stroke-width="58" stroke-linecap="round" d="M388 292Q512 408 636 292"/>
+  <g mask="url(#biteJ)">
+    <path fill="${bowl}" d="M202 470H822A310 310 0 0 1 512 780A310 310 0 0 1 202 470Z"/>
+    <rect x="182" y="436" width="660" height="64" rx="32" fill="${rim}"/>
+  </g>`);
+    },
+  },
+};
+
+// MARK: - 全部方案（扁平的新方案排在前面）
 
 export const CONCEPTS = {
+  ...FLAT,
   // A. 被咬了一口的爱心：Kindbite 的字面意思，温和 + 食物
   heart: {
     title: "Heart with a bite",
