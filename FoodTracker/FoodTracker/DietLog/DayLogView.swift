@@ -10,19 +10,21 @@
 import SwiftData
 import SwiftUI
 
-struct DayLogView: View {
+struct DayLogView<BelowCard: View>: View {
     let day: Date  // 显示哪一天
     let today: Date  // 今天是哪一天（用来判断文字怎么写）
     let bodyInfo: BodyInfo  // 算每日目标用
+    private let belowCard: BelowCard  // 放在进度卡片正下方的内容：「今日」页放热量提示；翻看往日时什么都没有
 
     @Query private var entries: [FoodEntry]
     @Environment(\.modelContext) private var modelContext
     @State private var editingEntry: FoodEntry?  // 正在修改的记录，有值时弹出表单
 
-    init(day: Date, today: Date, bodyInfo: BodyInfo) {
+    init(day: Date, today: Date, bodyInfo: BodyInfo, @ViewBuilder belowCard: () -> BelowCard) {
         self.day = day
         self.today = today
         self.bodyInfo = bodyInfo
+        self.belowCard = belowCard()
         // 查询条件在创建页面时算好：换了一天，SwiftUI 会重新创建这个页面，查询也跟着换
         _entries = Query(filter: FoodEntry.predicate(day: day), sort: \FoodEntry.createdAt)
     }
@@ -45,6 +47,8 @@ struct DayLogView: View {
                     }
                 }
             }
+
+            belowCard
 
             ForEach(MealType.allCases) { meal in
                 let mealEntries = entries(for: meal)
@@ -105,6 +109,13 @@ struct DayLogView: View {
             modelContext.delete(entry)
         }
         try? modelContext.save()
+    }
+}
+
+extension DayLogView where BelowCard == EmptyView {
+    /// 卡片下面不放东西的写法（翻看往日、预览）
+    init(day: Date, today: Date, bodyInfo: BodyInfo) {
+        self.init(day: day, today: today, bodyInfo: bodyInfo) { EmptyView() }
     }
 }
 

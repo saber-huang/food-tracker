@@ -10,11 +10,12 @@ import Foundation
 import SwiftData
 
 extension FoodEntry {
-    /// 提示要用到的记录：最近 14 天（含今天）。查询条件的日期在 #Predicate 外面先算好
-    static func hintHistoryPredicate(today: Date, calendar: Calendar = DayMath.calendar) -> Predicate<FoodEntry> {
+    /// 提示要用到的记录：判断只看最近 14 天，但查询范围前后都留够「假装现在是」能调到的 30 天，
+    /// 这样模拟器里把时间调到别的日子，提示和记录用的还是同一份数据。查询条件的日期在 #Predicate 外面先算好
+    static func hintHistoryPredicate(realToday: Date, calendar: Calendar = DayMath.calendar) -> Predicate<FoodEntry> {
         predicate(
-            from: DayMath.addingDays(-(HintEngine.historyDays - 1), to: today, calendar: calendar),
-            to: DayMath.addingDays(1, to: today, calendar: calendar), calendar: calendar)
+            from: DayMath.addingDays(-HintClock.lookbackDays, to: realToday, calendar: calendar),
+            to: DayMath.addingDays(HintClock.fakeRangeDays + 1, to: realToday, calendar: calendar), calendar: calendar)
     }
 }
 

@@ -34,6 +34,7 @@ struct HomeView: View {
     @State private var showNoCamera = false  // 是否提示「没有相机」
     @State private var showManualEntry = false  // 是否打开「手动添加」
     @State private var showMonthPicker = false  // 是否打开月历
+    @State private var hintSheet: HintSheet?  // 热量提示里的按钮要打开的页面（弹窗挂在一直都在的列表上，提示消失了也不影响）
 
     init(profile: UserProfile) {
         self.profile = profile
@@ -48,7 +49,12 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            DayLogView(day: selectedDay, today: today, bodyInfo: profile.bodyInfo)
+            DayLogView(day: selectedDay, today: today, bodyInfo: profile.bodyInfo) {
+                // 热量提示只在看今天时出现，紧跟在进度卡片下面
+                if isToday {
+                    TodayHints(profile: profile, sheet: $hintSheet)
+                }
+            }
                 // 换了一天就整个重新创建，保证列表查的是新的一天
                 .id(selectedDay)
                 .navigationTitle("今日")  // 只用在结果页的「返回」按钮上；顶栏中间显示的是月份
@@ -136,6 +142,19 @@ struct HomeView: View {
                 }
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
                     refreshToday(appBecameActive: false)
+                }
+                // 热量提示里的按钮：推荐下一餐（第 10 步做真正的页面，现在先占位）、编辑资料
+                .sheet(item: $hintSheet) { sheet in
+                    switch sheet {
+                    case .nextMeal(let budget):
+                        NavigationStack {
+                            Text(HintCopy.nextMealTitle(mealName: budget.meal.title))
+                                .navigationTitle(HintCopy.nextMealTitle(mealName: budget.meal.title))
+                                .navigationBarTitleDisplayMode(.inline)
+                        }
+                    case .editProfile:
+                        ProfileEditView(profile: profile)
+                    }
                 }
                 // 月历：选了一天就跳过去
                 .sheet(isPresented: $showMonthPicker) {

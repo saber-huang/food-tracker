@@ -58,6 +58,11 @@ struct ProfileView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+
+                #if DEBUG && targetEnvironment(simulator)
+                // 只在模拟器里出现的开发者工具：一键造出各种热量提示
+                DebugHintSection(profile: profile)
+                #endif
             }
             .navigationTitle("我的")
             .sheet(isPresented: $isEditing) {
