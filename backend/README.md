@@ -100,6 +100,6 @@ uv run fastapi dev main.py --host 0.0.0.0
 | `FOOD_AI_EFFORT` | `low` | 思考深度：`low` / `medium` / `high` |
 | `ANALYZE_PER_DEVICE` / `ANALYZE_PER_IP` / `ANALYZE_PER_SITE` | 15 / 60 / 100 | 识别的每日次数上限 |
 | `RECIPES_PER_DEVICE` / `RECIPES_PER_IP` / `RECIPES_PER_SITE` | 5 / 20 / 40 | 食谱的每日次数上限 |
-| `TRUSTED_PROXIES` | 见 `render.yaml` | 可信的代理地址段，用来拿到来访者的真实 IP |
+| `TRUSTED_PROXIES` | 见 `render.yaml` | 可信的代理地址段。在 Render 上计次看的是 Cloudflare 写入的 `CF-Connecting-IP`（见 `main.py` 的 `client_ip`），这个只在请求没带它时备用 |
 
 改了环境变量之后，Render 会自动重新部署。

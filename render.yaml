@@ -16,7 +16,8 @@ services:
     # 启动命令说明：
     #   --workers 1           只开一个进程：次数限制和缓存都在内存里，多个进程会各算各的
     #   --forwarded-allow-ips 只信任 Cloudflare 和 Render 内部地址转发来的「真实 IP」信息，
-    #                         来访者自己伪造的 X-Forwarded-For 会被忽略
+    #                         来访者自己伪造的 X-Forwarded-For 会被忽略。
+    #                         这只是备用：计次主要看 Cloudflare 写入的 CF-Connecting-IP（见 main.py 的 client_ip）
     startCommand: uv run --no-sync fastapi run main.py --host 0.0.0.0 --port $PORT --workers 1 --forwarded-allow-ips "$TRUSTED_PROXIES"
     healthCheckPath: /health
     autoDeployTrigger: commit   # 每次推送到 GitHub 的 main 分支，自动重新部署

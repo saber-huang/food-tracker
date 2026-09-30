@@ -103,26 +103,44 @@ DeviceID = Annotated[str | None, Header(alias="X-Device-ID", description="App �
 DEVICE_ID_PATTERN = re.compile(r"^[A-Za-z0-9-]{8,64}$")
 
 
-def is_public_ip(host: str) -> bool:
-    """是不是公网地址（内网、本机、保留地址都不算）"""
+def rate_limit_address(raw: str) -> str | None:
+    """把一个 IP 地址换成计次用的写法；不是合法的 IP 就返回 None。
+    - IPv4：就是这个地址本身（一户人家的几台设备通常共用一个公网 IPv4）
+    - IPv6：按前 64 位（/64）算一个地址。一户人家通常分到一整段 /64，里面的地址可以随便换，
+      如果按完整地址计次，换一个地址就能绕过「每个 IP」的限制
+    - ::ffff:1.2.3.4 这种写法其实是 IPv4，按 IPv4 算"""
     try:
-        return ipaddress.ip_address(host).is_global
+        ip = ipaddress.ip_address(raw.strip())
     except ValueError:
-        return False
+        return None
+    if ip.version == 6:
+        if ip.ipv4_mapped:
+            return str(ip.ipv4_mapped)
+        return str(ipaddress.ip_network(f"{ip}/64", strict=False))
+    return str(ip)
+
+
+_warned_missing_cf_header = False
 
 
 def client_ip(request: Request) -> str:
-    """来访者的真实 IP。
-    在 Render 上，请求经过 Cloudflare 和 Render 的转发层；uvicorn 按启动参数 --forwarded-allow-ips
-    里的可信代理列表，从 X-Forwarded-For 里找出真实来访者，放进 request.client.host
-    （来访者自己伪造的 X-Forwarded-For 会被忽略）。
-    万一解析出来的仍是内网地址（说明可信列表漏了一跳），退一步用 Cloudflare 写入的 CF-Connecting-IP。
-    公网来访者伪造不了这条退路：他们的地址本来就是公网地址，不会走到这一步。"""
+    """计次用的来访者地址。
+    在 Render 上，请求先经过 Cloudflare，再经过 Render 的转发层才到这里。Cloudflare 会把来访者的真实地址
+    写进 CF-Connecting-IP 请求头，并且不让来访者自己伪造它（带着伪造值的请求会被 Cloudflare 直接拦下，已实测），
+    所以在 Render 上优先用它。
+    以前是让 uvicorn 按可信代理列表从 X-Forwarded-For 里推算，但在 Render 上实测所有来访者都被算成了
+    同一个地址（同一台电脑分别用 IPv4 和 IPv6 访问，共用了同一个「每分钟」次数），现在只把它当备用。
+    本地开发没有 Cloudflare，直接用 uvicorn 给出的地址。"""
+    global _warned_missing_cf_header
+    if ON_RENDER:
+        if (cf := request.headers.get("cf-connecting-ip")) and (address := rate_limit_address(cf)):
+            return address
+        # 正常情况下每个请求都带这个头；没带说明请求没经过 Cloudflare，记一次日志方便排查（只记第一次，免得刷屏）
+        if not _warned_missing_cf_header:
+            _warned_missing_cf_header = True
+            logger.warning("请求没有带合法的 CF-Connecting-IP，改用转发层给出的地址计次")
     host = request.client.host if request.client else "unknown"
-    if ON_RENDER and not is_public_ip(host):
-        if forwarded := request.headers.get("cf-connecting-ip"):
-            return forwarded.strip()
-    return host
+    return rate_limit_address(host) or host
 
 
 def keys_for(request: Request, device_id: str | None) -> tuple[str, str]:
