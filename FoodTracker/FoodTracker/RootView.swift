@@ -29,6 +29,8 @@ struct RootView: View {
                 OnboardingView()
             }
         }
+        // 以前只能用公制：已经有资料的人继续用公制（只在第一次运行这个版本时判断一次）
+        .onAppear { UnitSystem.keepMetricForExistingUser(hasProfile: !profiles.isEmpty) }
         .alert("没有删除成功", isPresented: $eraseFailed) {
             Button("好", role: .cancel) {}
         } message: {

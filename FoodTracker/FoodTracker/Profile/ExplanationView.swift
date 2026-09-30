@@ -10,6 +10,8 @@ import SwiftUI
 
 struct ExplanationView: View {
     let bodyInfo: BodyInfo
+    // 用英制的人先看到一句换算：下面的公式都用公斤和厘米
+    @AppStorage(UnitSystem.key) private var units: UnitSystem = UnitSystem.regionDefault()
 
     private var t: DailyTargets { NutritionCalculator.targets(for: bodyInfo) }
 
@@ -17,6 +19,13 @@ struct ExplanationView: View {
         List {
             Section {
                 Text("下面用你自己的数据，一步步演示每日目标是怎么算出来的。")
+                if units == .imperial {
+                    Text(
+                        "公式用的是公制单位：你的体重 \(BodyUnits.weightDisplay(kg: bodyInfo.weightKg, units: .imperial)) = \(bodyInfo.weightKg.oneDecimal) 公斤，身高 \(BodyUnits.heightDisplay(cm: bodyInfo.heightCm, units: .imperial)) = \(bodyInfo.heightCm.oneDecimal) 厘米。"
+                    )
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                }
             }
 
             Section("第 1 步：基础代谢") {

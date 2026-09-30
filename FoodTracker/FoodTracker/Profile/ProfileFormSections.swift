@@ -7,16 +7,19 @@
 //  @Bindable 让这些界面可以直接修改 ProfileDraft 里的数据。
 //
 
+import Accessibility
 import SwiftUI
 
 // MARK: - 基本信息：性别、年龄、身高、体重
 
 struct BasicInfoSection: View {
     @Bindable var draft: ProfileDraft
+    /// 身高、体重用哪种单位（和「我的」页的设置是同一个）
+    @AppStorage(UnitSystem.key) private var units: UnitSystem = UnitSystem.regionDefault()
 
     /// 记住当前正在输入的是哪个框，用来收起键盘
     @FocusState private var focusedField: Field?
-    private enum Field { case age, height, weight }
+    private enum Field { case age, height, feet, inches, weight }
 
     var body: some View {
         Section {
@@ -41,14 +44,32 @@ struct BasicInfoSection: View {
                 focus: $focusedField, field: .age
             )
 
-            NumberRow(
-                title: String(localized: "身高"), unit: String(localized: "厘米"), text: $draft.heightText,
-                keyboard: .decimalPad, error: draft.heightError,
-                focus: $focusedField, field: .height
-            )
+            // 单位：切换时已经填好的身高、体重会换算过去
+            Picker("单位", selection: $units) {
+                ForEach(UnitSystem.allCases, id: \.self) { system in
+                    Text(system.shortTitle).tag(system)
+                }
+            }
+            .pickerStyle(.segmented)
+            .accessibilityLabel("单位")
+
+            switch draft.units {
+            case .metric:
+                NumberRow(
+                    title: String(localized: "身高"), unit: String(localized: "厘米"), text: $draft.heightText,
+                    keyboard: .decimalPad, error: draft.heightError,
+                    focus: $focusedField, field: .height
+                )
+            case .imperial:
+                FeetInchesRow(
+                    feet: $draft.feetText, inches: $draft.inchesText, error: draft.heightError,
+                    focus: $focusedField, feetField: .feet, inchesField: .inches
+                )
+            }
 
             NumberRow(
-                title: String(localized: "体重"), unit: String(localized: "公斤"), text: $draft.weightText,
+                title: String(localized: "体重"), unit: draft.units == .metric ? String(localized: "公斤") : String(localized: "磅"),
+                text: $draft.weightText,
                 keyboard: .decimalPad, error: draft.weightError ?? draft.plausibilityError,
                 focus: $focusedField, field: .weight
             )
@@ -63,6 +84,68 @@ struct BasicInfoSection: View {
             Text("基本信息")
         } footer: {
             Text("性别只用于计算基础代谢，公式里男女的数值不同。")
+        }
+        // 草稿的单位跟着设置走：打开页面时对齐一次，之后设置一变就换算
+        .onAppear { draft.switchUnits(to: units) }
+        .onChange(of: units) { _, newUnits in
+            focusedField = nil
+            draft.switchUnits(to: newUnits)
+        }
+    }
+}
+
+/// 英制身高：一行里两个输入框，「5 英尺 7 英寸」
+private struct FeetInchesRow<Field: Hashable>: View {
+    @Binding var feet: String
+    @Binding var inches: String
+    let error: String?
+    let focus: FocusState<Field?>.Binding
+    let feetField: Field
+    let inchesField: Field
+
+    private var isEditing: Bool { focus.wrappedValue == feetField || focus.wrappedValue == inchesField }
+
+    /// 和 NumberRow 一样：还没输入、或者正在输入时不显示错误
+    private var shownError: String? {
+        let hasText = !feet.isEmpty || !inches.isEmpty
+        return hasText && !isEditing ? error : nil
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("身高")
+                    .accessibilityHidden(true)
+                Spacer()
+                TextField("身高（英尺）", text: $feet, prompt: Text(verbatim: "5"))
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: 56)
+                    .focused(focus, equals: feetField)
+                Text("英尺")
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+                TextField("身高（英寸）", text: $inches, prompt: Text(verbatim: "7"))
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: 56)
+                    .focused(focus, equals: inchesField)
+                Text("英寸")
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+            }
+
+            if let shownError {
+                Text(shownError)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+        }
+        // 红色提示出现时，让旁白念出来
+        .onChange(of: shownError) { _, newError in
+            if let newError {
+                AccessibilityNotification.Announcement(newError).post()
+            }
         }
     }
 }

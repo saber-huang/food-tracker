@@ -20,6 +20,8 @@ struct ProfileView: View {
     @AppStorage(AIConsent.key) private var aiConsentVersion = 0
     // 热量提示的设置，存在手机本地（UserDefaults）；默认全部开启
     @AppStorage(HintKeys.level) private var hintLevel: HintLevel = .all
+    // 身高、体重用哪种单位显示和填写；没选过时按手机的地区（美国用英制）
+    @AppStorage(UnitSystem.key) private var units: UnitSystem = UnitSystem.regionDefault()
 
     var body: some View {
         let bodyInfo = profile.bodyInfo
@@ -39,10 +41,15 @@ struct ProfileView: View {
                 Section("个人资料") {
                     LabeledContent("性别", value: bodyInfo.sex.title)
                     LabeledContent("年龄", value: String(localized: "\(bodyInfo.age) 岁"))
-                    LabeledContent("身高", value: String(localized: "\(bodyInfo.heightCm.oneDecimal) 厘米"))
-                    LabeledContent("体重", value: String(localized: "\(bodyInfo.weightKg.oneDecimal) 公斤"))
+                    LabeledContent("身高", value: BodyUnits.heightDisplay(cm: bodyInfo.heightCm, units: units))
+                    LabeledContent("体重", value: BodyUnits.weightDisplay(kg: bodyInfo.weightKg, units: units))
                     LabeledContent("活动量", value: bodyInfo.activity.title)
                     LabeledContent("目标", value: bodyInfo.goal.title)
+                    Picker("单位", selection: $units) {
+                        ForEach(UnitSystem.allCases, id: \.self) { system in
+                            Text(system.title).tag(system)
+                        }
+                    }
                     Button("编辑资料") { isEditing = true }
                 }
 
@@ -124,7 +131,7 @@ struct ProfileEditView: View {
     init(profile: UserProfile) {
         self.profile = profile
         // 用原来的资料生成一份草稿；不点保存的话，原来的资料不会变
-        _draft = State(initialValue: ProfileDraft(from: profile.bodyInfo))
+        _draft = State(initialValue: ProfileDraft(from: profile.bodyInfo, units: UnitSystem.current()))
     }
 
     var body: some View {

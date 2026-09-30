@@ -309,40 +309,83 @@ nonisolated enum ProfileValidator {
         return nil
     }
 
-    static func heightError(_ heightCm: Double?) -> String? {
-        guard let heightCm else { return String(localized: "请输入身高（厘米）") }
+    /// 英制下身高范围的写法：下限往上取整、上限往下取整到整英寸（120～230 厘米 → 4 英尺 0 英寸～7 英尺 6 英寸），
+    /// 这样按提示填的数一定能通过检查
+    static var imperialHeightBounds: (low: (feet: Int, inches: Int), high: (feet: Int, inches: Int)) {
+        let low = Int((heightRange.lowerBound / BodyUnits.cmPerInch).rounded(.up))
+        let high = Int((heightRange.upperBound / BodyUnits.cmPerInch).rounded(.down))
+        return ((low / 12, low % 12), (high / 12, high % 12))
+    }
+
+    /// 英制下体重范围的写法（磅），同样往里取整：30～250 公斤 → 67～551 磅
+    static var imperialWeightBounds: (low: Int, high: Int) {
+        (Int(BodyUnits.pounds(kg: weightRange.lowerBound).rounded(.up)), Int(BodyUnits.pounds(kg: weightRange.upperBound).rounded(.down)))
+    }
+
+    /// 身高（厘米）有没有问题。units 决定提示里用哪种单位
+    static func heightError(_ heightCm: Double?, units: UnitSystem = .metric) -> String? {
+        guard let heightCm else {
+            return units == .metric ? String(localized: "请输入身高（厘米）") : String(localized: "请输入身高（英尺和英寸）")
+        }
         guard heightRange.contains(heightCm) else {
-            return String(localized: "身高需要在 \(Int(heightRange.lowerBound))～\(Int(heightRange.upperBound)) 厘米之间")
+            switch units {
+            case .metric:
+                return String(localized: "身高需要在 \(Int(heightRange.lowerBound))～\(Int(heightRange.upperBound)) 厘米之间")
+            case .imperial:
+                let (low, high) = imperialHeightBounds
+                return String(localized: "身高需要在 \(low.feet) 英尺 \(low.inches) 英寸～\(high.feet) 英尺 \(high.inches) 英寸之间")
+            }
         }
         return nil
     }
 
-    static func weightError(_ weightKg: Double?) -> String? {
-        guard let weightKg else { return String(localized: "请输入体重（公斤）") }
+    /// 体重（公斤）有没有问题。units 决定提示里用哪种单位
+    static func weightError(_ weightKg: Double?, units: UnitSystem = .metric) -> String? {
+        guard let weightKg else {
+            return units == .metric ? String(localized: "请输入体重（公斤）") : String(localized: "请输入体重（磅）")
+        }
         guard weightRange.contains(weightKg) else {
-            return String(localized: "体重需要在 \(Int(weightRange.lowerBound))～\(Int(weightRange.upperBound)) 公斤之间")
+            switch units {
+            case .metric:
+                return String(localized: "体重需要在 \(Int(weightRange.lowerBound))～\(Int(weightRange.upperBound)) 公斤之间")
+            case .imperial:
+                let (low, high) = imperialWeightBounds
+                return String(localized: "体重需要在 \(low)～\(high) 磅之间")
+            }
         }
         return nil
     }
 
     /// 身高和体重的组合是否离谱（比如把「斤」当成了「公斤」）。有问题时不允许继续
-    static func plausibilityError(heightCm: Double, weightKg: Double) -> String? {
+    static func plausibilityError(heightCm: Double, weightKg: Double, units: UnitSystem = .metric) -> String? {
         let bmi = NutritionCalculator.bmi(heightCm: heightCm, weightKg: weightKg)
         guard plausibleBMIRange.contains(bmi) else {
-            return String(localized: "身高和体重的组合不太合理（BMI 约 \(bmi.formatted(.number.precision(.fractionLength(0))))），请检查数字和单位：体重单位是公斤，1 公斤 = 2 斤")
+            let bmiText = bmi.formatted(.number.precision(.fractionLength(0)))
+            switch units {
+            case .metric:
+                return String(localized: "身高和体重的组合不太合理（BMI 约 \(bmiText)），请检查数字和单位：体重单位是公斤，1 公斤 = 2 斤")
+            case .imperial:
+                return String(localized: "身高和体重的组合不太合理（BMI 约 \(bmiText)），请检查数字和单位：身高单位是英尺和英寸，体重单位是磅")
+            }
         }
         return nil
     }
 
     /// BMI 很高或很低时，温和地提醒核对数字和单位（不阻止继续）
-    static func unitWarning(heightCm: Double, weightKg: Double) -> String? {
+    static func unitWarning(heightCm: Double, weightKg: Double, units: UnitSystem = .metric) -> String? {
         let bmi = NutritionCalculator.bmi(heightCm: heightCm, weightKg: weightKg)
         // 超出合理范围时，体重那一行已经有更明确的错误提示，这里不重复
         guard plausibleBMIRange.contains(bmi) else { return nil }
         // 很高：多半是把「斤」当成了「公斤」
-        if bmi >= unitCheckBMI { return String(localized: "请确认体重单位是公斤（1 公斤 = 2 斤）") }
+        if bmi >= unitCheckBMI {
+            return units == .metric ? String(localized: "请确认体重单位是公斤（1 公斤 = 2 斤）") : String(localized: "请确认体重单位是磅")
+        }
         // 很低：可能是身高或体重打错了一位数字（比如 54 打成 45）
-        if bmi < severeThinnessBMI { return String(localized: "请确认身高和体重填写正确（身高单位是厘米，体重单位是公斤）") }
+        if bmi < severeThinnessBMI {
+            return units == .metric
+                ? String(localized: "请确认身高和体重填写正确（身高单位是厘米，体重单位是公斤）")
+                : String(localized: "请确认身高和体重填写正确（身高单位是英尺和英寸，体重单位是磅）")
+        }
         return nil
     }
 

@@ -113,6 +113,22 @@
         }
       }
     },
+    "%@ 磅" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ lb"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 磅"
+          }
+        }
+      }
+    },
     "%@需要在 0～1000 克之间" : {
       "localizations" : {
         "en" : {
@@ -253,6 +269,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld 岁以上减脂要格外注意保住肌肉：配合力量训练，开始前先和医生确认。"
+          }
+        }
+      }
+    },
+    "%lld 英尺 %lld 英寸" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld ft %2$lld in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 英尺 %lld 英寸"
           }
         }
       }
@@ -889,6 +921,22 @@
         }
       }
     },
+    "体重需要在 %lld～%lld 磅之间" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weight must be between %1$lld and %2$lld lb"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "体重需要在 %lld～%lld 磅之间"
+          }
+        }
+      }
+    },
     "你的 BMI 约为 %@，低于 %@，属于偏轻范围，所以这里不提供减脂目标。可以选择「维持」或「增肌」；如果对体重有顾虑，建议咨询医生或营养师。" : {
       "localizations" : {
         "en" : {
@@ -1241,6 +1289,22 @@
         }
       }
     },
+    "公制（厘米、公斤）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metric (cm, kg)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公制（厘米、公斤）"
+          }
+        }
+      }
+    },
     "公式最后一项男女不同：男性加 5，女性减 161。" : {
       "localizations" : {
         "en" : {
@@ -1253,6 +1317,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "公式最后一项男女不同：男性加 5，女性减 161。"
+          }
+        }
+      }
+    },
+    "公式用的是公制单位：你的体重 %@ = %@ 公斤，身高 %@ = %@ 厘米。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The formulas use metric units: your weight %1$@ = %2$@ kg, and your height %3$@ = %4$@ cm."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公式用的是公制单位：你的体重 %@ = %@ 公斤，身高 %@ = %@ 厘米。"
           }
         }
       }
@@ -1561,6 +1641,22 @@
         }
       }
     },
+    "单位" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Units"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "单位"
+          }
+        }
+      }
+    },
     "厘米" : {
       "localizations" : {
         "en" : {
@@ -1573,6 +1669,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "厘米"
+          }
+        }
+      }
+    },
+    "厘米 / 公斤" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cm / kg"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "厘米 / 公斤"
           }
         }
       }
@@ -3545,6 +3657,22 @@
         }
       }
     },
+    "磅" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "lb"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磅"
+          }
+        }
+      }
+    },
     "移除照片" : {
       "localizations" : {
         "en" : {
@@ -3797,6 +3925,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "脂肪占每日热量的 %@。每克脂肪约 9 千卡："
+          }
+        }
+      }
+    },
+    "英制（英尺、磅）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "US (ft, lb)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "英制（英尺、磅）"
+          }
+        }
+      }
+    },
+    "英寸" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "英寸"
+          }
+        }
+      }
+    },
+    "英尺" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ft"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "英尺"
+          }
+        }
+      }
+    },
+    "英尺 / 磅" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ft / lb"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "英尺 / 磅"
           }
         }
       }
@@ -4073,6 +4265,22 @@
         }
       }
     },
+    "请确认体重单位是磅" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please make sure your weight is in pounds"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请确认体重单位是磅"
+          }
+        }
+      }
+    },
     "请确认身高和体重填写正确（身高单位是厘米，体重单位是公斤）" : {
       "localizations" : {
         "en" : {
@@ -4085,6 +4293,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请确认身高和体重填写正确（身高单位是厘米，体重单位是公斤）"
+          }
+        }
+      }
+    },
+    "请确认身高和体重填写正确（身高单位是英尺和英寸，体重单位是磅）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please make sure your height and weight are correct (height in ft and in, weight in lb)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请确认身高和体重填写正确（身高单位是英尺和英寸，体重单位是磅）"
           }
         }
       }
@@ -4133,6 +4357,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请输入体重（公斤）"
+          }
+        }
+      }
+    },
+    "请输入体重（磅）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your weight (lb)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入体重（磅）"
           }
         }
       }
@@ -4213,6 +4453,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请输入身高（厘米）"
+          }
+        }
+      }
+    },
+    "请输入身高（英尺和英寸）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your height (ft and in)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入身高（英尺和英寸）"
           }
         }
       }
@@ -4313,6 +4569,38 @@
         }
       }
     },
+    "身高和体重的组合不太合理（BMI 约 %@），请检查数字和单位：身高单位是英尺和英寸，体重单位是磅" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This height and weight don't look right together (BMI about %@). Please check the numbers and units: height is in feet and inches, and weight is in pounds."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "身高和体重的组合不太合理（BMI 约 %@），请检查数字和单位：身高单位是英尺和英寸，体重单位是磅"
+          }
+        }
+      }
+    },
+    "身高需要在 %lld 英尺 %lld 英寸～%lld 英尺 %lld 英寸之间" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Height must be between %1$lld ft %2$lld in and %3$lld ft %4$lld in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "身高需要在 %lld 英尺 %lld 英寸～%lld 英尺 %lld 英寸之间"
+          }
+        }
+      }
+    },
     "身高需要在 %lld～%lld 厘米之间" : {
       "localizations" : {
         "en" : {
@@ -4325,6 +4613,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "身高需要在 %lld～%lld 厘米之间"
+          }
+        }
+      }
+    },
+    "身高（英寸）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Height (inches)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "身高（英寸）"
+          }
+        }
+      }
+    },
+    "身高（英尺）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Height (feet)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "身高（英尺）"
           }
         }
       }

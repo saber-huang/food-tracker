@@ -13,7 +13,7 @@ struct OnboardingView: View {
     /// SwiftData 的「数据库入口」，用来保存新资料
     @Environment(\.modelContext) private var modelContext
 
-    @State private var draft = ProfileDraft()
+    @State private var draft = ProfileDraft(units: UnitSystem.current())
     @State private var step: Step = .welcome
     @State private var hasAgreed = false  // 是否勾选了「我已了解」
 
