@@ -12,10 +12,12 @@ App Store Connect 里的「隐私政策网址」和「技术支持网址」填�
   - 联系邮箱：FoodTracker/FoodTracker/Privacy/SupportInfo.swift 里的 contactEmail
   - 支持页：  site/support.md
 
-改了上面任何一个之后，更新网页的步骤（在 food-tracker 文件夹里运行）：
-  1. python3 site/build_site.py ../food-tracker-support
-  2. cd ../food-tracker-support && git add -A && git commit -m "更新网页" && git push
-  推送后大约一分钟，网页就会更新。
+改了上面任何一个之后，更新网页的步骤：
+  1. 在 food-tracker 文件夹里运行：python3 site/build_site.py ~/Desktop/food-tracker-support-files
+  2. 打开 https://github.com/saber-huang/food-tracker-support ，点「Add file」→「Upload files」，
+     把文件夹里的 index.html、privacy.html、README.md 拖进去（同名文件会被替换），点「Commit changes」
+  大约一分钟后网页就会更新。第一次发布（2026-09-30）也是这样在网站上上传的；
+  公开仓库要由你本人在网站上操作，Claude Code 的权限检查不允许它自己发布公开内容。
 
 只支持这两份文字里用到的几种 Markdown 写法（和 App 里的 MarkdownBlocks.swift 一样）：
 「# 」大标题、「## 」小标题、「- 」列表项、空行分段，以及 **加粗** 和 [链接](网址)。
