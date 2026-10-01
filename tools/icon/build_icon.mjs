@@ -8,6 +8,7 @@
 //   node build_icon.mjs --bowl-colors light          同上，但用浅米色的 BOWL_COLORS_LIGHT，生成 out/bowl-colors-light.png
 //   node build_icon.mjs --install heart              把 heart 方案的三张图装进 App 的 AppIcon.appiconset
 //   node build_icon.mjs --install bowl --palette ink 同上，但用 ink 这套配色（只有 lens 和 bowl 支持）
+//   node build_icon.mjs --install bowlFlat --color oat --bg white   扁平的碗指定颜色和背景（white / cream / #RRGGBB）
 // 渲染用的是 sharp（GitHub 上三万多星的 Node 图片库，内置 SVG 渲染）。
 
 import sharp from "sharp";
@@ -211,9 +212,17 @@ async function bowlColorSheet(group = "bright") {
 }
 
 /** 把选定方案的三张图装进 Xcode 的图标资源，并写好 Contents.json。paletteName 只对 lens 和 bowl 有效 */
-async function install(name, paletteName) {
+async function install(name, paletteName, colorName, background) {
   if (!CONCEPTS[name]) throw new Error(`没有叫 ${name} 的方案，可选：${Object.keys(CONCEPTS).join(", ")}`);
   let draw = (variant) => CONCEPTS[name].svg(variant);
+  if (name === "bowlFlat" && (colorName || background)) {
+    // 扁平的碗可以指定颜色（三组颜色表里的任何一个名字）和背景（white / cream 或 #RRGGBB）
+    const colors = { ...BOWL_COLORS, ...BOWL_COLORS_MUTED, ...BOWL_COLORS_LIGHT };
+    const color = colors[colorName ?? "oat"];
+    if (!color) throw new Error(`没有叫 ${colorName} 的颜色，可选：${Object.keys(colors).join(", ")}`);
+    const bg = { white: "#FFFFFF", cream: "#FBF6EF" }[background ?? "white"] ?? background;
+    draw = (variant) => bowlFlatSvg(variant, color, bg);
+  }
   if (paletteName) {
     if (!PALETTE_CONCEPTS[name]) throw new Error(`${name} 不支持换配色，只有 ${Object.keys(PALETTE_CONCEPTS).join(", ")} 支持`);
     if (!PALETTES[paletteName]) throw new Error(`没有叫 ${paletteName} 的配色，可选：${Object.keys(PALETTES).join(", ")}`);
@@ -243,8 +252,8 @@ async function install(name, paletteName) {
 
 const args = process.argv.slice(2);
 if (args[0] === "--install") {
-  const paletteIndex = args.indexOf("--palette");
-  await install(args[1], paletteIndex >= 0 ? args[paletteIndex + 1] : undefined);
+  const flag = (f) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : undefined; };
+  await install(args[1], flag("--palette"), flag("--color"), flag("--bg"));
 } else if (args[0] === "--palettes") {
   await paletteSheet();
 } else if (args[0] === "--bowl-colors") {

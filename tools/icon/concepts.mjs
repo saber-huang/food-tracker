@@ -197,11 +197,12 @@ const FLAT = {
   <path ${stroke} stroke="${fat}" d="${arc(512, 512, 300, 316, 384)}"/>`);
     },
   },
-  // J. 浅底 + 扁平的碗和笑脸（FitHub 的思路：浅底，一个简单的物件）。颜色见 BOWL_COLORS，默认橙色
+  // J. 浅底 + 扁平的碗和笑脸（FitHub 的思路：浅底，一个简单的物件）。
+  // 现在用的图标：燕麦色的碗（BOWL_COLORS_LIGHT.oat）配纯白底，用户 2026-09-30 选定；换颜色就改这里
   bowlFlat: {
-    title: "Flat bowl on a light background",
+    title: "Flat oat bowl on white",
     svg(v) {
-      return bowlFlatSvg(v, BOWL_COLORS.orange);
+      return bowlFlatSvg(v, BOWL_COLORS_LIGHT.oat, "#FFFFFF");
     },
   },
 };
