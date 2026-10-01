@@ -2,9 +2,10 @@
 //  ResultView.swift
 //  FoodTracker
 //
-//  结果页：从上到下是照片和 AI 的一句话总结、识别到的每种食物（点一项可以修改，向左滑可以删掉，也能补一项）、
-//  整餐合计、记到哪一天哪一餐；最下面固定着「保存到今日」按钮和「热量为 AI 估算」的提示。
-//  照片不保存，只保存食物和营养数据。
+//  识别结果（保存前的确认页）：从上到下是这一餐的照片（1～4 张）和 AI 的一句话总结、识别到的每种食物
+//  （点一项可以修改份量和数字，向左滑可以删掉，也能补一项 AI 没认出来的）、整餐合计（旁边是「AI 估算 ⓘ」）、
+//  记到哪一天哪一餐；最下面固定着「保存这餐」。识别后不会自动保存，一定要用户点了才存。
+//  AI 没把握的份量写「份量不确定」，不假装很准。照片不保存，只保存食物和营养数据。
 //
 
 import SwiftData
@@ -12,7 +13,7 @@ import SwiftUI
 
 struct ResultView: View {
     let result: AnalyzeResult
-    let photo: UIImage?
+    let photos: [UIImage]  // 这一餐的照片（调试菜单里的示例结果没有照片）
     /// 记到哪一天：按下「开始识别」时「今日」页正在看的那天（20260929 这样的数字），这页里不能改
     let dayKey: Int
     let today: Date  // 今天是哪一天：决定按钮上写「保存到今日」还是「保存到 9月20日」
@@ -28,9 +29,9 @@ struct ResultView: View {
     @State private var isAddingItem = false  // 是否弹出「添加食物」
     @State private var isSaving = false  // 防止快速连点两次「保存」存成两份
 
-    init(result: AnalyzeResult, photo: UIImage?, dayKey: Int, today: Date, onSaved: @escaping () -> Void) {
+    init(result: AnalyzeResult, photos: [UIImage], dayKey: Int, today: Date, onSaved: @escaping () -> Void) {
         self.result = result
-        self.photo = photo
+        self.photos = photos
         self.dayKey = dayKey
         self.today = today
         self.onSaved = onSaved
@@ -46,24 +47,31 @@ struct ResultView: View {
     var body: some View {
         List {
             Group {
-                // 照片（小图）和 AI 的一句话总结并排：下面的食物列表不用往下翻就看得到
+                // 照片（小图）和 AI 的一句话总结：下面的食物列表不用往下翻就看得到。
+                // 一张照片时并排；几张照片时先一排缩略图，下面是总结
                 Section {
-                    HStack(alignment: .top, spacing: 12) {
-                        if let photo {
-                            Image(uiImage: photo)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 76, height: 76)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .accessibilityHidden(true)  // 就是刚才选的那张照片
+                    if photos.count > 1 {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            HStack(spacing: AppSpacing.xs) {
+                                ForEach(photos.indices, id: \.self) { index in
+                                    thumbnail(photos[index], size: 60)
+                                }
+                            }
+                            Text(result.message)
                         }
-                        Text(result.message)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        HStack(alignment: .top, spacing: AppSpacing.sm) {
+                            if let photo = photos.first {
+                                thumbnail(photo, size: 76)
+                            }
+                            Text(result.message)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                 }
 
                 if showsList {
-                    Section("识别到的食物（点一项可修改）") {
+                    Section {
                         // 每一项有自己的 id，删掉一项时列表能正确地动画，弹出的表单也知道改的是哪一项
                         ForEach(items) { item in
                             Button {
@@ -82,10 +90,22 @@ struct ResultView: View {
                         } label: {
                             Label("添加一项", systemImage: "plus.circle")
                         }
+                    } header: {
+                        AppSectionHeader(title: String(localized: "识别到的食物"))
                     }
 
-                    Section("整餐合计") {
+                    Section {
                         TotalView(items: items)
+                    } header: {
+                        HStack(alignment: .center) {
+                            Text("整餐合计")
+                                .font(AppTypography.sectionTitle)
+                                .foregroundStyle(AppColors.textPrimary)
+                            Spacer()
+                            AIEstimateBadge()
+                                .padding(.vertical, -AppSpacing.sm)
+                        }
+                        .textCase(nil)
                     }
 
                     // 记到哪一天（打开这页时就定好了，这里只显示）、哪一餐；紧挨着下面的保存按钮，保存前最后看一眼
@@ -97,8 +117,6 @@ struct ResultView: View {
                             }
                         }
                         .pickerStyle(.segmented)  // 四个餐次一看就懂，不另写标题；旁白会读出「记到哪一餐」
-                    } footer: {
-                        Text("按现在的时间默认推荐，可以改。")
                     }
                 } else {
                     Section {
@@ -112,34 +130,31 @@ struct ResultView: View {
                     }
                 }
             }
-            .listRowBackground(AppColors.surfacePrimary)  // 卡片用暖白，不用纯白
+            .appCardRow()  // 卡片用暖白，分隔线很淡
         }
         .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
         .navigationTitle("识别结果")
         .navigationBarTitleDisplayMode(.inline)
-        // 固定在页面最底部：保存按钮（和引导页「下一步」、食谱页「生成」是同一种大按钮）+ AI 估算的提示
+        .hidesFloatingTabBar()
+        // 固定在页面最底部：「保存这餐」（和其他页面的主按钮同一种样子）
         .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 8) {
-                if showsList {
-                    Button {
-                        save()
-                    } label: {
-                        Text(DayMath.saveButtonTitle(day: day, today: today))
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(items.isEmpty || isSaving)
+            if showsList {
+                let canSave = !items.isEmpty && !isSaving
+                Button(action: save) {
+                    Text(DayMath.saveButtonTitle(day: day, today: today))
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(AppColors.onBrand)
+                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .background(
+                            AppColors.brand.opacity(canSave ? 1 : 0.4),
+                            in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
                 }
-                Text("热量为 AI 估算，仅供参考；保存前可以修改。")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                .buttonStyle(AppPressStyle())
+                .disabled(!canSave)
+                .padding(.horizontal, AppSpacing.pageMargin)
+                .padding(.vertical, AppSpacing.xs)
+                .appBottomBar()
             }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal)
-            .padding(.vertical, 10)
-            .appBottomBar()
         }
         // 修改一项：保存后替换掉列表里 id 相同的那一项；表单里也能删掉这一项
         .sheet(item: $editingItem) { item in
@@ -162,6 +177,16 @@ struct ResultView: View {
         }
     }
 
+    /// 照片缩略图（就是刚才拍的或选的照片，旁白不用读）
+    private func thumbnail(_ photo: UIImage, size: CGFloat) -> some View {
+        Image(uiImage: photo)
+            .resizable()
+            .scaledToFill()
+            .frame(width: size, height: size)
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.thumbnail, style: .continuous))
+            .accessibilityHidden(true)
+    }
+
     private func save() {
         // 按钮变灰要等下一次刷新界面，所以这里再检查一次，连点两下也只存一份
         guard !isSaving else { return }
@@ -173,11 +198,19 @@ struct ResultView: View {
     }
 }
 
-/// 一种食物占一行：名称、可信度、热量、重量、三大营养素
+/// 一种食物占一行：名称、可信度、热量、份量、三大营养素；右边的小箭头表示点了可以修改
 private struct FoodRow: View {
     let item: EditableItem
 
     var body: some View {
+        HStack(alignment: .center, spacing: AppSpacing.xs) {
+            details
+            AppChevron()
+        }
+        .contentShape(Rectangle())
+    }
+
+    private var details: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(item.name)
@@ -187,8 +220,13 @@ private struct FoodRow: View {
                 Text("\(item.values.caloriesKcal.noDecimal) 千卡")
                     .font(.headline)
             }
-            // 不知道重量的一项不显示这一行
-            if let weight = item.weightG {
+            // AI 没把握（可信度低）时不假装准确：写「份量不确定」，点这一行就能调整
+            if item.confidence == .low {
+                Text("份量不确定 · 点按调整")
+                    .font(.subheadline)
+                    .foregroundStyle(AppColors.confidenceLow)
+            } else if let weight = item.weightG {
+                // 不知道重量的一项不显示这一行
                 Text("约 \(weight.oneDecimal) 克")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -248,7 +286,7 @@ private struct TotalView: View {
                 Spacer()
                 // 有一项不知道重量，总重量就算不准，写明「部分未填重量」
                 if items.contains(where: { $0.weightG == nil }) {
-                    Text("部分未填重量")
+                    Text("部分未填份量")
                         .foregroundStyle(.secondary)
                 } else {
                     Text("共约 \(items.compactMap(\.weightG).reduce(0, +).noDecimal) 克")
@@ -269,7 +307,7 @@ private struct TotalView: View {
 #Preview("有食物") {
     NavigationStack {
         ResultView(
-            result: SampleData.analyzeResult, photo: nil, dayKey: DayMath.dayKey(for: .now),
+            result: SampleData.analyzeResult, photos: [], dayKey: DayMath.dayKey(for: .now),
             today: DayMath.startOfDay(.now)
         ) {}
     }
@@ -279,7 +317,7 @@ private struct TotalView: View {
 #Preview("没有食物") {
     NavigationStack {
         ResultView(
-            result: SampleData.notFoodResult, photo: nil, dayKey: DayMath.dayKey(for: .now),
+            result: SampleData.notFoodResult, photos: [], dayKey: DayMath.dayKey(for: .now),
             today: DayMath.startOfDay(.now)
         ) {}
     }

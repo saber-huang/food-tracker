@@ -254,14 +254,15 @@ nonisolated enum DayMath {
         return dateWithWeekday(d, today: t, calendar: calendar, language: language)
     }
 
-    /// 保存按钮上的字：「保存到今日」「保存到 9月20日」；英文「Save to Today」「Save to Sep 20」
+    /// 保存按钮上的字：今天是「保存这餐」，往日写明哪一天「保存到 9月20日」（免得记错日子）；
+    /// 英文「Save Meal」「Save to Sep 20」
     static func saveButtonTitle(
         day: Date, today: Date, calendar: Calendar = DayMath.calendar, language: AppLanguage = .current
     ) -> String {
         let isToday = startOfDay(day, calendar: calendar) == startOfDay(today, calendar: calendar)
         switch language {
-        case .zh: return isToday ? "保存到今日" : "保存到 " + shortDate(day, today: today, calendar: calendar, language: .zh)
-        case .en: return isToday ? "Save to Today" : "Save to " + shortDate(day, today: today, calendar: calendar, language: .en)
+        case .zh: return isToday ? "保存这餐" : "保存到 " + shortDate(day, today: today, calendar: calendar, language: .zh)
+        case .en: return isToday ? "Save Meal" : "Save to " + shortDate(day, today: today, calendar: calendar, language: .en)
         }
     }
 

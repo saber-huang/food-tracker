@@ -4,7 +4,8 @@
 //
 //  「食谱」页用到的几种卡片：
 //  - RecipeGoalSummary：每日目标的摘要（辅助信息：小一号的燕麦色卡片，放在推荐下面）
-//  - RecipeCard + RecipeCardFooter：一餐的推荐（餐次标签、菜名、热量、三大营养素、时间；下面一行是「查看做法」「换一个」）
+//  - RecipeCard + RecipeCardFooter：一餐的推荐（餐次标签、菜名、热量、三大营养素、时间）。
+//    整张卡片点了就打开做法（右边的小箭头表示能点）；下面一行只有一个次要的「换一个」
 //  - EmptyRecipesCard：还没有推荐时的样子，里面是「生成一日三餐」
 //  - RegenerateButton：已经有推荐时，下面一个不太大的「重新生成一日三餐」
 //  - PreferenceSummary：饮食偏好的摘要（是设置条件，比推荐安静）
@@ -99,11 +100,15 @@ struct RecipeCard: View {
                     cookingTime
                 }
             }
-            Text(recipe.name)
-                .font(AppTypography.recipeName)
-                .foregroundStyle(AppColors.textPrimary)
-                .lineLimit(3)
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
+                Text(recipe.name)
+                    .font(AppTypography.recipeName)
+                    .foregroundStyle(AppColors.textPrimary)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: AppSpacing.xs)
+                AppChevron()  // 整张卡片都能点，打开做法
+            }
             HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xxs) {
                 Text(recipe.caloriesKcal.noDecimal)
                     .font(AppTypography.heroNumber(size: numberSize))
@@ -165,33 +170,15 @@ private struct MacroDot: View {
     }
 }
 
-/// 食谱卡片的最后一行：左边「查看做法」是主要动作（浅橄榄色的胶囊），右边「换一个」是次要动作（只有图标和灰字）
+/// 食谱卡片的最后一行：一个次要的「换一个」（换的时候显示「正在换…」）。
+/// 打开做法不用单独的按钮：点卡片本身就行
 struct RecipeCardFooter: View {
     let isSwapping: Bool
     let isBusy: Bool  // 正在生成或换别的：「换一个」不能点
-    let onOpen: () -> Void
     let onSwap: () -> Void
 
     var body: some View {
         HStack {
-            Button(action: onOpen) {
-                HStack(spacing: AppSpacing.xxs) {
-                    Text("查看做法")
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                }
-                .font(AppTypography.detail.weight(.semibold))
-                .foregroundStyle(AppColors.brandDeep)
-                .padding(.horizontal, AppSpacing.md - 2)
-                .frame(minHeight: 34)
-                .background(AppColors.brandSoft, in: Capsule())
-                .frame(minHeight: 44)  // 能点的范围有 44pt 高
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.borderless)
-
-            Spacer(minLength: AppSpacing.sm)
-
             Button(action: onSwap) {
                 HStack(spacing: 6) {
                     if isSwapping {
@@ -211,6 +198,8 @@ struct RecipeCardFooter: View {
             .buttonStyle(.borderless)
             .disabled(isBusy)
             .opacity(isBusy && !isSwapping ? 0.5 : 1)
+            .accessibilityHint("重新推荐这一餐")
+            Spacer()
         }
     }
 }

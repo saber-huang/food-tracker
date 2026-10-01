@@ -82,6 +82,12 @@ struct NextMealSheet: View {
                         Label(recipe.meal.title, systemImage: recipe.meal.systemImage)
                     }
                 }
+
+                // 只在最下面说一次「估算值」，点 ⓘ 看完整说明
+                Section {
+                } footer: {
+                    AIFootnote()
+                }
             }
             .navigationTitle(HintCopy.nextMealTitle(mealName: mealName))
             .navigationBarTitleDisplayMode(.inline)
@@ -97,17 +103,6 @@ struct NextMealSheet: View {
             }
             // 第一次生成前：说明会发送什么、发给谁，同意后才发送（见 AIConsent.swift）
             .aiConsentSheet(pending: $pendingAIAction)
-            // 固定在页面最底部的提示（和「食谱」页一样）
-            .safeAreaInset(edge: .bottom) {
-                Text(RecipeCopy.disclaimer)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                    .padding(.vertical, 10)
-                    .frame(maxWidth: .infinity)
-                    .background(.bar)
-            }
             // 打开时问一下今天还能生成几次（不花钱、不占次数）；问不到就不显示
             .task {
                 if let quota = try? await APIClient.quota() {

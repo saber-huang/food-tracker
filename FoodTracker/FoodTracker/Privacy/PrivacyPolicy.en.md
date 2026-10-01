@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Last updated: September 30, 2026
+Last updated: October 1, 2026
 
 This app helps you log what you eat and estimate calories and nutrition. This policy explains what information the app handles, why, who receives it, and how you can delete it.
 
@@ -22,7 +22,7 @@ All of this stays on your phone and is not stored on this app's server. Only whe
 
 Photo scanning, recipe generation and next-meal suggestions are powered by Claude, an AI from Anthropic. Before you use these features for the first time, the app explains this and asks for your consent. Once you agree, each use sends:
 
-- Photo scan: the meal photo you choose. It is resized and re-compressed before upload, without the location or other photo details.
+- Photo scan: the meal photos you choose (up to 4 for one meal). They are resized and re-compressed before upload, without the location or other photo details.
 - Recipe generation: your goal (lose fat, maintain or build muscle), your daily calorie, protein, carb and fat targets, and the tastes, allergies, foods to avoid and cooking time you entered.
 - Next-meal suggestion: the same as recipe generation, except the targets are scaled to that one meal based on what's left of today's calories.
 
@@ -52,7 +52,7 @@ To control costs and prevent abuse, the server counts how many times each device
 
 ## Your Choices
 
-- Withdraw consent: you can withdraw it anytime on the Profile tab. You'll be asked again before your next use of an AI feature. Manual logging isn't affected.
+- Withdraw consent: on the Profile tab, tap AI Features and turn it off anytime. You'll be asked again before your next use of an AI feature. Manual logging isn't affected.
 - Delete your data: choose Delete All Data on the Profile tab to delete your profile, food log and settings on this phone. This can't be undone. Usage counts on the server clear automatically after about 24 hours.
 - Don't use AI features: without consent, you can still log meals manually.
 

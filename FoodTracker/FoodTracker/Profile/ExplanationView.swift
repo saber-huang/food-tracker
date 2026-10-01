@@ -119,6 +119,7 @@ struct ExplanationView: View {
         .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
         .navigationTitle("怎么算的")
         .navigationBarTitleDisplayMode(.inline)
+        .hidesFloatingTabBar()  // 二级页面：底部标签栏收起来
     }
 
     // MARK: - 各段说明文字

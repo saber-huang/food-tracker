@@ -50,8 +50,10 @@ struct PrivacyPolicyView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .appListBackground()  // 页面用 App 的暖色背景
         .navigationTitle("隐私政策")
         .navigationBarTitleDisplayMode(.inline)
+        .hidesFloatingTabBar()  // 二级页面：底部标签栏收起来
     }
 
     @ViewBuilder

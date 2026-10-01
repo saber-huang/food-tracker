@@ -89,7 +89,7 @@ struct LocalizationTests {
         #expect(title(d(2026, 9, 28, hour: 23, cal)) == "Yesterday")
         #expect(title(d(2026, 9, 20, cal)) == "Sun, Sep 20")
         #expect(title(d(2025, 12, 31, cal)) == "Wed, Dec 31, 2025")
-        #expect(DayMath.saveButtonTitle(day: d(2026, 9, 29, cal), today: today, calendar: cal, language: .en) == "Save to Today")
+        #expect(DayMath.saveButtonTitle(day: d(2026, 9, 29, cal), today: today, calendar: cal, language: .en) == "Save Meal")
         #expect(DayMath.saveButtonTitle(day: d(2026, 9, 20, cal), today: today, calendar: cal, language: .en) == "Save to Sep 20")
         #expect(DayMath.recordCaption(day: d(2026, 9, 29, cal), today: today, calendar: cal, language: .en) == nil)
         #expect(DayMath.recordCaption(day: d(2026, 9, 28, cal), today: today, calendar: cal, language: .en) == "Logging to Mon, Sep 28")

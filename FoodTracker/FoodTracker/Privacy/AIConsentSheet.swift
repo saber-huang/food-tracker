@@ -3,7 +3,7 @@
 //  FoodTracker
 //
 //  「使用 AI 功能前」的说明：会发送什么、不会发送什么、发给谁、怎么处理、怎么撤回。
-//  第一次用 AI 功能时弹出（带「同意并继续」「暂不使用」两个按钮）；「我的」页也能随时打开看（不带按钮）。
+//  第一次用 AI 功能时弹出（带「同意并继续」「暂不使用」两个按钮）；「我的」>「AI 功能」里也能随时打开看（不带按钮）。
 //  这里的说法要和 PrivacyPolicy.md 保持一致；发送的内容有变化时，两边一起改，并把 AIConsent.currentVersion 加 1。
 //
 
@@ -16,13 +16,17 @@ struct AIConsentSheet: View {
     var body: some View {
         NavigationStack {
             List {
-                AIDataDisclosure()
-                Section {
-                    NavigationLink("查看完整的隐私政策") {
-                        PrivacyPolicyView()
+                Group {
+                    AIDataDisclosure()
+                    Section {
+                        NavigationLink("查看完整的隐私政策") {
+                            PrivacyPolicyView()
+                        }
                     }
                 }
+                .appCardRow()  // 卡片用暖白，和 App 其他页面一样
             }
+            .appListBackground()
             .navigationTitle("使用 AI 功能前")
             .navigationBarTitleDisplayMode(.inline)
             // 两个按钮固定在底部，说明再长也不会被挤出屏幕
@@ -46,25 +50,30 @@ struct AIConsentSheet: View {
                     .controlSize(.large)
                 }
                 .padding()
-                .background(.bar)
+                .appBottomBar()  // 和页面同样的暖色，上边缘淡出
             }
         }
     }
 }
 
-/// 「我的」页里打开的同一份说明（只看，不带按钮）
+/// 「我的」>「AI 功能」>「关于 AI 数据处理」打开的同一份说明（只看，不带按钮）
 struct AIDataInfoView: View {
     var body: some View {
         List {
-            AIDataDisclosure()
-            Section {
-                NavigationLink("查看完整的隐私政策") {
-                    PrivacyPolicyView()
+            Group {
+                AIDataDisclosure()
+                Section {
+                    NavigationLink("查看完整的隐私政策") {
+                        PrivacyPolicyView()
+                    }
                 }
             }
+            .appCardRow()  // 卡片用暖白，和 App 其他页面一样
         }
-        .navigationTitle("AI 功能的数据说明")
+        .appListBackground()
+        .navigationTitle("关于 AI 数据处理")
         .navigationBarTitleDisplayMode(.inline)
+        .hidesFloatingTabBar()  // 二级页面：底部标签栏收起来
     }
 }
 
@@ -76,7 +85,7 @@ struct AIDataDisclosure: View {
         }
 
         Section("会发送什么") {
-            item("photo", "拍照识别：你选的这张餐食照片。上传前会缩小并重新压缩，不带拍摄地点等信息。")
+            item("photo", "拍照识别：你选的餐食照片（同一餐最多 4 张）。上传前会缩小并重新压缩，不带拍摄地点等信息。")
             item("fork.knife", "生成食谱和推荐下一餐：你的目标（减脂、维持或增肌），热量和三大营养素目标，以及你填写的口味偏好、过敏、不吃的食物和做饭时间。")
         }
 
@@ -92,7 +101,7 @@ struct AIDataDisclosure: View {
         }
 
         Section("随时可以改变主意") {
-            item("arrow.uturn.backward", "在「我的」页可以撤回同意。不同意也能照常手动记录饮食。")
+            item("arrow.uturn.backward", "在「我的」>「AI 功能」里可以随时关掉。不同意也能照常手动记录饮食。")
         }
     }
 

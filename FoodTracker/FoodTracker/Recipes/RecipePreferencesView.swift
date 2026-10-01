@@ -44,8 +44,6 @@ struct RecipePreferencesView: View {
                         .lineLimit(2...4)
                 } header: {
                     Text("饮食偏好（可不填）")
-                } footer: {
-                    Text("用一两句话描述就行，AI 会参考。")
                 }
 
                 Section {
@@ -60,8 +58,6 @@ struct RecipePreferencesView: View {
                     TextField("例如：香菜、动物内脏", text: $dislikesText, axis: .vertical)
                 } header: {
                     Text("忌口")
-                } footer: {
-                    Text("不想吃的食材，同样不会出现在食谱里。")
                 }
 
                 Section("每餐可接受的烹饪时间") {

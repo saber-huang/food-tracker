@@ -118,7 +118,7 @@ struct DayMathTests {
         #expect(DayMath.dayTitle(for: d(2026, 9, 28, hour: 23, cal), today: today, calendar: cal) == "昨天")
         #expect(DayMath.dayTitle(for: d(2026, 9, 20, cal), today: today, calendar: cal) == "9月20日 周日")
         #expect(DayMath.dayTitle(for: d(2025, 12, 31, cal), today: today, calendar: cal) == "2025年12月31日 周三")
-        #expect(DayMath.saveButtonTitle(day: d(2026, 9, 29, cal), today: today, calendar: cal) == "保存到今日")
+        #expect(DayMath.saveButtonTitle(day: d(2026, 9, 29, cal), today: today, calendar: cal) == "保存这餐")
         #expect(DayMath.saveButtonTitle(day: d(2026, 9, 20, cal), today: today, calendar: cal) == "保存到 9月20日")
         #expect(DayMath.saveButtonTitle(day: d(2025, 12, 31, cal), today: today, calendar: cal) == "保存到 2025年12月31日")
         #expect(DayMath.recordCaption(day: d(2026, 9, 29, cal), today: today, calendar: cal) == nil)

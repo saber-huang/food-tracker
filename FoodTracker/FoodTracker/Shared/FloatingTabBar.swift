@@ -96,3 +96,36 @@ struct FloatingTabBar: View {
         FloatingTabBar(selection: $selection)
     }
 }
+
+// MARK: - 二级页面藏起标签栏
+
+/// 底部标签栏现在要不要藏起来。一级页面（今日、食谱、我的）显示；二级页面（食谱详情、识别结果、设置的下一页……）
+/// 出现时藏起来、离开时再显示（见 hidesFloatingTabBar）。用计数而不是开关：
+/// 二级页面上再进一层时，先出现的那页离开、后出现的那页还在，标签栏仍然藏着
+@Observable
+final class TabBarVisibility {
+    private(set) var hiddenCount = 0
+
+    var isHidden: Bool { hiddenCount > 0 }
+
+    func hide() { hiddenCount += 1 }
+    func show() { hiddenCount = max(0, hiddenCount - 1) }
+}
+
+extension View {
+    /// 二级页面加上这一句：出现时藏起底部标签栏，离开时再显示。
+    /// 不在主界面里（比如引导页里打开的「怎么算的」、Xcode 预览）时什么都不做
+    func hidesFloatingTabBar() -> some View {
+        modifier(HidesFloatingTabBar())
+    }
+}
+
+private struct HidesFloatingTabBar: ViewModifier {
+    @Environment(TabBarVisibility.self) private var visibility: TabBarVisibility?
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear { visibility?.hide() }
+            .onDisappear { visibility?.show() }
+    }
+}

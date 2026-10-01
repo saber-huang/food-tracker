@@ -203,7 +203,7 @@ nonisolated enum EntryValidator {
     static func weightError(text: String) -> String? {
         if NumberText.isBlank(text) { return nil }
         guard let grams = NumberText.number(from: text) else { return String(localized: "请输入数字") }
-        return weightRange.contains(grams) ? nil : String(localized: "重量需要在 0～5000 克之间")
+        return weightRange.contains(grams) ? nil : String(localized: "份量需要在 0～5000 克之间")
     }
 
     /// 热量必须填
@@ -234,6 +234,6 @@ nonisolated enum EntryValidator {
     /// 灰色提醒（不阻止保存）：三大营养素加起来比食物本身还重，多半是单位填错了
     static func macrosExceedWeightWarning(_ v: NutrientValues, weightG: Double?) -> String? {
         guard let weight = weightG, weight > 0, v.proteinG + v.carbsG + v.fatG > weight * 1.05 + 1 else { return nil }
-        return String(localized: "蛋白质、碳水、脂肪加起来超过了重量，请检查单位。")
+        return String(localized: "蛋白质、碳水、脂肪加起来超过了份量，请检查单位。")
     }
 }

@@ -361,6 +361,7 @@ extension View {
                 ], startPoint: .top, endPoint: .bottom
             )
             .padding(.top, -AppSpacing.md)  // 淡出的那一段往上多伸出一点
+            .ignoresSafeArea(edges: .bottom)  // 一直铺到屏幕最底下（Home 条那一段）：滚动的内容不会从按钮下面露出来
         }
     }
 

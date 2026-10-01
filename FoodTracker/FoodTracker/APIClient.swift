@@ -2,7 +2,7 @@
 //  APIClient.swift
 //  FoodTracker
 //
-//  负责和后端通信：上传照片识别（/analyze）、生成食谱（/recipes）、查询剩余次数（/quota）。
+//  负责和后端通信：上传一餐的照片识别（/analyze，1～4 张）、生成食谱（/recipes）、查询剩余次数（/quota）。
 //
 
 import Foundation
@@ -38,14 +38,18 @@ enum APIError: LocalizedError {
 enum APIClient {
     // MARK: - 接口
 
-    /// 把 JPEG 照片发给后端识别，返回识别结果。
+    /// 一次最多识别几张照片（和后端 food_ai.MAX_PHOTOS 一致）
+    static let maxPhotos = 4
+
+    /// 把同一餐的 JPEG 照片（1～4 张）一起发给后端识别，返回一份合并好的结果。
+    /// 后端会把几张照片当作同一餐：同一份食物出现在几张照片里，只算一次。不管几张照片，都只算一次识别次数
     /// - Parameter lang: 结果用什么语言，"zh" 中文或 "en" 英文
-    static func analyze(jpegData: Data, lang: String) async throws -> AnalyzeResult {
+    static func analyze(jpegs: [Data], lang: String) async throws -> AnalyzeResult {
         // 照片用 multipart/form-data 格式上传（网页上传文件用的就是这种格式）
         let boundary = "Boundary-\(UUID().uuidString)"
         var request = makeRequest(path: "analyze", method: "POST", timeout: 120)
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.httpBody = multipartBody(jpegData: jpegData, lang: lang, boundary: boundary)
+        request.httpBody = multipartBody(jpegs: jpegs, lang: lang, boundary: boundary)
         return try await send(request)
     }
 
@@ -121,8 +125,10 @@ enum APIClient {
         }
     }
 
-    /// 拼出 multipart/form-data 格式的请求内容：一个 lang 字段 + 一个 photo 文件
-    private static func multipartBody(jpegData: Data, lang: String, boundary: String) -> Data {
+    /// 拼出 multipart/form-data 格式的请求内容：一个 lang 字段 + 照片文件。
+    /// 第一张照片放在 photo 字段（只有一张时和以前的请求完全一样，旧的后端也能用），
+    /// 其余的放在 more_photos 字段（可以重复多次）。字段名要和后端 main.py 里的参数名一致
+    static func multipartBody(jpegs: [Data], lang: String, boundary: String) -> Data {
         var body = Data()
         func append(_ text: String) { body.append(Data(text.utf8)) }
 
@@ -131,12 +137,16 @@ enum APIClient {
         append("Content-Disposition: form-data; name=\"lang\"\r\n\r\n")
         append("\(lang)\r\n")
 
-        // 文件字段：photo（名字要和后端 main.py 里的参数名一致）
-        append("--\(boundary)\r\n")
-        append("Content-Disposition: form-data; name=\"photo\"; filename=\"meal.jpg\"\r\n")
-        append("Content-Type: image/jpeg\r\n\r\n")
-        body.append(jpegData)
-        append("\r\n")
+        // 文件字段：photo（第一张），more_photos（其余几张）
+        for (index, jpeg) in jpegs.enumerated() {
+            let field = index == 0 ? "photo" : "more_photos"
+            let fileName = index == 0 ? "meal.jpg" : "meal-\(index + 1).jpg"
+            append("--\(boundary)\r\n")
+            append("Content-Disposition: form-data; name=\"\(field)\"; filename=\"\(fileName)\"\r\n")
+            append("Content-Type: image/jpeg\r\n\r\n")
+            body.append(jpeg)
+            append("\r\n")
+        }
 
         // 结束标记
         append("--\(boundary)--\r\n")

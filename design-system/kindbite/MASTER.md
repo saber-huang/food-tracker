@@ -81,11 +81,25 @@ warm minimal · calm · organic · premium · iOS-native。每天会打开很多
 | BowlGauge、KindbiteMark | DietLog/BowlGauge.swift | 碗形进度、图标图案 |
 | QuickLogDock | DietLog/QuickLogDock.swift | 快速记录：三个动作平分一行，图标放在同样 56pt 高的格子里（圆心对齐）、文字基线对齐；拍照是 56pt 橄榄绿圆 + 实心相机 + 半粗字 + 11pt 浅色说明，相册、手动是 44pt 燕麦色圆 + 描边图标 + 灰字 |
 | MealCardHeader、MealRow、MealMacroFooter、EmptyMealRow | DietLog/MealCard.swift | 今日饮食：记过的一餐 = 标题和千卡 + 每条记录一行（名称、千卡、箭头）+ 最下面的营养素；没记的一餐 = 半透明窄条「早餐 还没有记录」+「+」 |
-| RecipeGoalSummary、RecipeCard、RecipeCardFooter、EmptyRecipesCard、RegenerateButton、PreferenceSummary、MealSlotTag | Recipes/RecipeCards.swift | 食谱页：食谱卡片（餐次标签用很淡的燕麦 / 鼠尾草 / 灰褐底，菜名 17pt，热量 28pt，「查看做法」是浅橄榄色胶囊、「换一个」是灰字）；每日目标是燕麦色小卡片 |
+| RecipeGoalSummary、RecipeCard、RecipeCardFooter、EmptyRecipesCard、RegenerateButton、PreferenceSummary、MealSlotTag | Recipes/RecipeCards.swift | 食谱页：食谱卡片（餐次标签用很淡的燕麦 / 鼠尾草 / 灰褐底，菜名 17pt + 小箭头，热量 28pt）；整张卡片点了进详情，下面一条淡线隔开灰字的「换一个」（次要操作）；每日目标是燕麦色小卡片 |
 | PageHeader、appStatusBarCover | Shared/DesignSystem.swift | 「食谱」「我的」的左对齐页面标题；没有导航栏时盖住状态栏 |
 | GoalHeroCard、ProfileInfoRow、ProfileValueTile | Profile/GoalHeroCard.swift | 我的：每日目标主卡片、资料行（至少 56pt 高）、「目标与活动」里名称在上值在下的两块 |
 | MacroStat、MacroStatsRow | Profile/TargetsViews.swift | 三种营养素的目标：克数在上、名称在下（我的、食谱详情共用）；最大字号时改成上下三行 |
 | FloatingTabBar、AppTab | Shared/FloatingTabBar.swift | 悬浮标签栏；选中的底比格子窄一点、淡一点 |
+| TabBarVisibility、hidesFloatingTabBar() | Shared/FloatingTabBar.swift | 二级页面挂上 `.hidesFloatingTabBar()`，打开时标签栏收起来、返回时回来（用计数，叠几层都对） |
+| InfoSheet、InfoButton、AIEstimateBadge、AIFootnote | Shared/InfoSheet.swift | 说明收进 ⓘ：点开是底部说明卡片（标题 + 几段话 + 可选的要点 +「知道了」）；「AI 估算 ⓘ」小标；整页只出现一次的「营养数据为估算值，仅供参考。ⓘ」 |
+| PhotoReviewView | Photos/PhotoReviewView.swift | 确认照片：大图 + 「第几张」+ 重拍 / 删除，缩略图一排 + 「+」，底部「开始识别」/「识别 N 张照片」和「再拍一张」 |
+| HintSettingsView、AISettingsView | Profile/SettingsPages.swift | 「我的」点进去的设置页：热量提示三选一（打勾 + 每项一句说明）；AI 功能开关（开 = 先看说明再同意，关 = 撤回）+「关于 AI 数据处理」 |
+
+## 说明文字放在哪（第四轮）
+
+- **页面上常驻的说明尽量不放。** 能从界面看懂的不写；需要解释的放进 ⓘ（InfoSheet）、或者点进二级页面再说。「我的」页只显示当前的值（全部开启、已开启），设置的解释都在点进去的那一页。
+- **AI 的提示分三级，只在用到 AI 的地方出现：** ① 数字旁边的「AI 估算 ⓘ」小标（识别结果的整餐合计、食谱详情的热量）；② 点开是「关于 AI 估算」说明卡片（会和实际有差异、保存前可以改、疾病 / 孕期 / 过敏 / 特殊饮食需求请咨询医生或注册营养师）；③ 食谱页、推荐下一餐整页最下面一行「营养数据为估算值，仅供参考。ⓘ」。不在每张卡片上重复。手动添加不出现 AI 提示。
+- **二级页面收起标签栏：** 食谱详情、确认照片、识别结果、隐私政策、AI 功能、关于 AI 数据处理、热量提示、怎么算的。手动添加、编辑资料是弹出的表单，本来就盖住标签栏。返回用系统的返回按钮和左滑手势。
+- **底部固定的主按钮**（保存这餐、记录这餐、识别 N 张照片、保存）：橄榄绿、50pt 高、圆角 18；底部那一条用 `appBottomBar()`，背景一直铺到屏幕最底下，滚动的内容不会从按钮下面露出来。
+- **删除所有数据**：行里写「删除后无法恢复」；点了弹出居中的提示框「确定删除所有数据？」，「取消」「删除」两个按钮都看得见（系统的确认菜单在新系统上会变成没有「取消」的小气泡，所以不用）。
+- **多张照片**：首页还是一个「拍照」；拍完（或从相册选）先到「确认照片」页，可以再拍、从相册加、重拍、删除，同一餐最多 4 张（到 4 张时「+」和「再拍一张」都不显示）；补拍的提示只在第一次、只带着一张照片时出现。几张照片一起发给后端、一次识别、只算一次次数，结果合成一餐，保存前都能改，不会自动保存。
+- **字号特别大时换排法**：一行放不下的（「第几张」+ 两个按钮、营养素三列、菜名和时间）改成上下排，按钮上的字永远一行。
 
 ## 不要做
 
@@ -95,7 +109,7 @@ warm minimal · calm · organic · premium · iOS-native。每天会打开很多
 - 营养素颜色不给文字用；数字一律用正文颜色。
 - 不在页面里直接写颜色和数字：新颜色先加到 DesignSystem.swift，再在这份文件里登记。
 
-## 交付前检查（第三轮都做过）
+## 交付前检查（第三轮、第四轮都做过）
 
 - [x] 尺寸：iPhone SE（375×667）、iPhone 17（402×874）、iPhone 18 Pro Max（440×956）。
 - [x] 字号：默认和辅助功能特大都看过；最大字号时营养素改成上下三行，底部的 AI 提示最多放大到「特特大」。
@@ -104,11 +118,14 @@ warm minimal · calm · organic · premium · iOS-native。每天会打开很多
 - [x] 交互：拍照、相册、手动、点 + 给某一餐添加（默认选中那一餐）、点记录修改、左滑删除、ⓘ、食谱卡片和「查看做法」打开详情、编辑资料、这些目标是如何计算的。
 - [x] 生成食谱：暂时撤回 AI 同意后点「重新生成一日三餐」，弹出「使用 AI 功能前」说明（说明按钮接到了生成的入口），点「暂不使用」什么都没发送，再恢复同意。没有真的调用 AI（要花钱），生成的代码没有改。
 - [x] 深色模式、英文界面（启动参数 `-AppleLanguages "(en)" -AppleLocale en_US`）。
-- 模拟器专用：启动参数 `-startTab recipes|profile` 直接打开某个标签；食谱页右上角「调试」→「用示例食谱」不花钱就能看食谱卡片。
+- [x] 第四轮：多张照片的整个流程（相册多选、再加、删除、到 4 张的上限、识别、合成一餐、保存）用电脑上的假后端走过一遍——接口、照片检查、次数限制都是真的，只有「问 AI」换成了假结果，不花钱。模拟器的相机拍不了照，相机这一步要在真机上试。
+- [x] 第四轮：Release 版（和 TestFlight 一样的设置）里没有「调试」菜单和「开发者」一栏，也没有连假后端的代码。
+- [x] 测试改动的数据（存的记录、设置）在测完后按备份原样恢复。
+- 模拟器专用：启动参数 `-startTab recipes|profile` 直接打开某个标签；`-backendOverride http://127.0.0.1:8765` 连电脑上的假后端（只在模拟器的测试版里有效，不带 App 密钥）；食谱页右上角「调试」→「用示例食谱」不花钱就能看食谱卡片。
 
 ## 这份规范是怎么来的
 
-- 用户的三轮设计稿：第一轮定下暖白燕麦底、橄榄绿、主卡片、快速记录、悬浮标签栏；第二轮精修层级（先数据后品牌、拍照是主功能、今日饮食卡片化、食谱和我的重新组织、三个标签统一）；第三轮让食谱页先给推荐、我的页去掉设置感、两页共用左对齐标题、空餐和已记录餐分得开。参考了 Canvas 和不背单词。
+- 用户的四轮设计稿：第一轮定下暖白燕麦底、橄榄绿、主卡片、快速记录、悬浮标签栏；第二轮精修层级（先数据后品牌、拍照是主功能、今日饮食卡片化、食谱和我的重新组织、三个标签统一）；第三轮让食谱页先给推荐、我的页去掉设置感、两页共用左对齐标题、空餐和已记录餐分得开；第四轮是产品体验：减少常驻说明、AI 提示分级、二级页面收起标签栏、食谱详情重做、手动添加先简后繁、多张照片一起识别、「我的」的设置分到二级页面。参考了 Canvas 和不背单词。
 - **frontend-design**：只有一个招牌（碗），其余保持安静；避开 AI 设计常见的「奶油底 + 衬线字 + 陶土色」。
 - **ui-ux-pro-max**：点击范围 ≥ 44pt、对比度、安全区域、按下反馈、减弱动态效果、Dynamic Type。
 - **dataviz**：数字用正文颜色、颜色只给图形；营养素配色用校验脚本算过。

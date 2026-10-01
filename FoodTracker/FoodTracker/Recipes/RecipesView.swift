@@ -7,7 +7,7 @@
 //  2. 今日推荐：早餐、午餐、晚餐各一张食谱卡片（点卡片或「查看做法」看详情，「换一个」单独重新生成这一餐）；
 //     还没有推荐时是一张带「生成一日三餐」的卡片。下面是「重新生成一日三餐」和一行很小的剩余次数
 //  3. 每日目标：小一号的辅助卡片（食谱就是按它生成的）
-//  4. 饮食偏好的摘要（点了修改）；最下面固定一行 AI 估算的提示
+//  4. 饮食偏好的摘要（点了修改）；最下面一行很小的「营养数据为估算值，仅供参考。ⓘ」
 //  卡片的样子在 RecipeCards.swift。
 //
 
@@ -110,6 +110,10 @@ struct RecipesView: View {
                     AppSectionHeaderWithAction(title: String(localized: "饮食偏好"), actionTitle: String(localized: "编辑")) {
                         showPreferences = true
                     }
+                } footer: {
+                    // 整页只在最下面说一次「估算值」，点 ⓘ 看完整说明（不在每张卡片上重复）
+                    AIFootnote()
+                        .padding(.top, AppSpacing.sm)
                 }
             }
             .listStyle(.insetGrouped)
@@ -133,17 +137,6 @@ struct RecipesView: View {
             } message: {
                 Text(errorMessage)
             }
-            // 固定在页面最底部的提示
-            .safeAreaInset(edge: .bottom) {
-                Text(RecipeCopy.disclaimer)
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, AppSpacing.pageMargin)
-                    .padding(.vertical, AppSpacing.xs)
-                    .frame(maxWidth: .infinity)
-                    .appBottomBar()
-            }
             .task {
                 loadLastPlan()
                 await refreshQuota()
@@ -160,16 +153,19 @@ struct RecipesView: View {
                 openedRecipe = recipe
             } label: {
                 RecipeCard(recipe: recipe)
+                    // 分隔线从卡片文字的左边开始；不写的话系统按第一段文字对齐，每张卡片的线长短不一样
+                    .alignmentGuide(.listRowSeparatorLeading) { d in d[.leading] }
             }
             .buttonStyle(AppPressStyle(scales: false))
-            .listRowSeparator(.hidden)
+            .listRowSeparator(.hidden, edges: .top)  // 卡片上边缘不要线
+            .listRowSeparator(.visible, edges: .bottom)  // 卡片正文和下面的「换一个」之间一条很淡的线
             .appCardRow()
 
             RecipeCardFooter(
-                isSwapping: swappingMeal == recipe.meal, isBusy: isBusy, onOpen: { openedRecipe = recipe },
+                isSwapping: swappingMeal == recipe.meal, isBusy: isBusy,
                 onSwap: { AIConsent.perform(pending: $pendingAIAction) { Task { await swap(recipe.meal) } } }
             )
-            .listRowInsets(EdgeInsets(top: 0, leading: AppSpacing.cardPadding, bottom: 0, trailing: AppSpacing.cardPadding))
+            .listRowInsets(EdgeInsets(top: 0, leading: AppSpacing.cardPadding - 4, bottom: 0, trailing: AppSpacing.cardPadding))
             .appCardRow()
         } header: {
             if showsHeader {
@@ -182,7 +178,7 @@ struct RecipesView: View {
     @ViewBuilder
     private var remainingCaption: some View {
         if let remaining {
-            Text("今天还可以生成 \(remaining) 次（含「换一个」）。短时间内用相同的条件重新生成，会直接使用上次的结果，不占次数。")
+            Text("今天还可以生成 \(remaining) 次（含「换一个」）")
                 .font(AppTypography.caption)
                 .foregroundStyle(AppColors.textTertiary)
                 .textCase(nil)
@@ -259,11 +255,6 @@ struct RecipesView: View {
         else { return }
         recipes = saved
     }
-}
-
-/// 「食谱」页、食谱详情和「推荐下一餐」共用的文字
-enum RecipeCopy {
-    static let disclaimer = String(localized: "食谱与营养数据为 AI 估算，仅供参考；如有疾病、处于孕期或有特殊饮食需求，请咨询医生或营养师")
 }
 
 /// 一道菜的摘要：菜名、热量和营养素、时间和食材数（「食谱」页和「推荐下一餐」的卡片共用）

@@ -7,8 +7,9 @@
 //  1. 每日目标（主卡片，见 GoalHeroCard），下面一个小链接「这些目标是如何计算的？」
 //  2. 个人资料（性别、年龄、身高、体重），标题右边是「编辑」
 //  3. 目标与活动（活动量、目标）
-//  4. 设置（单位、热量提示）、隐私与数据（隐私政策、AI 功能的同意、删除所有数据）、关于（意见反馈、版本号）
-//  每一组是一张卡片，不是一整页的设置列表。
+//  4. 设置（单位、热量提示）、隐私与 AI（隐私政策、AI 功能、删除所有数据）、关于（意见反馈、健康提示、版本号）
+//  每一组是一张卡片，不是一整页的设置列表。这一页只显示当前的值，不放说明文字：
+//  需要解释的设置点进二级页面再说（见 SettingsPages.swift），健康提示点开是一张说明卡片。
 //
 
 import SwiftData
@@ -21,7 +22,8 @@ struct ProfileView: View {
 
     @State private var isEditing = false
     @State private var showsExplanation = false  // 是否打开「这些目标是如何计算的？」
-    @State private var confirmErase = false  // 是否弹出「删除所有数据？」的确认
+    @State private var confirmErase = false  // 是否弹出「确定删除所有数据？」的确认
+    @State private var showsHealthInfo = false  // 是否打开「健康提示」说明卡片
     // 同意过第几版 AI 数据说明（0 = 没同意或撤回了）；在别的页面点了同意，这里也会马上变
     @AppStorage(AIConsent.key) private var aiConsentVersion = 0
     // 热量提示的设置，存在手机本地（UserDefaults）；默认全部开启
@@ -89,57 +91,69 @@ struct ProfileView: View {
                         AppSectionHeader(title: String(localized: "目标与活动"))
                     }
 
-                    // 4. 设置：单位；热量提示（全部开启 / 只看每周小结 / 关闭，文案都在 HintCopy 里）
+                    // 4. 设置：单位；热量提示（点进去再选，说明文字都在那一页里）
                     Section {
                         Picker("单位", selection: $units) {
                             ForEach(UnitSystem.allCases, id: \.self) { system in
                                 Text(system.title).tag(system)
                             }
                         }
-                        Picker(HintCopy.settingsPickerLabel, selection: $hintLevel) {
-                            ForEach(HintLevel.allCases, id: \.self) { level in
-                                Text(HintCopy.levelTitle(level)).tag(level)
-                            }
+                        NavigationLink {
+                            HintSettingsView()
+                        } label: {
+                            LabeledContent(HintCopy.settingsHeader, value: HintCopy.levelTitle(hintLevel))
                         }
                     } header: {
                         AppSectionHeader(title: String(localized: "设置"))
-                    } footer: {
-                        Text(HintCopy.levelExplanation(hintLevel) + "\n\n" + HintCopy.settingsGoalNote)
                     }
 
-                    // 隐私与数据：隐私政策、AI 功能的同意、删除所有数据
+                    // 5. 隐私与 AI：隐私政策、AI 功能（开关和撤回都在下一页）、删除所有数据
                     Section {
                         NavigationLink("隐私政策") {
                             PrivacyPolicyView()
                         }
                         NavigationLink {
-                            AIDataInfoView()
+                            AISettingsView()
                         } label: {
-                            LabeledContent("AI 功能", value: AIConsent.isGranted(version: aiConsentVersion) ? String(localized: "已同意") : String(localized: "未同意"))
+                            LabeledContent(
+                                "AI 功能",
+                                value: AIConsent.isGranted(version: aiConsentVersion)
+                                    ? String(localized: "已开启") : String(localized: "未开启"))
                         }
-                        if AIConsent.isGranted(version: aiConsentVersion) {
-                            // 撤回很安全：只是下次用 AI 功能前再问一次，所以不用再确认
-                            Button("撤回 AI 功能的同意") { AIConsent.revoke() }
+                        Button(role: .destructive) {
+                            confirmErase = true
+                        } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("删除所有数据")
+                                Text("删除后无法恢复")
+                                    .font(AppTypography.detail)
+                                    .foregroundStyle(AppColors.textSecondary)
+                            }
+                            .padding(.vertical, AppSpacing.xxs)
                         }
-                        Button("删除所有数据", role: .destructive) { confirmErase = true }
-                            .foregroundStyle(AppColors.destructive)
+                        .foregroundStyle(AppColors.destructive)
                     } header: {
-                        AppSectionHeader(title: String(localized: "隐私与数据"))
-                    } footer: {
-                        Text("撤回同意后，下次拍照识别或生成食谱前会再问你，手动记录不受影响。")
+                        AppSectionHeader(title: String(localized: "隐私与 AI"))
                     }
 
-                    // 关于：意见反馈、版本号，最下面是健康提示
+                    // 6. 关于：意见反馈、健康提示（点开是一张说明卡片）、版本号
                     Section {
                         // 联系邮箱还没定时不显示（见 SupportInfo.swift）
                         if let feedbackURL = SupportInfo.feedbackURL {
                             Link("意见反馈", destination: feedbackURL)
                         }
+                        Button {
+                            showsHealthInfo = true
+                        } label: {
+                            LabeledContent("健康提示") {
+                                Image(systemName: "info.circle")
+                                    .foregroundStyle(AppColors.textSecondary)
+                            }
+                            .foregroundStyle(AppColors.textPrimary)
+                        }
                         LabeledContent("版本", value: SupportInfo.versionText)
                     } header: {
                         AppSectionHeader(title: String(localized: "关于"))
-                    } footer: {
-                        Text("热量和营养目标是根据公式估算的参考值，不是医疗建议。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
                     }
 
                     #if DEBUG && targetEnvironment(simulator)
@@ -164,12 +178,15 @@ struct ProfileView: View {
             .sheet(isPresented: $isEditing) {
                 ProfileEditView(profile: profile)
             }
-            // 删除前再确认一次：删掉就找不回来了
-            .confirmationDialog("删除所有数据？", isPresented: $confirmErase, titleVisibility: .visible) {
-                Button("删除所有数据", role: .destructive) { onEraseAll() }
+            .sheet(isPresented: $showsHealthInfo) {
+                InfoSheet(topic: .health)
+            }
+            // 删除前再确认一次：删掉就找不回来了。用居中的提示框，「取消」「删除」两个按钮都看得见
+            .alert("确定删除所有数据？", isPresented: $confirmErase) {
                 Button("取消", role: .cancel) {}
+                Button("删除", role: .destructive) { onEraseAll() }
             } message: {
-                Text("会删掉这台手机上的个人资料、全部饮食记录和设置，删除后无法恢复。")
+                Text("会删除这台手机上的个人资料、全部饮食记录和设置。此操作无法撤销。")
             }
         }
     }

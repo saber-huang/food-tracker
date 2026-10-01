@@ -68,10 +68,8 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
             } header: {
-                // 看往日时写明新记录会记到哪一天
-                AppSectionHeader(
-                    title: String(localized: "快速记录"),
-                    trailing: DayMath.recordCaption(day: day, today: today) ?? String(localized: "记录一餐"))
+                // 看往日时写明新记录会记到哪一天；看今天时右边什么都不写
+                AppSectionHeader(title: String(localized: "快速记录"), trailing: DayMath.recordCaption(day: day, today: today))
             }
 
             hints
@@ -91,9 +89,9 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
         .sheet(item: $editingEntry) { entry in
             EntryEditView(
                 draft: EntryDraft(item: EditableItem(entry: entry)), title: String(localized: "修改记录"), showsMealPicker: true,
-                showsDayPicker: true,
-                // 从食谱记的一餐：重量是食材生重加起来的，提醒一下（改重量时数字会按比例换算）
-                note: entry.source == .recipe ? String(localized: "重量按食材生重合计。") : nil,
+                showsDate: true,
+                // 从食谱记的一餐：份量是食材生重加起来的，提醒一下（改份量时数字会按比例换算）
+                note: entry.source == .recipe ? String(localized: "份量按食材生重合计。") : nil,
                 onSave: { item in
                     // 改到别的餐或别的日期也在这里：这条记录会从这一天消失，出现在新的那天
                     entry.apply(item)

@@ -25,6 +25,8 @@ struct MonthPickerSheet: View {
             filter: FoodEntry.predicate(from: DayMath.oldestDay(today: today), to: DayMath.addingDays(1, to: today)))
     }
 
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverOn
+
     /// 有记录的日期（每天的 0 点）
     private var recordDays: Set<Date> {
         Set(entries.map { $0.day() })
@@ -38,12 +40,14 @@ struct MonthPickerSheet: View {
                     dismiss()
                 }
                 .padding(.horizontal)
-                // 旁白读不出圆点，所以用文字说明一下
-                Text("有记录的日期下方有小圆点；未来的日期不能选择")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding()
+                // 旁白读不出圆点，所以开着旁白时用文字说明一下；平时看得见圆点和变灰的日期，就不放这行字
+                if voiceOverOn {
+                    Text("有记录的日期下方有小圆点；未来的日期不能选择")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                }
                 Spacer(minLength: 0)
             }
             .navigationTitle("选择日期")

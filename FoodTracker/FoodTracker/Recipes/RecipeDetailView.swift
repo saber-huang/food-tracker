@@ -2,8 +2,13 @@
 //  RecipeDetailView.swift
 //  FoodTracker
 //
-//  食谱详情：营养数据、「记录到今日」、食材和克数、做法步骤。
-//  「记录到今日」把整道菜记成今天的一条饮食记录（重量 = 食材生重合计），记到哪一餐由用户选。
+//  食谱详情：像一页菜谱，而不是数据表。从上到下：
+//  1. 「晚餐 · 约 28 分钟」和菜名（大标题写在页面里；顶栏只留返回，长菜名不挤在顶栏里）
+//  2. 一张卡片：热量（旁边「AI 估算 ⓘ」）和三大营养素
+//  3. 食材：一张卡片，每行一种食材，右边是克数（生重）
+//  4. 做法：一步一段，前面是编号圆圈，步骤之间用留白分开，不画分隔线
+//  最下面固定着「＋ 记录这餐」：把整道菜记成今天的一条饮食记录（份量 = 食材生重合计），记到哪一餐由用户选。
+//  这是二级页面：底部的标签栏藏起来。
 //
 
 import SwiftData
@@ -18,103 +23,171 @@ struct RecipeDetailView: View {
     @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 34
 
     var body: some View {
-        List {
-            Group {
-                Section {
-                    // 和「食谱」页的卡片同一种样子：餐次标签和时间、大号的热量、三大营养素
-                    VStack(alignment: .leading, spacing: AppSpacing.md) {
-                        HStack(alignment: .center) {
-                            MealSlotTag(slot: recipe.meal)
-                            Spacer(minLength: AppSpacing.xs)
-                            Label("约 \(recipe.cookingMinutes) 分钟", systemImage: "clock")
-                                .font(AppTypography.caption)
-                                .foregroundStyle(AppColors.textSecondary)
-                        }
-                        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xxs) {
-                            Text(recipe.caloriesKcal.noDecimal)
-                                .font(AppTypography.heroNumber(size: numberSize))
-                                .monospacedDigit()
-                                .foregroundStyle(AppColors.textPrimary)
-                            Text("千卡")
-                                .font(AppTypography.heroCaption)
-                                .foregroundStyle(AppColors.textSecondary)
-                        }
-                        MacroStatsRow(proteinG: recipe.proteinG, carbsG: recipe.carbsG, fatG: recipe.fatG)
-                    }
-                    .padding(.vertical, AppSpacing.xs)
-
-                    // 把这道菜记成今天的一餐
-                    Button {
-                        showMealChoice = true
-                    } label: {
-                        Label(
-                            logged.map { String(localized: "已记录到\($0.title)") } ?? String(localized: "记录到今日"),
-                            systemImage: logged == nil ? "plus.circle" : "checkmark.circle")
-                    }
-                    .disabled(logged != nil)
-                    // 选记到哪一餐（挂在按钮上，弹出的小窗会指向这个按钮）：这道菜本来是哪一餐，就在那一项后面标「（推荐）」
-                    .confirmationDialog("记到哪一餐？", isPresented: $showMealChoice, titleVisibility: .visible) {
-                        ForEach(MealType.allCases) { meal in
-                            Button(meal == MealType(slot: recipe.meal) ? String(localized: "\(meal.title)（推荐）") : meal.title) {
-                                log(meal)
-                            }
-                        }
-                        Button("取消", role: .cancel) {}
-                    }
-                }
-
-                Section {
-                    ForEach(recipe.ingredients, id: \.self) { ingredient in
-                        HStack {
-                            Text(ingredient.name)
-                                .foregroundStyle(AppColors.textPrimary)
-                            Spacer()
-                            Text("\(ingredient.grams.noDecimal) 克")
-                                .monospacedDigit()
-                                .foregroundStyle(AppColors.textSecondary)
-                        }
-                    }
-                } header: {
-                    AppSectionHeader(title: String(localized: "食材（生重）"))
-                }
-
-                Section {
-                    ForEach(Array(recipe.steps.enumerated()), id: \.offset) { index, step in
-                        HStack(alignment: .top, spacing: AppSpacing.sm) {
-                            Text("\(index + 1)")
-                                .font(AppTypography.number)
-                                .foregroundStyle(AppColors.brand)
-                                .frame(width: 20, alignment: .trailing)
-                            Text(step)
-                                .foregroundStyle(AppColors.textPrimary)
-                        }
-                        .padding(.vertical, 2)
-                    }
-                } header: {
-                    AppSectionHeader(title: String(localized: "做法"))
-                }
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppSpacing.xl) {
+                header
+                nutritionCard
+                ingredientsSection
+                stepsSection
             }
-            .appCardRow()  // 卡片用暖白，分隔线很淡
+            .padding(.horizontal, AppSpacing.pageMargin)
+            .padding(.top, AppSpacing.xs)
+            .padding(.bottom, AppSpacing.xxl)
         }
-        .listStyle(.insetGrouped)
-        .listSectionSpacing(AppSpacing.cardGap)
-        .contentMargins(.horizontal, AppSpacing.pageMargin, for: .scrollContent)
-        .appListBackground()  // 和「食谱」页同一种背景
-        .navigationTitle(recipe.name)
+        .background { AppBackground(glow: false) }
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            Text(RecipeCopy.disclaimer)
-                .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, AppSpacing.pageMargin)
-                .padding(.vertical, AppSpacing.xs)
-                .frame(maxWidth: .infinity)
-                .appBottomBar()
+        .hidesFloatingTabBar()
+        .safeAreaInset(edge: .bottom) { logButton }
+    }
+
+    // MARK: - 页面的几块
+
+    /// 「晚餐 · 约 28 分钟」+ 菜名
+    private var header: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xs) {
+            HStack(spacing: 6) {
+                Image(systemName: recipe.meal.systemImage)
+                    .accessibilityHidden(true)
+                Text(recipe.meal.title) + Text(verbatim: " · ") + Text("约 \(recipe.cookingMinutes) 分钟")
+            }
+            .font(AppTypography.detail.weight(.medium))
+            .foregroundStyle(AppColors.textSecondary)
+
+            Text(recipe.name)
+                .font(.title2.weight(.bold))
+                .foregroundStyle(AppColors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
         }
     }
 
-    /// 记成今天的一条记录：整道菜一条，重量是食材生重合计（之后可以在「今日」里改份量）
+    /// 热量和三大营养素
+    private var nutritionCard: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
+            HStack(alignment: .center) {
+                HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xxs) {
+                    Text(recipe.caloriesKcal.noDecimal)
+                        .font(AppTypography.heroNumber(size: numberSize))
+                        .monospacedDigit()
+                        .foregroundStyle(AppColors.textPrimary)
+                    Text("千卡")
+                        .font(AppTypography.heroCaption)
+                        .foregroundStyle(AppColors.textSecondary)
+                }
+                .accessibilityElement(children: .combine)
+                Spacer(minLength: AppSpacing.xs)
+                AIEstimateBadge()
+            }
+            MacroStatsRow(proteinG: recipe.proteinG, carbsG: recipe.carbsG, fatG: recipe.fatG)
+        }
+        .padding(AppSpacing.cardPadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .appCard()
+    }
+
+    /// 食材：一张卡片，每行一种，右边是克数；分隔线只从文字开始，很淡
+    private var ingredientsSection: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("食材")
+                    .font(AppTypography.sectionTitle)
+                    .foregroundStyle(AppColors.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                Text("按生重")
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.textTertiary)
+            }
+            .padding(.horizontal, AppSpacing.xxs)
+
+            VStack(spacing: 0) {
+                ForEach(Array(recipe.ingredients.enumerated()), id: \.offset) { index, ingredient in
+                    if index > 0 {
+                        Rectangle()
+                            .fill(AppColors.divider)
+                            .frame(height: 1)
+                    }
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(ingredient.name)
+                            .foregroundStyle(AppColors.textPrimary)
+                        Spacer(minLength: AppSpacing.sm)
+                        Text("\(ingredient.grams.noDecimal) 克")
+                            .monospacedDigit()
+                            .foregroundStyle(AppColors.textSecondary)
+                    }
+                    .font(.body)
+                    .frame(minHeight: 54)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .padding(.horizontal, AppSpacing.cardPadding)
+            .appCard()
+        }
+    }
+
+    /// 做法：编号圆圈 + 一段话，步骤之间用留白分开
+    private var stepsSection: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.lg) {
+            Text("做法")
+                .font(AppTypography.sectionTitle)
+                .foregroundStyle(AppColors.textPrimary)
+                .padding(.horizontal, AppSpacing.xxs)
+                .accessibilityAddTraits(.isHeader)
+            ForEach(Array(recipe.steps.enumerated()), id: \.offset) { index, step in
+                HStack(alignment: .top, spacing: AppSpacing.sm) {
+                    Text(verbatim: "\(index + 1)")
+                        .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                        .foregroundStyle(AppColors.brandDeep)
+                        .frame(width: 28, height: 28)
+                        .background(AppColors.brandSoft, in: Circle())
+                        .accessibilityHidden(true)
+                    Text(step)
+                        .font(.body)
+                        .foregroundStyle(AppColors.textPrimary)
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 3)
+                }
+                .padding(.horizontal, AppSpacing.xxs)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(Text("第 \(index + 1) 步：") + Text(step))
+            }
+        }
+    }
+
+    /// 最下面的「＋ 记录这餐」；记过之后变成「✓ 已记录到午餐」，不能再点
+    private var logButton: some View {
+        Button {
+            showMealChoice = true
+        } label: {
+            Label(
+                logged.map { String(localized: "已记录到\($0.title)") } ?? String(localized: "记录这餐"),
+                systemImage: logged == nil ? "plus" : "checkmark"
+            )
+            .font(.body.weight(.semibold))
+            .foregroundStyle(logged == nil ? AppColors.onBrand : AppColors.brandDeep)
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(
+                logged == nil ? AppColors.brand : AppColors.brandSoft,
+                in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
+        }
+        .buttonStyle(AppPressStyle())
+        .disabled(logged != nil)
+        // 选记到哪一餐：这道菜本来是哪一餐，就在那一项后面标「（推荐）」
+        .confirmationDialog("记到哪一餐？", isPresented: $showMealChoice, titleVisibility: .visible) {
+            ForEach(MealType.allCases) { meal in
+                Button(meal == MealType(slot: recipe.meal) ? String(localized: "\(meal.title)（推荐）") : meal.title) {
+                    log(meal)
+                }
+            }
+            Button("取消", role: .cancel) {}
+        }
+        .padding(.horizontal, AppSpacing.pageMargin)
+        .padding(.vertical, AppSpacing.xs)
+        .appBottomBar()
+    }
+
+    /// 记成今天的一条记录：整道菜一条，份量是食材生重合计（之后可以在「今日」里改份量）
     private func log(_ meal: MealType) {
         // 按钮变灰要等下一次刷新界面，所以这里再检查一次，连点两下也只记一条
         guard logged == nil else { return }

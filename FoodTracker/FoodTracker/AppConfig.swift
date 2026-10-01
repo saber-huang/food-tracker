@@ -16,9 +16,21 @@ enum AppConfig {
         return value.flatMap { $0.isEmpty ? nil : $0 }
     }
 
+    /// 只在模拟器里的测试版：用启动参数 -backendOverride http://127.0.0.1:8765 临时连电脑上的测试后端
+    /// （比如把 AI 换成假结果的后端，不花钱就能走完整个拍照识别流程）。这时也不发 App 密钥
+    private static let localOverride: URL? = {
+        #if DEBUG && targetEnvironment(simulator)
+        if let text = UserDefaults.standard.string(forKey: "backendOverride"), let url = URL(string: text) {
+            return url
+        }
+        #endif
+        return nil
+    }()
+
     /// 后端地址。Secrets.xcconfig 里填了 BACKEND_URL 就用它（云端）；
     /// 没填就连电脑上的本地后端：模拟器和真机访问电脑的方式不一样，这里自动选择。
     static let backendURL: URL = {
+        if let localOverride { return localOverride }
         if let text = plistString("BackendURL"), let url = URL(string: text) {
             return url
         }
@@ -33,7 +45,7 @@ enum AppConfig {
     }()
 
     /// App 密钥：每个请求都会带上，后端用它挡住随手乱试的人。本地开发时为空，后端也不检查
-    static let appKey: String = plistString("AppKey") ?? ""
+    static let appKey: String = localOverride == nil ? (plistString("AppKey") ?? "") : ""
 
     /// 现在连的是不是云端后端（云端一定是 https）
     static var isCloud: Bool { backendURL.scheme == "https" }

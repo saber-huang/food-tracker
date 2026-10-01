@@ -5,7 +5,8 @@
 //  「今日」页：顶部是日期栏（月份 + 一周的日期，左右滑动翻周、点一天看那一天），
 //  下面依次是主卡片（还可以吃多少）、快速记录（拍照、相册、手动）、热量提示、今日饮食。
 //  新记录（拍照识别或手动添加）都记到正在看的那一天，所以忘了记的往日也能补。
-//  选了照片后点「开始识别」，识别成功后自动跳到结果页；手动添加不需要联网，识别次数用完了也能记。
+//  拍完照（或从相册选好照片）先到「确认照片」页：可以再拍几张同一餐的照片（最多 4 张），点「开始识别」后，
+//  几张照片合并成一份结果，自动跳到结果页。手动添加不需要联网，识别次数用完了也能记。
 //
 
 import PhotosUI
@@ -24,15 +25,12 @@ struct HomeView: View {
     @State private var selectedDay: Date  // 正在看的那一天（0 点）
     @State private var followsToday = true  // 用户最后一次选的是不是「今天」；过了午夜也不会被改掉
     @State private var visibleWeekOffset: Int? = 0  // 周横条现在显示哪一页：0 = 本周，-1 = 上周 …
-    @State private var photo: UIImage?  // 当前选中的照片
-    @State private var pickerItem: PhotosPickerItem?  // 相册里选中的项目
+    @State private var photos: [UIImage] = []  // 这一餐的照片（1～4 张），在「确认照片」页里增减
+    @State private var pickerItems: [PhotosPickerItem] = []  // 相册里选中的项目（一次最多 4 张）
     @State private var showCamera = false  // 是否打开相机
-    @State private var isAnalyzing = false  // 是否正在识别
-    @State private var analyzeRemaining: Int?  // 今天还能拍照识别几次；问不到（没网、服务器在唤醒）就不显示
-    @State private var pendingAIAction: PendingAIAction?  // 还没同意使用 AI 时，先记下要做的识别，同意后再做
+    @State private var showsPhotoReview = false  // 是否打开「确认照片」页
     @State private var resultRoute: ResultRoute?  // 识别结果 + 记到哪一天，有值时自动跳到结果页
-    @State private var showError = false  // 是否显示出错提示
-    @State private var errorMessage = ""  // 出错提示的内容
+    @State private var loadFailed = false  // 从相册读照片失败
     @State private var showNoCamera = false  // 是否提示「没有相机」
     @State private var manualEntry: ManualEntryRequest?  // 有值时打开「手动添加」：默认记到哪一餐、哪一天
     @State private var showMonthPicker = false  // 是否打开月历
@@ -69,23 +67,28 @@ struct HomeView: View {
                 .safeAreaInset(edge: .top, spacing: 0) {
                     dateHeader
                 }
-                // resultRoute 有值时跳到结果页；用户按「返回」时它会自动变回 nil
+                // 拍完照或选好照片：先到「确认照片」页，可以再加几张，再一起识别
+                .navigationDestination(isPresented: $showsPhotoReview) {
+                    PhotoReviewView(photos: $photos, dayKey: currentDayKey) { result, dayKey, analyzedPhotos in
+                        resultRoute = ResultRoute(result: result, dayKey: dayKey, photos: analyzedPhotos)
+                    }
+                }
+                // resultRoute 有值时跳到结果页（叠在「确认照片」页上面）；用户按「返回」时它会自动变回 nil
                 .navigationDestination(item: $resultRoute) { route in
-                    ResultView(result: route.result, photo: photo, dayKey: route.dayKey, today: today) {
-                        // 保存成功：关掉结果页、清掉照片，同一餐不会不小心识别两次
+                    // 照片跟着 route 一起传过来：这里直接读 photos 的话，读到的可能是这一页上次刷新时的旧值（空的）
+                    ResultView(result: route.result, photos: route.photos, dayKey: route.dayKey, today: today) {
+                        // 保存成功：关掉结果页和「确认照片」页、清掉照片，同一餐不会不小心识别两次
                         resultRoute = nil
-                        photo = nil
+                        showsPhotoReview = false
                     }
                 }
-                // 从相册选了照片之后，把它读出来
-                .onChange(of: pickerItem) { _, newItem in
-                    Task { await loadPhoto(from: newItem) }
+                // 离开「确认照片」页（返回、或者保存完）：照片不再需要了
+                .onChange(of: showsPhotoReview) { _, isShowing in
+                    if !isShowing { photos = [] }
                 }
-                // 选好照片（拍照或从相册）时，顺便问一下今天还能识别几次
-                .onChange(of: photo) { _, newPhoto in
-                    if newPhoto != nil {
-                        Task { await refreshAnalyzeRemaining() }
-                    }
+                // 从相册选了照片之后，把它们读出来，打开「确认照片」页
+                .onChange(of: pickerItems) {
+                    Task { await loadPickedPhotos() }
                 }
                 // 真的换了一天才会运行：记住用户最后选的是不是「今天」
                 .onChange(of: selectedDay) { _, day in
@@ -118,38 +121,23 @@ struct HomeView: View {
                         jump(to: day)
                     }
                 }
-                // 手动添加：填好后存成一条记录，记到正在看的那一天
+                // 手动添加：填好后存成一条记录，默认记到正在看的那一天。
                 // 用 sheet(item:)：打开时带着「哪一餐、哪一天」，表单第一次出现就是对的
                 // （用 isPresented 加另一个状态的话，第一次弹出时可能读到旧的餐次）
                 .sheet(item: $manualEntry) { request in
-                    EntryEditView(
-                        draft: EntryDraft(meal: request.meal, dayKey: request.dayKey),
-                        title: String(localized: "手动添加"),
-                        showsMealPicker: true, mealIsSuggested: request.mealIsSuggested, showsDate: true
-                    ) { item in
-                        modelContext.insert(
-                            FoodEntry(
-                                dayKey: item.dayKey, meal: item.meal, name: item.name, weightG: item.weightG,
-                                values: item.values, source: .manual))
-                        try? modelContext.save()
-                    }
+                    ManualEntrySheet(request: request)
                 }
-                // 第一次识别前：说明照片会发给谁、怎么处理，同意后才上传（见 AIConsent.swift）
-                .aiConsentSheet(pending: $pendingAIAction)
-                // 全屏打开相机
-                .fullScreenCover(isPresented: $showCamera) {
+                // 全屏打开相机；拍好一张（关掉相机之后）打开「确认照片」页
+                .fullScreenCover(isPresented: $showCamera, onDismiss: openPhotoReviewIfNeeded) {
                     CameraPicker { newPhoto in
-                        photo = newPhoto
+                        photos = [newPhoto]
                     }
                     .ignoresSafeArea()
                 }
-                .alert("识别失败", isPresented: $showError) {
-                    Button("重试") { startAnalyzing() }
-                    // 没网、识别次数用完了：不用等，直接手动记
-                    Button("改为手动添加") { openManualEntry() }
+                .alert("读取照片失败", isPresented: $loadFailed) {
                     Button("好", role: .cancel) {}
                 } message: {
-                    Text(errorMessage)
+                    Text("读取照片失败，请换一张试试。")
                 }
                 .alert("没有可用的相机", isPresented: $showNoCamera) {
                     Button("好", role: .cancel) {}
@@ -181,13 +169,12 @@ struct HomeView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .disabled(isAnalyzing)  // 识别中不能切换日期
                 .accessibilityHint("打开月历，选择日期")
 
                 Spacer(minLength: 0)
 
-                // 看往日时才出现；识别中不能切换日期
-                if !isToday && !isAnalyzing {
+                // 看往日时才出现
+                if !isToday {
                     Button("回到今天") { goToToday() }
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(AppColors.brand)
@@ -224,8 +211,6 @@ struct HomeView: View {
             )
             .id(DayMath.weekStart(containing: today))  // 新的一周开始（或换了时区）时整条重建
             .padding(.horizontal, AppSpacing.xs)
-            .disabled(isAnalyzing)  // 识别中不能切换日期
-            .scrollDisabled(isAnalyzing)
         }
         .padding(.bottom, AppSpacing.sm)
         .background {
@@ -243,12 +228,9 @@ struct HomeView: View {
         }
     }
 
-    /// 快速记录：拍照、相册、手动；选了照片时多出缩略图和「开始识别」
+    /// 快速记录：拍照、相册、手动
     private var quickLogDock: some View {
-        QuickLogDock(
-            photo: photo, isAnalyzing: isAnalyzing, analyzeRemaining: analyzeRemaining, pickerItem: $pickerItem,
-            onCamera: openCamera, onManual: { openManualEntry() }, onAnalyze: startAnalyzing,
-            onRemovePhoto: { photo = nil })
+        QuickLogDock(pickerItems: $pickerItems, onCamera: openCamera, onManual: { openManualEntry() })
     }
 
     // MARK: - 功能
@@ -267,17 +249,24 @@ struct HomeView: View {
         }
     }
 
-    /// 开始识别。没同意过使用 AI 时，先弹出说明；同意后才真正上传照片
-    private func startAnalyzing() {
-        AIConsent.perform(pending: $pendingAIAction) { Task { await analyze() } }
-    }
-
     /// 打开「手动添加」表单。meal：默认记到哪一餐（从某一餐的 + 打开时）；不传就按现在的时间推荐。
     /// 打开时就把「哪一天」换成数字定下来，填表中途手机换了时区也不会记到别的一天
     private func openManualEntry(meal: MealType? = nil) {
         refreshToday(appBecameActive: false)  // 打开前确认一下今天是哪天（可能刚过午夜）
-        manualEntry = ManualEntryRequest(
-            meal: meal ?? suggestedMeal, mealIsSuggested: meal == nil, dayKey: DayMath.dayKey(for: selectedDay))
+        manualEntry = ManualEntryRequest(meal: meal ?? suggestedMeal, dayKey: DayMath.dayKey(for: selectedDay))
+    }
+
+    /// 识别时记到哪一天：先确认一下今天是哪天（可能刚过午夜），再取正在看的那天
+    private func currentDayKey() -> Int {
+        refreshToday(appBecameActive: false)
+        return DayMath.dayKey(for: selectedDay)
+    }
+
+    /// 相机关掉以后：拍到了照片就打开「确认照片」页（取消了就什么都不做）
+    private func openPhotoReviewIfNeeded() {
+        if !photos.isEmpty && !showsPhotoReview {
+            showsPhotoReview = true
+        }
     }
 
     /// 检查今天是不是换了一天（过了午夜、换了时区、时钟被调过），需要的话更新「今天」和正在看的那天。
@@ -304,84 +293,39 @@ struct HomeView: View {
         visibleWeekOffset = DayMath.weekOffset(of: selectedDay, relativeTo: today)
     }
 
-    /// 从相册选中的项目里读出照片
-    private func loadPhoto(from item: PhotosPickerItem?) async {
-        guard let item else { return }
-        if let data = try? await item.loadTransferable(type: Data.self),
-            let image = UIImage(data: data)
-        {
-            photo = image
-        } else {
-            showError(message: String(localized: "读取照片失败，请换一张试试。"))
+    /// 从相册选中的项目里读出照片（最多 4 张），打开「确认照片」页
+    private func loadPickedPhotos() async {
+        let items = pickerItems
+        guard !items.isEmpty else { return }
+        pickerItems = []  // 清空选择，下次选同一张照片也能生效
+        var loaded: [UIImage] = []
+        for item in items.prefix(APIClient.maxPhotos) {
+            if let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) {
+                loaded.append(image)
+            }
         }
-        pickerItem = nil  // 清空选择，下次选同一张照片也能生效
-    }
-
-    /// 压缩照片 → 发给后端 → 拿到结果
-    private func analyze() async {
-        guard let photo else { return }
-        guard let jpegData = photo.compressedForUpload() else {
-            showError(message: String(localized: "照片处理失败，请换一张试试。"))
-            return
-        }
-
-        isAnalyzing = true
-        defer { isAnalyzing = false }  // 不管成功还是失败，最后都关掉加载动画
-
-        // 识别要好几秒，先把「记到哪一天」定下来（换成数字）：记到正在看的那天；
-        // 就算等待时刚好过了午夜、或者手机换了时区，也还是按下按钮时的那天
-        refreshToday(appBecameActive: false)
-        let dayKey = DayMath.dayKey(for: selectedDay)
-        do {
-            // 识别结果（食物名称和那句总结）用 App 现在显示的语言
-            let result = try await APIClient.analyze(jpegData: jpegData, lang: AppLanguage.current.apiCode)
-            refreshToday(appBecameActive: false)
-            resultRoute = ResultRoute(result: result, dayKey: dayKey)
-        } catch {
-            showError(message: error.localizedDescription)
-        }
-        // 识别用掉了一次（失败时后端可能还回去了），重新问一下还剩几次。
-        // 另起一个任务去问：不然上面的 defer 要等它问完才关掉加载状态，按钮会一直是灰的
-        Task { await refreshAnalyzeRemaining() }
-    }
-
-    /// 问后端今天还能识别几次（不花钱、不占次数）；问不到就不显示，不打扰用户
-    private func refreshAnalyzeRemaining() async {
-        if let quota = try? await APIClient.quota() {
-            analyzeRemaining = quota.analyzeRemaining
-        }
-    }
-
-    private func showError(message: String) {
-        errorMessage = message
-        showError = true
+        if loaded.count < min(items.count, APIClient.maxPhotos) { loadFailed = true }
+        guard !loaded.isEmpty else { return }
+        photos = loaded
+        showsPhotoReview = true
     }
 
     #if DEBUG && targetEnvironment(simulator)
     /// 调试菜单：不识别，直接用示例结果打开结果页（记到正在看的那天）
     private func showSampleResult(_ result: AnalyzeResult) {
         refreshToday(appBecameActive: false)
-        resultRoute = ResultRoute(result: result, dayKey: DayMath.dayKey(for: selectedDay))
+        resultRoute = ResultRoute(result: result, dayKey: DayMath.dayKey(for: selectedDay), photos: [])
     }
     #endif
 }
 
-/// 打开「手动添加」需要的两样东西：默认记到哪一餐，记到哪一天（20260929 这样的数字）
-private struct ManualEntryRequest: Identifiable {
-    let id = UUID()
-    let meal: MealType
-    let mealIsSuggested: Bool  // 餐次是不是按时间猜的（表单里会写「按现在的时间默认推荐」）
-    let dayKey: Int
-}
-
-/// 跳到结果页需要的两样东西：识别结果，以及这餐要记到哪一天（20260929 这样的数字）
+/// 跳到结果页需要的东西：识别结果、这餐要记到哪一天（20260929 这样的数字），以及识别的是哪几张照片
 private struct ResultRoute: Hashable {
     let result: AnalyzeResult
     let dayKey: Int
+    let photos: [UIImage]
 }
 
-/// 次要按钮：灰底黑字（深色模式白字）。主色只留给一个主按钮；
-/// 主色的浅底上放主色的小字对比度不够（量出来不到 4.5:1），灰底黑字看得最清楚
 #Preview {
     HomeView(profile: SampleData.profile)
         .modelContainer(SampleData.previewContainer)
