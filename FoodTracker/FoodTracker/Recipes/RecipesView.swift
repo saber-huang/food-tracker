@@ -33,13 +33,17 @@ struct RecipesView: View {
     var body: some View {
         NavigationStack {
             List {
-                targetsSection
-                preferencesSection
-                generateSection
-                ForEach(recipes) { recipe in
-                    mealSection(recipe)
+                Group {
+                    targetsSection
+                    preferencesSection
+                    generateSection
+                    ForEach(recipes) { recipe in
+                        mealSection(recipe)
+                    }
                 }
+                .listRowBackground(AppColors.surfacePrimary)  // 卡片用暖白，不用纯白
             }
+            .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
             .navigationTitle("食谱")
             .sheet(isPresented: $showPreferences) {
                 RecipePreferencesView()
@@ -60,7 +64,7 @@ struct RecipesView: View {
                     .padding(.horizontal)
                     .padding(.vertical, 10)
                     .frame(maxWidth: .infinity)
-                    .background(.bar)
+                    .appBottomBar()
             }
             .task {
                 loadLastPlan()

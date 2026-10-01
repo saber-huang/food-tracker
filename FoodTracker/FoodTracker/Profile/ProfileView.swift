@@ -29,82 +29,86 @@ struct ProfileView: View {
 
         NavigationStack {
             List {
-                Section("每日目标") {
-                    TargetsSummaryView(targets: targets)
-                    FloorNotice(targets: targets)
-                    GoalNotesView(bodyInfo: bodyInfo)
-                    NavigationLink("这些数字是怎么算的？") {
-                        ExplanationView(bodyInfo: bodyInfo)
-                    }
-                }
-
-                Section("个人资料") {
-                    LabeledContent("性别", value: bodyInfo.sex.title)
-                    LabeledContent("年龄", value: String(localized: "\(bodyInfo.age) 岁"))
-                    LabeledContent("身高", value: BodyUnits.heightDisplay(cm: bodyInfo.heightCm, units: units))
-                    LabeledContent("体重", value: BodyUnits.weightDisplay(kg: bodyInfo.weightKg, units: units))
-                    LabeledContent("活动量", value: bodyInfo.activity.title)
-                    LabeledContent("目标", value: bodyInfo.goal.title)
-                    Picker("单位", selection: $units) {
-                        ForEach(UnitSystem.allCases, id: \.self) { system in
-                            Text(system.title).tag(system)
+                Group {
+                    Section("每日目标") {
+                        TargetsSummaryView(targets: targets)
+                        FloorNotice(targets: targets)
+                        GoalNotesView(bodyInfo: bodyInfo)
+                        NavigationLink("这些数字是怎么算的？") {
+                            ExplanationView(bodyInfo: bodyInfo)
                         }
                     }
-                    Button("编辑资料") { isEditing = true }
-                }
 
-                // 热量提示：全部开启 / 只看每周小结 / 关闭（文案都在 HintCopy 里）
-                Section {
-                    Picker(HintCopy.settingsPickerLabel, selection: $hintLevel) {
-                        ForEach(HintLevel.allCases, id: \.self) { level in
-                            Text(HintCopy.levelTitle(level)).tag(level)
+                    Section("个人资料") {
+                        LabeledContent("性别", value: bodyInfo.sex.title)
+                        LabeledContent("年龄", value: String(localized: "\(bodyInfo.age) 岁"))
+                        LabeledContent("身高", value: BodyUnits.heightDisplay(cm: bodyInfo.heightCm, units: units))
+                        LabeledContent("体重", value: BodyUnits.weightDisplay(kg: bodyInfo.weightKg, units: units))
+                        LabeledContent("活动量", value: bodyInfo.activity.title)
+                        LabeledContent("目标", value: bodyInfo.goal.title)
+                        Picker("单位", selection: $units) {
+                            ForEach(UnitSystem.allCases, id: \.self) { system in
+                                Text(system.title).tag(system)
+                            }
                         }
+                        Button("编辑资料") { isEditing = true }
                     }
-                } header: {
-                    Text(HintCopy.settingsHeader)
-                } footer: {
-                    Text(HintCopy.levelExplanation(hintLevel) + "\n\n" + HintCopy.settingsGoalNote)
-                }
 
-                // 隐私与数据：隐私政策、AI 功能的同意、删除所有数据
-                Section {
-                    NavigationLink("隐私政策") {
-                        PrivacyPolicyView()
+                    // 热量提示：全部开启 / 只看每周小结 / 关闭（文案都在 HintCopy 里）
+                    Section {
+                        Picker(HintCopy.settingsPickerLabel, selection: $hintLevel) {
+                            ForEach(HintLevel.allCases, id: \.self) { level in
+                                Text(HintCopy.levelTitle(level)).tag(level)
+                            }
+                        }
+                    } header: {
+                        Text(HintCopy.settingsHeader)
+                    } footer: {
+                        Text(HintCopy.levelExplanation(hintLevel) + "\n\n" + HintCopy.settingsGoalNote)
                     }
-                    NavigationLink {
-                        AIDataInfoView()
-                    } label: {
-                        LabeledContent("AI 功能", value: AIConsent.isGranted(version: aiConsentVersion) ? String(localized: "已同意") : String(localized: "未同意"))
-                    }
-                    if AIConsent.isGranted(version: aiConsentVersion) {
-                        // 撤回很安全：只是下次用 AI 功能前再问一次，所以不用再确认
-                        Button("撤回 AI 功能的同意") { AIConsent.revoke() }
-                    }
-                    Button("删除所有数据", role: .destructive) { confirmErase = true }
-                } header: {
-                    Text("隐私与数据")
-                } footer: {
-                    Text("撤回同意后，下次拍照识别或生成食谱前会再问你，手动记录不受影响。")
-                }
 
-                // 关于：意见反馈、版本号，最下面是健康提示
-                Section {
-                    // 联系邮箱还没定时不显示（见 SupportInfo.swift）
-                    if let feedbackURL = SupportInfo.feedbackURL {
-                        Link("意见反馈", destination: feedbackURL)
+                    // 隐私与数据：隐私政策、AI 功能的同意、删除所有数据
+                    Section {
+                        NavigationLink("隐私政策") {
+                            PrivacyPolicyView()
+                        }
+                        NavigationLink {
+                            AIDataInfoView()
+                        } label: {
+                            LabeledContent("AI 功能", value: AIConsent.isGranted(version: aiConsentVersion) ? String(localized: "已同意") : String(localized: "未同意"))
+                        }
+                        if AIConsent.isGranted(version: aiConsentVersion) {
+                            // 撤回很安全：只是下次用 AI 功能前再问一次，所以不用再确认
+                            Button("撤回 AI 功能的同意") { AIConsent.revoke() }
+                        }
+                        Button("删除所有数据", role: .destructive) { confirmErase = true }
+                    } header: {
+                        Text("隐私与数据")
+                    } footer: {
+                        Text("撤回同意后，下次拍照识别或生成食谱前会再问你，手动记录不受影响。")
                     }
-                    LabeledContent("版本", value: SupportInfo.versionText)
-                } header: {
-                    Text("关于")
-                } footer: {
-                    Text("热量和营养目标是根据公式估算的参考值，不是医疗建议。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
-                }
 
-                #if DEBUG && targetEnvironment(simulator)
-                // 只在模拟器里出现的开发者工具：一键造出各种热量提示
-                DebugHintSection(profile: profile)
-                #endif
+                    // 关于：意见反馈、版本号，最下面是健康提示
+                    Section {
+                        // 联系邮箱还没定时不显示（见 SupportInfo.swift）
+                        if let feedbackURL = SupportInfo.feedbackURL {
+                            Link("意见反馈", destination: feedbackURL)
+                        }
+                        LabeledContent("版本", value: SupportInfo.versionText)
+                    } header: {
+                        Text("关于")
+                    } footer: {
+                        Text("热量和营养目标是根据公式估算的参考值，不是医疗建议。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
+                    }
+
+                    #if DEBUG && targetEnvironment(simulator)
+                    // 只在模拟器里出现的开发者工具：一键造出各种热量提示
+                    DebugHintSection(profile: profile)
+                    #endif
+                }
+                .listRowBackground(AppColors.surfacePrimary)  // 卡片用暖白，不用纯白
             }
+            .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
             .navigationTitle("我的")
             .sheet(isPresented: $isEditing) {
                 ProfileEditView(profile: profile)

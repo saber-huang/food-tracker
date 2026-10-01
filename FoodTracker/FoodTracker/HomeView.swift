@@ -2,8 +2,8 @@
 //  HomeView.swift
 //  FoodTracker
 //
-//  「今日」页：顶部是周横条（左右滑动翻周、点一天看那一天），中间是那一天的饮食记录
-//  （和目标比较的卡片 + 各餐的记录），底部是记录用的按钮：拍照、从相册选择、手动添加。
+//  「今日」页：顶部是日期栏（月份 + 一周的日期，左右滑动翻周、点一天看那一天），
+//  下面依次是主卡片（还可以吃多少）、快速记录（拍照、相册、手动）、热量提示、今日饮食。
 //  新记录（拍照识别或手动添加）都记到正在看的那一天，所以忘了记的往日也能补。
 //  选了照片后点「开始识别」，识别成功后自动跳到结果页；手动添加不需要联网，识别次数用完了也能记。
 //
@@ -52,29 +52,20 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             DayLogView(day: selectedDay, today: today, bodyInfo: profile.bodyInfo) {
-                // 热量提示只在看今天时出现，紧跟在进度卡片下面
+                quickLogDock
+            } hints: {
+                // 热量提示只在看今天时出现，放在快速记录下面
                 if isToday {
                     TodayHints(profile: profile, sheet: $hintSheet)
                 }
             }
                 // 换了一天就整个重新创建，保证列表查的是新的一天
                 .id(selectedDay)
-                .navigationTitle("今日")  // 只用在结果页的「返回」按钮上；顶栏中间显示的是月份
-                .navigationBarTitleDisplayMode(.inline)
-                // 顶部固定的周横条
-                .safeAreaInset(edge: .top) {
-                    WeekStripView(
-                        selectedDay: $selectedDay, visibleWeekOffset: $visibleWeekOffset, today: today,
-                        kcalTarget: profile.targets.calories
-                    )
-                    .id(DayMath.weekStart(containing: today))  // 新的一周开始（或换了时区）时整条重建
-                    .disabled(isAnalyzing)  // 识别中不能切换日期
-                    .scrollDisabled(isAnalyzing)
-                    .background(.bar)
-                }
-                // 底部固定的按钮区域
-                .safeAreaInset(edge: .bottom) {
-                    actionBar
+                .navigationTitle("今日")  // 只用在结果页的「返回」按钮上；这一页自己的顶部是日期栏
+                .toolbar(.hidden, for: .navigationBar)
+                // 顶部固定的日期栏：月份 + 一周的日期，和页面背景连在一起，不像系统的日期选择器
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    dateHeader
                 }
                 // resultRoute 有值时跳到结果页；用户按「返回」时它会自动变回 nil
                 .navigationDestination(item: $resultRoute) { route in
@@ -83,53 +74,6 @@ struct HomeView: View {
                         resultRoute = nil
                         photo = nil
                     }
-                }
-                .toolbar {
-                    // 顶栏中间：正在看的那天所在的月份，点一下打开月历；识别中只显示文字，不能点
-                    ToolbarItem(placement: .principal) {
-                        if isAnalyzing {
-                            Text(DayMath.monthTitle(for: selectedDay))
-                                .font(.headline)
-                        } else {
-                            Button {
-                                showMonthPicker = true
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Text(DayMath.monthTitle(for: selectedDay))
-                                        .font(.headline)
-                                    Image(systemName: "chevron.down")
-                                        .font(.caption.weight(.semibold))
-                                }
-                                .foregroundStyle(.primary)
-                            }
-                            .tint(.primary)  // 这是标题，不用主色（App 的主色会把顶栏按钮染成绿色）
-                            .accessibilityHint("打开月历，选择日期")
-                        }
-                    }
-                    // 条件写在 ToolbarItem 外面：看今天或识别中时，整个按钮都不出现
-                    if !isToday && !isAnalyzing {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button("回到今天") { goToToday() }
-                        }
-                    }
-                    #if DEBUG && targetEnvironment(simulator)
-                    // 只在模拟器里出现的调试菜单：不用拍照、不花识别次数就能测试记录功能。
-                    // 装到手机上的版本里没有这个菜单，不会弄乱真实数据
-                    ToolbarItem(placement: .topBarLeading) {
-                        Menu("调试") {
-                            Button("在这一天插入两条示例记录") {
-                                SampleData.insertSampleEntries(into: modelContext, day: selectedDay)
-                                try? modelContext.save()
-                            }
-                            Button("最近两周每天插入示例记录") {
-                                SampleData.insertRecentDays(into: modelContext, today: today)
-                                try? modelContext.save()
-                            }
-                            Button("用示例结果") { showSampleResult(SampleData.analyzeResult) }
-                            Button("用示例结果（不是食物）") { showSampleResult(SampleData.notFoodResult) }
-                        }
-                    }
-                    #endif
                 }
                 // 从相册选了照片之后，把它读出来
                 .onChange(of: pickerItem) { _, newItem in
@@ -196,7 +140,7 @@ struct HomeView: View {
                     .ignoresSafeArea()
                 }
                 .alert("识别失败", isPresented: $showError) {
-                    Button("重试") { AIConsent.perform(pending: $pendingAIAction) { Task { await analyze() } } }
+                    Button("重试") { startAnalyzing() }
                     // 没网、识别次数用完了：不用等，直接手动记
                     Button("改为手动添加") { openManualEntry() }
                     Button("好", role: .cancel) {}
@@ -206,134 +150,101 @@ struct HomeView: View {
                 .alert("没有可用的相机", isPresented: $showNoCamera) {
                     Button("好", role: .cancel) {}
                 } message: {
-                    Text("这台设备现在不能拍照，请点「从相册选择」。")
+                    Text("这台设备现在不能拍照，请点「相册」。")
                 }
         }
     }
 
     // MARK: - 界面的各个部分
 
-    /// 底部的按钮区域：选了照片时，上面多一行（照片缩略图 + 开始识别）；看往日时先写明记到哪一天
-    private var actionBar: some View {
-        VStack(spacing: 12) {
-            if let caption = DayMath.recordCaption(day: selectedDay, today: today) {
-                Label(caption, systemImage: "calendar")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-            if let photo {
-                HStack(spacing: 12) {
-                    Image(uiImage: photo)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 72, height: 72)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .overlay {
-                            if isAnalyzing {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(.black.opacity(0.4))
-                                    ProgressView()
-                                        .tint(.white)
-                                }
-                            }
-                        }
-                        // 右上角的小叉：选错了照片，或看完结果不想再识别，点它收起这一行（识别中不显示）
-                        .overlay(alignment: .topTrailing) {
-                            if !isAnalyzing {
-                                // 这里要写 self.photo：外面的 if let photo 里，photo 指的是照片本身，不能改
-                                Button("移除照片", systemImage: "xmark.circle.fill") { self.photo = nil }
-                                    .labelStyle(.iconOnly)
-                                    .font(.title3)
-                                    // 白色的叉 + 半透明黑底，放在什么颜色的照片上都看得清
-                                    .symbolRenderingMode(.palette)
-                                    .foregroundStyle(.white, .black.opacity(0.5))
-                                    .padding(4)
-                            }
-                        }
-                    VStack(alignment: .leading, spacing: 6) {
-                        analyzeButton
-                        if isAnalyzing {
-                            Text("正在识别，通常需要 5～10 秒…")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        } else if let remaining = analyzeRemaining {
-                            // 按下「开始识别」前告诉用户还剩几次；用完了也不挡着按钮，后端会给出明确的说明
-                            Text(remaining > 0 ? "今天还可以识别 \(remaining) 次" : "今天的识别次数用完了，可以先用「手动添加」")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+    /// 顶部的日期栏：第一行是月份（点一下打开月历）和「回到今天」，下面是一周的日期。
+    /// 背景和页面顶部同一个颜色，底边淡出，内容滑到它下面时被柔和地盖住
+    private var dateHeader: some View {
+        VStack(spacing: AppSpacing.xs) {
+            HStack(spacing: AppSpacing.sm) {
+                Button {
+                    showMonthPicker = true
+                } label: {
+                    HStack(spacing: AppSpacing.xxs) {
+                        Text(DayMath.monthTitle(for: selectedDay))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(AppColors.textPrimary)
+                        Image(systemName: "chevron.down")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(AppColors.textSecondary)
                     }
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .disabled(isAnalyzing)  // 识别中不能切换日期
+                .accessibilityHint("打开月历，选择日期")
+
+                Spacer(minLength: 0)
+
+                // 看往日时才出现；识别中不能切换日期
+                if !isToday && !isAnalyzing {
+                    Button("回到今天") { goToToday() }
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(AppColors.brand)
+                        .frame(minHeight: 44)
+                }
+
+                #if DEBUG && targetEnvironment(simulator)
+                // 只在模拟器里出现的调试菜单：不用拍照、不花识别次数就能测试记录功能。
+                // 装到手机上的版本里没有这个菜单，不会弄乱真实数据
+                Menu {
+                    Button("在这一天插入两条示例记录") {
+                        SampleData.insertSampleEntries(into: modelContext, day: selectedDay)
+                        try? modelContext.save()
+                    }
+                    Button("最近两周每天插入示例记录") {
+                        SampleData.insertRecentDays(into: modelContext, today: today)
+                        try? modelContext.save()
+                    }
+                    Button("用示例结果") { showSampleResult(SampleData.analyzeResult) }
+                    Button("用示例结果（不是食物）") { showSampleResult(SampleData.notFoodResult) }
+                } label: {
+                    Text("调试")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(AppColors.textSecondary)
+                        .frame(minWidth: 44, minHeight: 44)
+                }
+                #endif
             }
-            pickButtons
+            .padding(.horizontal, AppSpacing.pageMargin)
+
+            DateStrip(
+                selectedDay: $selectedDay, visibleWeekOffset: $visibleWeekOffset, today: today,
+                kcalTarget: profile.targets.calories
+            )
+            .id(DayMath.weekStart(containing: today))  // 新的一周开始（或换了时区）时整条重建
+            .padding(.horizontal, AppSpacing.xs)
+            .disabled(isAnalyzing)  // 识别中不能切换日期
+            .scrollDisabled(isAnalyzing)
         }
-        .padding(.horizontal)
-        .padding(.vertical, 10)
-        .background(.bar)
-        // 字号最多放大到「特特大」：再大这一栏会占掉小半个屏幕（和系统的标签栏一样；长按按钮可以看放大的文字）
-        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+        .padding(.bottom, AppSpacing.sm)
+        .background {
+            AppColors.backgroundTop
+                .ignoresSafeArea(edges: .top)
+        }
+        // 底边往下淡出一小段：内容滑上来时慢慢消失，不是被一条硬边切掉
+        .overlay(alignment: .bottom) {
+            LinearGradient(
+                colors: [AppColors.backgroundTop, AppColors.backgroundTop.opacity(0)], startPoint: .top, endPoint: .bottom
+            )
+            .frame(height: AppSpacing.md)
+            .offset(y: AppSpacing.md)
+            .allowsHitTesting(false)
+        }
     }
 
-    /// 拍照 / 从相册选择 / 手动添加 三个按钮（图标在上、文字在下，小屏幕的手机也放得下）。
-    /// 还没选照片时「拍照」是主按钮（实心的主色）；其余是灰底黑字的次要按钮。
-    /// 选了照片以后主按钮换成「开始识别」，这三个都变成次要按钮
-    private var pickButtons: some View {
-        HStack(spacing: 10) {
-            cameraButton
-
-            // PhotosPicker 是系统自带的相册选择器，不需要申请相册权限
-            PhotosPicker(selection: $pickerItem, matching: .images) {
-                Label("从相册选择", systemImage: "photo.on.rectangle")
-            }
-            .modifier(SecondaryActionStyle())
-
-            Button {
-                openManualEntry()
-            } label: {
-                Label("手动添加", systemImage: "square.and.pencil")
-            }
-            .modifier(SecondaryActionStyle())
-        }
-        .labelStyle(IconAboveTitleLabelStyle())
-        // 用特大字号的人长按按钮，会弹出放大的图标和文字（这一栏的字号有上限，见 actionBar）
-        .accessibilityShowsLargeContentViewer()
-        // 这一行的高度 = 最高的那个按钮：字号变大、「从相册选择」换行时，三个按钮还是一样高
-        .fixedSize(horizontal: false, vertical: true)
-        .disabled(isAnalyzing)
-    }
-
-    @ViewBuilder
-    private var cameraButton: some View {
-        let button = Button {
-            // 有些设备（比如旧版模拟器）没有相机，先检查一下
-            if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                showCamera = true
-            } else {
-                showNoCamera = true
-            }
-        } label: {
-            Label("拍照", systemImage: "camera")
-        }
-        if photo == nil {
-            button.buttonStyle(.borderedProminent)
-        } else {
-            button.modifier(SecondaryActionStyle())
-        }
-    }
-
-    /// 开始识别按钮：识别中不能重复点
-    private var analyzeButton: some View {
-        Button {
-            // 没同意过使用 AI 时，先弹出说明；同意后才真正上传照片
-            AIConsent.perform(pending: $pendingAIAction) { Task { await analyze() } }
-        } label: {
-            Label("开始识别", systemImage: "sparkles")
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .disabled(isAnalyzing)
+    /// 快速记录：拍照、相册、手动；选了照片时多出缩略图和「开始识别」
+    private var quickLogDock: some View {
+        QuickLogDock(
+            photo: photo, isAnalyzing: isAnalyzing, analyzeRemaining: analyzeRemaining, pickerItem: $pickerItem,
+            onCamera: openCamera, onManual: openManualEntry, onAnalyze: startAnalyzing,
+            onRemovePhoto: { photo = nil })
     }
 
     // MARK: - 功能
@@ -341,6 +252,20 @@ struct HomeView: View {
     /// 按现在几点，默认选中这一餐（用户可以改）
     private var suggestedMeal: MealType {
         DietLogMath.suggestedMeal(at: .now)
+    }
+
+    /// 打开相机。有些设备（比如旧版模拟器）没有相机，先检查一下
+    private func openCamera() {
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            showCamera = true
+        } else {
+            showNoCamera = true
+        }
+    }
+
+    /// 开始识别。没同意过使用 AI 时，先弹出说明；同意后才真正上传照片
+    private func startAnalyzing() {
+        AIConsent.perform(pending: $pendingAIAction) { Task { await analyze() } }
     }
 
     /// 打开「手动添加」表单
@@ -443,29 +368,6 @@ private struct ResultRoute: Hashable {
 
 /// 次要按钮：灰底黑字（深色模式白字）。主色只留给一个主按钮；
 /// 主色的浅底上放主色的小字对比度不够（量出来不到 4.5:1），灰底黑字看得最清楚
-private struct SecondaryActionStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .buttonStyle(.bordered)
-            .tint(Color(.systemGray))
-            .foregroundStyle(Color.primary)
-    }
-}
-
-/// 按钮上图标在上、文字在下（系统没有现成的这种样式，自己定义一个）
-private struct IconAboveTitleLabelStyle: LabelStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        VStack(spacing: 3) {
-            configuration.icon
-                .font(.body)
-            configuration.title
-                .font(.caption)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)  // 撑满这一行的宽和高（高度由上面的 fixedSize 定）
-        .padding(.vertical, 1)
-    }
-}
-
 #Preview {
     HomeView(profile: SampleData.profile)
         .modelContainer(SampleData.previewContainer)

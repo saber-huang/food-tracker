@@ -45,72 +45,76 @@ struct ResultView: View {
 
     var body: some View {
         List {
-            // 照片（小图）和 AI 的一句话总结并排：下面的食物列表不用往下翻就看得到
-            Section {
-                HStack(alignment: .top, spacing: 12) {
-                    if let photo {
-                        Image(uiImage: photo)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 76, height: 76)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .accessibilityHidden(true)  // 就是刚才选的那张照片
+            Group {
+                // 照片（小图）和 AI 的一句话总结并排：下面的食物列表不用往下翻就看得到
+                Section {
+                    HStack(alignment: .top, spacing: 12) {
+                        if let photo {
+                            Image(uiImage: photo)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 76, height: 76)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .accessibilityHidden(true)  // 就是刚才选的那张照片
+                        }
+                        Text(result.message)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    Text(result.message)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-            }
 
-            if showsList {
-                Section("识别到的食物（点一项可修改）") {
-                    // 每一项有自己的 id，删掉一项时列表能正确地动画，弹出的表单也知道改的是哪一项
-                    ForEach(items) { item in
+                if showsList {
+                    Section("识别到的食物（点一项可修改）") {
+                        // 每一项有自己的 id，删掉一项时列表能正确地动画，弹出的表单也知道改的是哪一项
+                        ForEach(items) { item in
+                            Button {
+                                editingItem = item
+                            } label: {
+                                FoodRow(item: item)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        // 向左滑动出现「删除」：只是从这个列表里去掉，保存之前都可以反悔（返回重来）
+                        .onDelete { offsets in
+                            items.remove(atOffsets: offsets)
+                        }
                         Button {
-                            editingItem = item
+                            isAddingItem = true
                         } label: {
-                            FoodRow(item: item)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    // 向左滑动出现「删除」：只是从这个列表里去掉，保存之前都可以反悔（返回重来）
-                    .onDelete { offsets in
-                        items.remove(atOffsets: offsets)
-                    }
-                    Button {
-                        isAddingItem = true
-                    } label: {
-                        Label("添加一项", systemImage: "plus.circle")
-                    }
-                }
-
-                Section("整餐合计") {
-                    TotalView(items: items)
-                }
-
-                // 记到哪一天（打开这页时就定好了，这里只显示）、哪一餐；紧挨着下面的保存按钮，保存前最后看一眼
-                Section {
-                    LabeledContent("记录日期", value: DayMath.dayTitle(for: day, today: today))
-                    Picker("记到哪一餐", selection: $meal) {
-                        ForEach(MealType.allCases) { meal in
-                            Text(meal.title).tag(meal)
+                            Label("添加一项", systemImage: "plus.circle")
                         }
                     }
-                    .pickerStyle(.segmented)  // 四个餐次一看就懂，不另写标题；旁白会读出「记到哪一餐」
-                } footer: {
-                    Text("按现在的时间默认推荐，可以改。")
-                }
-            } else {
-                Section {
-                    ContentUnavailableView(
-                        "没有识别到食物",
-                        systemImage: "questionmark.circle",
-                        description: Text("可以返回换一张照片，也可以手动添加。")
-                    )
-                    // 手动加的一项会进入上面的列表，之后就和识别到食物一样：可以再改、再加，最后一起保存
-                    Button("改为手动添加") { isAddingItem = true }
+
+                    Section("整餐合计") {
+                        TotalView(items: items)
+                    }
+
+                    // 记到哪一天（打开这页时就定好了，这里只显示）、哪一餐；紧挨着下面的保存按钮，保存前最后看一眼
+                    Section {
+                        LabeledContent("记录日期", value: DayMath.dayTitle(for: day, today: today))
+                        Picker("记到哪一餐", selection: $meal) {
+                            ForEach(MealType.allCases) { meal in
+                                Text(meal.title).tag(meal)
+                            }
+                        }
+                        .pickerStyle(.segmented)  // 四个餐次一看就懂，不另写标题；旁白会读出「记到哪一餐」
+                    } footer: {
+                        Text("按现在的时间默认推荐，可以改。")
+                    }
+                } else {
+                    Section {
+                        ContentUnavailableView(
+                            "没有识别到食物",
+                            systemImage: "questionmark.circle",
+                            description: Text("可以返回换一张照片，也可以手动添加。")
+                        )
+                        // 手动加的一项会进入上面的列表，之后就和识别到食物一样：可以再改、再加，最后一起保存
+                        Button("改为手动添加") { isAddingItem = true }
+                    }
                 }
             }
+            .listRowBackground(AppColors.surfacePrimary)  // 卡片用暖白，不用纯白
         }
+        .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
         .navigationTitle("识别结果")
         .navigationBarTitleDisplayMode(.inline)
         // 固定在页面最底部：保存按钮（和引导页「下一步」、食谱页「生成」是同一种大按钮）+ AI 估算的提示
@@ -135,7 +139,7 @@ struct ResultView: View {
             .frame(maxWidth: .infinity)
             .padding(.horizontal)
             .padding(.vertical, 10)
-            .background(.bar)
+            .appBottomBar()
         }
         // 修改一项：保存后替换掉列表里 id 相同的那一项；表单里也能删掉这一项
         .sheet(item: $editingItem) { item in
@@ -210,9 +214,9 @@ private struct ConfidenceBadge: View {
 
     private var color: Color {
         switch confidence {
-        case .high: Theme.confidenceHigh
-        case .medium: Theme.confidenceMedium
-        case .low: Theme.confidenceLow
+        case .high: AppColors.confidenceHigh
+        case .medium: AppColors.confidenceMedium
+        case .low: AppColors.confidenceLow
         case nil: .secondary
         }
     }
@@ -223,7 +227,7 @@ private struct ConfidenceBadge: View {
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
             .foregroundStyle(color)
-            .background(color.opacity(Theme.badgeOpacity), in: Capsule())
+            .background(color.opacity(AppColors.badgeOpacity), in: Capsule())
     }
 }
 
@@ -236,7 +240,7 @@ private struct TotalView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
                 Text(total.caloriesKcal.noDecimal)
-                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .font(AppTypography.heroNumber(size: 36))  // 和首页的大数字同一种字
                 Text("千卡")
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -250,9 +254,9 @@ private struct TotalView: View {
                 }
             }
             HStack {
-                NutrientColumn(name: String(localized: "蛋白质"), value: total.proteinG.oneDecimal, color: Theme.protein)
-                NutrientColumn(name: String(localized: "碳水"), value: total.carbsG.oneDecimal, color: Theme.carbs)
-                NutrientColumn(name: String(localized: "脂肪"), value: total.fatG.oneDecimal, color: Theme.fat)
+                NutrientColumn(name: String(localized: "蛋白质"), value: total.proteinG.oneDecimal, color: AppColors.protein)
+                NutrientColumn(name: String(localized: "碳水"), value: total.carbsG.oneDecimal, color: AppColors.carbs)
+                NutrientColumn(name: String(localized: "脂肪"), value: total.fatG.oneDecimal, color: AppColors.fat)
             }
         }
         .padding(.vertical, 4)

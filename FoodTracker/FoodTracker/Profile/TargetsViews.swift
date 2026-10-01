@@ -20,9 +20,9 @@ struct TargetsSummaryView: View {
                     .foregroundStyle(.secondary)
             }
             HStack {
-                NutrientColumn(name: String(localized: "蛋白质"), value: targets.proteinG.noDecimal, color: Theme.protein)
-                NutrientColumn(name: String(localized: "碳水"), value: targets.carbsG.noDecimal, color: Theme.carbs)
-                NutrientColumn(name: String(localized: "脂肪"), value: targets.fatG.noDecimal, color: Theme.fat)
+                NutrientColumn(name: String(localized: "蛋白质"), value: targets.proteinG.noDecimal, color: AppColors.protein)
+                NutrientColumn(name: String(localized: "碳水"), value: targets.carbsG.noDecimal, color: AppColors.carbs)
+                NutrientColumn(name: String(localized: "脂肪"), value: targets.fatG.noDecimal, color: AppColors.fat)
             }
         }
         .padding(.vertical, 4)

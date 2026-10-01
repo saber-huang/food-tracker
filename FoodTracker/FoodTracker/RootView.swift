@@ -51,22 +51,34 @@ struct RootView: View {
     }
 }
 
-/// 主界面：底部的标签栏
+/// 主界面：三个标签页，底部是悬浮的标签栏（FloatingTabBar）。
+/// 系统自带的标签栏藏起来；每个标签页的内容和翻页记录都由 TabView 保留，切换回来还在原来的位置。
+/// 标签栏放在页面下面（不是盖在页面上）：任何页面的最后一行、底部按钮都停在它上面，不会被挡住；
+/// 它周围露出的是和页面一样的暖色背景，所以看起来仍然是浮在页面上的一个圆角条
 struct MainTabView: View {
     let profile: UserProfile
     let onEraseAll: () -> Void  // 「我的」页确认「删除所有数据」后调用
 
+    @State private var selection = AppTab.today
+
     var body: some View {
-        TabView {
-            HomeView(profile: profile)
-                .tabItem { Label("今日", systemImage: "fork.knife") }
+        VStack(spacing: 0) {
+            TabView(selection: $selection) {
+                HomeView(profile: profile)
+                    .tag(AppTab.today)
+                    .toolbar(.hidden, for: .tabBar)
 
-            RecipesView(profile: profile)
-                .tabItem { Label("食谱", systemImage: "book") }
+                RecipesView(profile: profile)
+                    .tag(AppTab.recipes)
+                    .toolbar(.hidden, for: .tabBar)
 
-            ProfileView(profile: profile, onEraseAll: onEraseAll)
-                .tabItem { Label("我的", systemImage: "person.crop.circle") }
+                ProfileView(profile: profile, onEraseAll: onEraseAll)
+                    .tag(AppTab.profile)
+                    .toolbar(.hidden, for: .tabBar)
+            }
+            FloatingTabBar(selection: $selection)
         }
+        .background { AppBackground(glow: false) }
         // 一进主界面就悄悄叫醒云端服务器（免费服务器闲置会休眠），用户点识别时就不用等
         .task { await APIClient.warmUp() }
     }

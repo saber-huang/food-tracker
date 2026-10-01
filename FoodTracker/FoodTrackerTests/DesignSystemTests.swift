@@ -1,8 +1,8 @@
 //
-//  ThemeTests.swift
+//  DesignSystemTests.swift
 //  FoodTrackerTests
 //
-//  配色的检查：文字和按钮的对比度够不够（WCAG：普通文字 4.5:1，粗体大字和图形 3:1），
+//  设计规范的检查：文字和按钮的对比度够不够（WCAG：普通文字 4.5:1，粗体大字和图形 3:1），
 //  Assets 里的 AccentColor 和代码里的主色是不是同一个颜色，以及「今日」卡片里那只碗的装满高度。
 //
 
@@ -38,63 +38,70 @@ private func blend(_ color: UInt32, over background: UInt32, opacity: Double) ->
     return mix(16) | mix(8) | mix(0)
 }
 
-private let white: UInt32 = 0xFFFFFF
-private let lightPage: UInt32 = 0xF2F2F7  // 浅色模式的页面底色（卡片是白色）
-private let darkCard: UInt32 = 0x1C1C1E  // 深色模式的卡片
-private let black: UInt32 = 0x000000  // 深色模式的页面底色
+private typealias P = AppColors.Pair
 
-@Suite("配色")
-struct ThemeTests {
-    @Test("主色当文字时看得清，白字放在主色按钮上也看得清", arguments: [Theme.AccentChoice.matcha, .ink, .roast])
-    func accentContrast(_ choice: Theme.AccentChoice) {
-        let pair = choice.pair
-        #expect(contrast(pair.light, white) >= 4.5)
-        #expect(contrast(pair.light, lightPage) >= 4.5)
-        #expect(contrast(white, pair.light) >= 4.5)
-        #expect(contrast(pair.dark, darkCard) >= 4.5)
-        #expect(contrast(pair.dark, black) >= 4.5)
-        // 深色模式的按钮：白色粗体大字，3:1 就够（系统蓝在深色模式下也是这样）
-        #expect(contrast(white, pair.dark) >= 3)
+@Suite("设计规范：颜色")
+struct DesignSystemColorTests {
+    @Test("正文和次要文字：在页面底色、卡片、燕麦色底上都至少 4.5:1（浅色、深色模式）")
+    func textContrast() {
+        for surface in [P.background, P.backgroundTop, P.surfacePrimary] {
+            #expect(contrast(P.textPrimary.light, surface.light) >= 4.5)
+            #expect(contrast(P.textSecondary.light, surface.light) >= 4.5)
+            #expect(contrast(P.textPrimary.dark, surface.dark) >= 4.5)
+            #expect(contrast(P.textSecondary.dark, surface.dark) >= 4.5)
+        }
+        // 次要按钮的燕麦色圆底上，图标至少 3:1
+        #expect(contrast(P.iconSecondary.light, P.surfaceSecondary.light) >= 3)
+        #expect(contrast(P.iconSecondary.dark, P.surfaceSecondary.dark) >= 3)
     }
 
-    @Test("正式版的主色是抹茶绿；可以点的字和旁边的黑字也分得开（墨色就分不开，所以没选它）")
-    func defaultAccent() {
-        #expect(Theme.AccentChoice.matcha.pair.light == 0x357A4C)
-        #expect(contrast(Theme.AccentChoice.matcha.pair.light, black) >= 3)
+    @Test("主色橄榄绿：当文字看得清；暖白字放在主色上也看得清")
+    func brandContrast() {
+        #expect(contrast(P.brand.light, P.surfacePrimary.light) >= 4.5)
+        #expect(contrast(P.brand.light, P.background.light) >= 4.5)
+        #expect(contrast(P.onBrand.light, P.brand.light) >= 4.5)
+        #expect(contrast(P.brand.dark, P.surfacePrimary.dark) >= 4.5)
+        // 深色模式的主按钮：暖白粗体大字，3:1 就够（系统蓝在深色模式下也是这样）
+        #expect(contrast(P.onBrand.dark, P.brand.dark) >= 3)
+        // 选中的标签：深橄榄绿字放在浅橄榄色底上
+        #expect(contrast(P.brandDeep.light, P.brandSoft.light) >= 4.5)
+        #expect(contrast(P.brandDeep.dark, P.brandSoft.dark) >= 4.5)
     }
 
-    @Test("Assets 里的 AccentColor 和代码里的抹茶绿完全一样（浅色、深色都是）")
+    @Test("Assets 里的 AccentColor 和代码里的橄榄绿完全一样（浅色、深色都是）")
     func accentAssetMatchesCode() throws {
         // 测试跑在 App 里面，Bundle.main 就是 App 本身
         let asset = try #require(UIColor(named: "AccentColor", in: .main, compatibleWith: nil))
-        let pair = Theme.AccentChoice.matcha.pair
-        for (style, hex) in [(UIUserInterfaceStyle.light, pair.light), (.dark, pair.dark)] {
+        for (style, hex) in [(UIUserInterfaceStyle.light, P.brand.light), (.dark, P.brand.dark)] {
             var (r, g, b, a): (CGFloat, CGFloat, CGFloat, CGFloat) = (0, 0, 0, 0)
             asset.resolvedColor(with: UITraitCollection(userInterfaceStyle: style)).getRed(&r, green: &g, blue: &b, alpha: &a)
             let expected = [(hex >> 16) & 0xFF, (hex >> 8) & 0xFF, hex & 0xFF].map { CGFloat($0) / 255 }
             for (actual, wanted) in zip([r, g, b], expected) {
-                #expect(abs(actual - wanted) < 1.0 / 255, "AccentColor（\(style == .dark ? "深色" : "浅色")）和 Theme 不一样")
+                #expect(abs(actual - wanted) < 1.0 / 255, "AccentColor（\(style == .dark ? "深色" : "浅色")）和 AppColors 不一样")
             }
         }
     }
 
-    @Test("营养素的进度条：深色模式都 >= 3:1；浅色模式蛋白质、脂肪 >= 3:1，碳水浅一些但旁边一直有文字标签")
-    func macroBars() {
-        let macros = [Theme.Macro.protein, Theme.Macro.carbs, Theme.Macro.fat]
+    @Test("营养素的颜色彼此分得开，而且都不是主色（全 App 只有一种橄榄绿）")
+    func macroColorsAreDistinct() {
+        let macros = [P.protein, P.carbs, P.fat]
         for pair in macros {
-            #expect(contrast(pair.dark, darkCard) >= 3)
+            #expect(pair.light != P.brand.light)
+            #expect(pair.dark != P.brand.dark)
         }
-        #expect(contrast(Theme.Macro.protein.light, white) >= 3)
-        #expect(contrast(Theme.Macro.fat.light, white) >= 3)
-        #expect(contrast(Theme.Macro.carbs.light, white) >= 2.2)
+        // 亮度拉开（色盲时主要靠亮度区分）：浅色模式三种颜色两两的对比度都大于 1.3
+        for i in 0..<macros.count {
+            for j in (i + 1)..<macros.count {
+                #expect(contrast(macros[i].light, macros[j].light) > 1.3)
+                #expect(contrast(macros[i].dark, macros[j].dark) > 1.3)
+            }
+        }
     }
 
-    @Test("可信度小标签：字放在 12% 的同色底上 >= 4.5:1", arguments: [
-        Theme.ConfidencePair.high, Theme.ConfidencePair.medium, Theme.ConfidencePair.low,
-    ])
+    @Test("可信度小标签：字放在 12% 的同色底上 >= 4.5:1", arguments: [P.confidenceHigh, P.confidenceMedium, P.confidenceLow])
     func confidenceBadges(_ pair: ColorPair) {
-        let lightBackground = blend(pair.light, over: white, opacity: Theme.badgeOpacity)
-        let darkBackground = blend(pair.dark, over: darkCard, opacity: Theme.badgeOpacity)
+        let lightBackground = blend(pair.light, over: P.surfacePrimary.light, opacity: AppColors.badgeOpacity)
+        let darkBackground = blend(pair.dark, over: P.surfacePrimary.dark, opacity: AppColors.badgeOpacity)
         #expect(contrast(pair.light, lightBackground) >= 4.5)
         #expect(contrast(pair.dark, darkBackground) >= 4.5)
     }

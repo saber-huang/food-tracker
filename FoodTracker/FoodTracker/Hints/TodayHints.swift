@@ -85,6 +85,7 @@ struct TodayHints: View {
                 Text(HintCopy.debugFakeNowCaption(now))
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .hintRow()
             }
         }
         #endif
@@ -101,6 +102,7 @@ struct TodayHints: View {
         case .nearLimit(let remaining, let meal):
             Section {
                 note(HintCopy.nearLimit(remainingKcal: remaining, mealName: meal.title), icon: "info.circle")
+                    .hintRow()
                 Button {
                     // 按今天真正剩下的热量（目标 − 已记录）推荐，不用四舍五入过的数
                     let todayKcal = history.first { DayMath.calendar.isDate($0.day, inSameDayAs: now) }?.kcal ?? 0
@@ -109,24 +111,29 @@ struct TodayHints: View {
                     Label(HintCopy.recommendNextMeal, systemImage: "sparkles")
                 }
                 .accessibilityHint(HintCopy.recommendNextMealA11y)
+                .hintRow()
             }
         case .over(let byKcal, let meal):
             Section {
                 note(HintCopy.over(byKcal: byKcal, nextMealName: meal?.title), icon: "heart.circle")
+                    .hintRow()
             }
         case .adjustTarget(let days):
             // 连续几天明显高于目标：温和地问一句要不要调整目标。两个按钮都会让这张卡片 7 天内不再出现
             Section {
                 note(HintCopy.adjustTarget(consecutiveDays: days), icon: "heart.circle")
+                    .hintRow()
                 Button(HintCopy.adjustTargetAction) {
                     snoozeAdjust(from: now)
                     sheet = .editProfile
                 }
                 .accessibilityHint(HintCopy.adjustTargetA11y)
+                .hintRow()
                 Button(HintCopy.adjustTargetLater) {
                     snoozeAdjust(from: now)
                 }
                 .foregroundStyle(.secondary)
+                .hintRow()
             }
         case .weeklySummary(let summary):
             weeklySection(summary)
@@ -144,25 +151,34 @@ struct TodayHints: View {
                 )
                 .font(.subheadline)
                 .monospacedDigit()
+                .hintRow()
             }
             Text(verdict(for: summary))
                 .font(.callout)
                 .foregroundStyle(.secondary)
+                .hintRow()
             if summary.targetChangedRecently {
                 Text(HintCopy.weeklyTargetChangedNote)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .hintRow()
             }
             if summary.suggestsAdjustingTarget {
                 Text(HintCopy.weeklyAdjustSuggestion)
                     .font(.callout)
                     .foregroundStyle(.secondary)
+                    .hintRow()
                 Button(HintCopy.adjustTargetAction) { sheet = .editProfile }
                     .accessibilityHint(HintCopy.adjustTargetA11y)
+                    .hintRow()
             }
             Button(HintCopy.weeklyDismiss) { weeklyDismissedWeek = summary.weekKey }
+                .hintRow()
         } header: {
             Label(HintCopy.weeklyTitle, systemImage: "calendar")
+                .font(AppTypography.sectionTitle)
+                .foregroundStyle(AppColors.textPrimary)
+                .textCase(nil)
         }
     }
 
@@ -186,5 +202,12 @@ struct TodayHints: View {
     /// 7 天内不再问要不要调整目标（按提示用的「现在」算，模拟器里假装的时间也一样）
     private func snoozeAdjust(from now: Date) {
         adjustSnoozedUntil = now.addingTimeInterval(Double(HintEngine.adjustSnoozeDays) * 86_400).timeIntervalSince1970
+    }
+}
+
+private extension View {
+    /// 提示卡片里的一行：卡片底色和「今日」页的其他卡片一样（暖白）
+    func hintRow() -> some View {
+        listRowBackground(AppColors.surfacePrimary)
     }
 }

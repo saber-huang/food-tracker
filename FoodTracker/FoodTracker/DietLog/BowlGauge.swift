@@ -116,9 +116,9 @@ struct BowlGauge: View {
     var body: some View {
         let box = BowlGeometry.gaugeBox
         ZStack {
-            BowlPart(path: BowlGeometry.body, box: box).fill(Theme.Oat.empty)
-            BowlContents(fraction: fraction, box: box).fill(Theme.Oat.bowl)
-            BowlPart(path: BowlGeometry.rim, box: box).fill(Theme.Oat.rim)
+            BowlPart(path: BowlGeometry.body, box: box).fill(AppColors.oatEmpty)
+            BowlContents(fraction: fraction, box: box).fill(AppColors.oatBowl)
+            BowlPart(path: BowlGeometry.rim, box: box).fill(AppColors.oatRim)
         }
         .aspectRatio(box.width / box.height, contentMode: .fit)
         // 记了一餐，碗里慢慢装上去；系统设置了「减弱动态效果」就直接变
@@ -132,9 +132,9 @@ struct KindbiteMark: View {
     var body: some View {
         let box = BowlGeometry.markBox
         ZStack {
-            BowlPart(path: BowlGeometry.smile, box: box).fill(Theme.Oat.smile)
-            BowlPart(path: BowlGeometry.body, box: box).fill(Theme.Oat.bowl)
-            BowlPart(path: BowlGeometry.rim, box: box).fill(Theme.Oat.rim)
+            BowlPart(path: BowlGeometry.smile, box: box).fill(AppColors.oatBowl)
+            BowlPart(path: BowlGeometry.body, box: box).fill(AppColors.oatBowl)
+            BowlPart(path: BowlGeometry.rim, box: box).fill(AppColors.oatRim)
         }
         .aspectRatio(box.width / box.height, contentMode: .fit)
         .accessibilityHidden(true)

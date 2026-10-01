@@ -17,102 +17,106 @@ struct ExplanationView: View {
 
     var body: some View {
         List {
-            Section {
-                Text("下面用你自己的数据，一步步演示每日目标是怎么算出来的。")
-                if units == .imperial {
-                    Text(
-                        "公式用的是公制单位：你的体重 \(BodyUnits.weightDisplay(kg: bodyInfo.weightKg, units: .imperial)) = \(bodyInfo.weightKg.oneDecimal) 公斤，身高 \(BodyUnits.heightDisplay(cm: bodyInfo.heightCm, units: .imperial)) = \(bodyInfo.heightCm.oneDecimal) 厘米。"
-                    )
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                }
-            }
-
-            Section("第 1 步：基础代谢") {
-                Text("基础代谢是身体一整天躺着不动，维持心跳、呼吸和体温也要消耗的热量。我们用营养学界常用的 Mifflin-St Jeor 公式估算：")
-                FormulaRow(
-                    formula: String(localized: "10 × 体重 \(bodyInfo.weightKg.oneDecimal) + 6.25 × 身高 \(bodyInfo.heightCm.oneDecimal) − 5 × 年龄 \(bodyInfo.age) \(bodyInfo.sex == .male ? "+ 5" : "− 161")"),
-                    result: String(localized: "\(t.bmr.noDecimal) 千卡")
-                )
-                Text("公式最后一项男女不同：男性加 5，女性减 161。")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Section("第 2 步：每日总消耗") {
-                Text("再乘上活动系数，得到一天的总消耗。你选的是「\(bodyInfo.activity.title)」（\(bodyInfo.activity.detail)），系数是 \(bodyInfo.activity.factor.threeDecimals)：")
-                FormulaRow(
-                    formula: "\(t.bmr.noDecimal) × \(bodyInfo.activity.factor.threeDecimals)",
-                    result: String(localized: "\(t.tdee.noDecimal) 千卡")
-                )
-            }
-
-            Section("第 3 步：按目标调整") {
-                Text(goalExplanation)
-                // 碰到安全下限时，不显示公式算出来的那个更低的数，只显示最终目标
-                FormulaRow(
-                    formula: adjustmentFormula,
-                    result: t.isRaisedToFloor ? String(localized: "低于安全下限，按 \(t.calories.noDecimal) 千卡") : String(localized: "\(t.goalCalories.noDecimal) 千卡")
-                )
-                if t.isRaisedToFloor {
-                    // 用平静的灰色说明，不用红色或橙色的「警告」样式
-                    Label(
-                        "为了让你吃够身体需要的营养，在没有医生或营养师指导时，女性每天通常不建议低于 \(NutritionCalculator.minimumCalories(for: .female).noDecimal) 千卡、男性不低于 \(NutritionCalculator.minimumCalories(for: .male).noDecimal) 千卡，所以最终目标定为 \(t.calories.noDecimal) 千卡。",
-                        systemImage: "heart.circle"
-                    )
-                    .foregroundStyle(.secondary)
-                }
-            }
-
-            Section("第 4 步：三大营养素") {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("蛋白质").font(.headline)
-                    Text(proteinExplanation)
-                    FormulaRow(
-                        formula: "\(proteinWeightLabel) × \(bodyInfo.goal.proteinPerKg.oneDecimal)",
-                        result: String(localized: "\(t.proteinG.noDecimal) 克")
-                    )
-                    if t.isProteinCapped {
-                        Text("这个数超过了每日热量的 \(NutritionCalculator.maxProteinShare.percent)，所以按 \(NutritionCalculator.maxProteinShare.percent) 的上限取 \(t.proteinG.noDecimal) 克，给碳水和脂肪留出空间。")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    if bodyInfo.age >= ProfileValidator.kidneyNoteAge {
-                        Text("\(ProfileValidator.kidneyNoteAge) 岁以上、有高血压或糖尿病，或近一年没查过肾功能的话，按这个蛋白质目标吃之前先问问医生。")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+            Group {
+                Section {
+                    Text("下面用你自己的数据，一步步演示每日目标是怎么算出来的。")
+                    if units == .imperial {
+                        Text(
+                            "公式用的是公制单位：你的体重 \(BodyUnits.weightDisplay(kg: bodyInfo.weightKg, units: .imperial)) = \(bodyInfo.weightKg.oneDecimal) 公斤，身高 \(BodyUnits.heightDisplay(cm: bodyInfo.heightCm, units: .imperial)) = \(bodyInfo.heightCm.oneDecimal) 厘米。"
+                        )
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
                     }
                 }
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("脂肪").font(.headline)
-                    Text(fatExplanation)
+
+                Section("第 1 步：基础代谢") {
+                    Text("基础代谢是身体一整天躺着不动，维持心跳、呼吸和体温也要消耗的热量。我们用营养学界常用的 Mifflin-St Jeor 公式估算：")
                     FormulaRow(
-                        formula: "\(t.calories.noDecimal) × \(t.fatShare.percent) ÷ 9",
-                        result: String(localized: "\(t.fatG.noDecimal) 克")
+                        formula: String(localized: "10 × 体重 \(bodyInfo.weightKg.oneDecimal) + 6.25 × 身高 \(bodyInfo.heightCm.oneDecimal) − 5 × 年龄 \(bodyInfo.age) \(bodyInfo.sex == .male ? "+ 5" : "− 161")"),
+                        result: String(localized: "\(t.bmr.noDecimal) 千卡")
+                    )
+                    Text("公式最后一项男女不同：男性加 5，女性减 161。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Section("第 2 步：每日总消耗") {
+                    Text("再乘上活动系数，得到一天的总消耗。你选的是「\(bodyInfo.activity.title)」（\(bodyInfo.activity.detail)），系数是 \(bodyInfo.activity.factor.threeDecimals)：")
+                    FormulaRow(
+                        formula: "\(t.bmr.noDecimal) × \(bodyInfo.activity.factor.threeDecimals)",
+                        result: String(localized: "\(t.tdee.noDecimal) 千卡")
                     )
                 }
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("碳水").font(.headline)
-                    Text("剩下的热量都给碳水，它是训练时最主要的能量来源。蛋白质和碳水每克都约 4 千卡：")
+
+                Section("第 3 步：按目标调整") {
+                    Text(goalExplanation)
+                    // 碰到安全下限时，不显示公式算出来的那个更低的数，只显示最终目标
                     FormulaRow(
-                        formula: String(localized: "(\(t.calories.noDecimal) − 蛋白质 \(t.proteinG.noDecimal) × 4 − 脂肪 \(t.fatG.noDecimal) × 9) ÷ 4"),
-                        result: String(localized: "\(t.carbsG.noDecimal) 克")
+                        formula: adjustmentFormula,
+                        result: t.isRaisedToFloor ? String(localized: "低于安全下限，按 \(t.calories.noDecimal) 千卡") : String(localized: "\(t.goalCalories.noDecimal) 千卡")
                     )
+                    if t.isRaisedToFloor {
+                        // 用平静的灰色说明，不用红色或橙色的「警告」样式
+                        Label(
+                            "为了让你吃够身体需要的营养，在没有医生或营养师指导时，女性每天通常不建议低于 \(NutritionCalculator.minimumCalories(for: .female).noDecimal) 千卡、男性不低于 \(NutritionCalculator.minimumCalories(for: .male).noDecimal) 千卡，所以最终目标定为 \(t.calories.noDecimal) 千卡。",
+                            systemImage: "heart.circle"
+                        )
+                        .foregroundStyle(.secondary)
+                    }
+                }
+
+                Section("第 4 步：三大营养素") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("蛋白质").font(.headline)
+                        Text(proteinExplanation)
+                        FormulaRow(
+                            formula: "\(proteinWeightLabel) × \(bodyInfo.goal.proteinPerKg.oneDecimal)",
+                            result: String(localized: "\(t.proteinG.noDecimal) 克")
+                        )
+                        if t.isProteinCapped {
+                            Text("这个数超过了每日热量的 \(NutritionCalculator.maxProteinShare.percent)，所以按 \(NutritionCalculator.maxProteinShare.percent) 的上限取 \(t.proteinG.noDecimal) 克，给碳水和脂肪留出空间。")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        if bodyInfo.age >= ProfileValidator.kidneyNoteAge {
+                            Text("\(ProfileValidator.kidneyNoteAge) 岁以上、有高血压或糖尿病，或近一年没查过肾功能的话，按这个蛋白质目标吃之前先问问医生。")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("脂肪").font(.headline)
+                        Text(fatExplanation)
+                        FormulaRow(
+                            formula: "\(t.calories.noDecimal) × \(t.fatShare.percent) ÷ 9",
+                            result: String(localized: "\(t.fatG.noDecimal) 克")
+                        )
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("碳水").font(.headline)
+                        Text("剩下的热量都给碳水，它是训练时最主要的能量来源。蛋白质和碳水每克都约 4 千卡：")
+                        FormulaRow(
+                            formula: String(localized: "(\(t.calories.noDecimal) − 蛋白质 \(t.proteinG.noDecimal) × 4 − 脂肪 \(t.fatG.noDecimal) × 9) ÷ 4"),
+                            result: String(localized: "\(t.carbsG.noDecimal) 克")
+                        )
+                    }
+                }
+
+                Section("要记住的几点") {
+                    Text("这些数字是根据公式估算的起点，每个人的实际消耗会有差别。")
+                    Text("可以先按这个目标吃 2～3 周，看两周的平均体重再小幅调整。减脂时如果每周下降超过体重的 1%，每天多吃 150～200 千卡，或把活动量调高一档。")
+                    Text("本 App 不提供医疗建议。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
+                }
+
+                Section("参考资料") {
+                    ForEach(References.all, id: \.url) { reference in
+                        Link(reference.title, destination: reference.url)
+                    }
                 }
             }
-
-            Section("要记住的几点") {
-                Text("这些数字是根据公式估算的起点，每个人的实际消耗会有差别。")
-                Text("可以先按这个目标吃 2～3 周，看两周的平均体重再小幅调整。减脂时如果每周下降超过体重的 1%，每天多吃 150～200 千卡，或把活动量调高一档。")
-                Text("本 App 不提供医疗建议。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
-            }
-
-            Section("参考资料") {
-                ForEach(References.all, id: \.url) { reference in
-                    Link(reference.title, destination: reference.url)
-                }
-            }
+            .listRowBackground(AppColors.surfacePrimary)  // 卡片用暖白，不用纯白
         }
+        .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
         .navigationTitle("怎么算的")
         .navigationBarTitleDisplayMode(.inline)
     }

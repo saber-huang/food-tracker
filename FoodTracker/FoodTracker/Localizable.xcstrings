@@ -689,18 +689,18 @@
         }
       }
     },
-    "今天的识别次数用完了，可以先用「手动添加」" : {
+    "今天的识别次数用完了，可以先用「手动」" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No photo scans left today. You can use Add Manually for now."
+            "value" : "No scans left today. You can use Manual for now."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天的识别次数用完了，可以先用「手动添加」"
+            "value" : "今天的识别次数用完了，可以先用「手动」"
           }
         }
       }
@@ -793,18 +793,18 @@
         }
       }
     },
-    "从相册选择" : {
+    "今日饮食" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Photo Library"
+            "value" : "Today's Meals"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "从相册选择"
+            "value" : "今日饮食"
           }
         }
       }
@@ -1657,6 +1657,54 @@
         }
       }
     },
+    "千卡可摄入" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kcal left"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "千卡可摄入"
+          }
+        }
+      }
+    },
+    "千卡，比目标多" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kcal over target"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "千卡，比目标多"
+          }
+        }
+      }
+    },
+    "千卡，比目标少" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kcal under target"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "千卡，比目标少"
+          }
+        }
+      }
+    },
     "午餐" : {
       "localizations" : {
         "en" : {
@@ -1801,18 +1849,18 @@
         }
       }
     },
-    "可以用下方的按钮补记。" : {
+    "可以用上方的「快速记录」补记。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use the buttons below to add a meal."
+            "value" : "Use Quick Log above to add a meal."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "可以用下方的按钮补记。"
+            "value" : "可以用上方的「快速记录」补记。"
           }
         }
       }
@@ -2169,34 +2217,18 @@
         }
       }
     },
-    "已记录 %@ · 按当前目标 %@ 千卡" : {
+    "已摄入" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Logged %1$@ · current target %2$@ kcal"
+            "value" : "Eaten"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已记录 %@ · 按当前目标 %@ 千卡"
-          }
-        }
-      }
-    },
-    "已记录 %@ · 目标 %@ 千卡" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Logged %1$@ · target %2$@ kcal"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已记录 %@ · 目标 %@ 千卡"
+            "value" : "已摄入"
           }
         }
       }
@@ -2297,6 +2329,22 @@
         }
       }
     },
+    "当前目标" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current goal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前目标"
+          }
+        }
+      }
+    },
     "必填" : {
       "localizations" : {
         "en" : {
@@ -2341,6 +2389,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "忌口"
+          }
+        }
+      }
+    },
+    "快速记录" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Log"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速记录"
           }
         }
       }
@@ -2441,6 +2505,22 @@
         }
       }
     },
+    "手动" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手动"
+          }
+        }
+      }
+    },
     "手动添加" : {
       "localizations" : {
         "en" : {
@@ -2521,18 +2601,18 @@
         }
       }
     },
-    "拍一张餐食照片，或点「手动添加」。" : {
+    "拍一张餐食照片，或点「手动」。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take a photo of your meal, or tap Add Manually."
+            "value" : "Take a photo of your meal, or tap Manual."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拍一张餐食照片，或点「手动添加」。"
+            "value" : "拍一张餐食照片，或点「手动」。"
           }
         }
       }
@@ -3273,22 +3353,6 @@
         }
       }
     },
-    "比目标多" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Above target by"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "比目标多"
-          }
-        }
-      }
-    },
     "比目标多 %@ 千卡" : {
       "localizations" : {
         "en" : {
@@ -3301,22 +3365,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "比目标多 %@ 千卡"
-          }
-        }
-      }
-    },
-    "比目标少" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Below target by"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "比目标少"
           }
         }
       }
@@ -3685,6 +3733,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目标：%@ · 三餐按 30%% / 40%% / 30%% 分配"
+          }
+        }
+      }
+    },
+    "相册" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相册"
           }
         }
       }
@@ -4197,6 +4261,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "记到哪一餐？"
+          }
+        }
+      }
+    },
+    "记录一餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log a meal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录一餐"
           }
         }
       }
@@ -4777,22 +4857,6 @@
         }
       }
     },
-    "还可以吃" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Left to eat"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "还可以吃"
-          }
-        }
-      }
-    },
     "还可以吃 %@ 千卡" : {
       "localizations" : {
         "en" : {
@@ -4821,6 +4885,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这一天没有记录"
+          }
+        }
+      }
+    },
+    "这一天的饮食" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meals"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这一天的饮食"
           }
         }
       }
@@ -4873,18 +4953,18 @@
         }
       }
     },
-    "这台设备现在不能拍照，请点「从相册选择」。" : {
+    "这台设备现在不能拍照，请点「相册」。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This device can't take photos right now. Tap Photo Library instead."
+            "value" : "This device can't take photos right now. Tap Photos instead."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这台设备现在不能拍照，请点「从相册选择」。"
+            "value" : "这台设备现在不能拍照，请点「相册」。"
           }
         }
       }
