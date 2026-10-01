@@ -199,6 +199,7 @@ struct ProfileEditView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @State private var draft: ProfileDraft
+    @State private var savedTick = 0  // 保存时加 1：轻轻震一下
 
     init(profile: UserProfile) {
         self.profile = profile
@@ -207,39 +208,37 @@ struct ProfileEditView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                BasicInfoSection(draft: draft)
-                ActivitySection(draft: draft)
-                GoalSection(draft: draft)
+        AppForm {
+            BasicInfoSection(draft: draft)
+            ActivitySection(draft: draft)
+            GoalSection(draft: draft)
 
-                // 边改边预览新的目标
-                if let bodyInfo = draft.bodyInfo {
-                    let targets = NutritionCalculator.targets(for: bodyInfo)
-                    Section("保存后的每日目标") {
+            // 边改边预览新的目标
+            if let bodyInfo = draft.bodyInfo {
+                let targets = NutritionCalculator.targets(for: bodyInfo)
+                AppFormSection(String(localized: "保存后的每日目标")) {
+                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
                         TargetsSummaryView(targets: targets)
                         FloorNotice(targets: targets)
                     }
-                }
-            }
-            .navigationTitle("编辑资料")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") { save() }
-                        .disabled(draft.bodyInfo == nil)  // 有填错的地方就不能保存
+                    .padding(AppSpacing.cardPadding)
                 }
             }
         }
+        .appSheetHeader(
+            AppSheetHeader(
+                title: String(localized: "编辑资料"), onCancel: { dismiss() }, confirmTitle: String(localized: "保存"),
+                confirmEnabled: draft.bodyInfo != nil,  // 有填错的地方就不能保存
+                onConfirm: save))
+        .sensoryFeedback(.success, trigger: savedTick)
+        .appSheet()
     }
 
     private func save() {
         guard let bodyInfo = draft.bodyInfo else { return }
         profile.update(with: bodyInfo)
         try? modelContext.save()
+        savedTick += 1
         dismiss()
     }
 }

@@ -59,14 +59,18 @@ struct RecipesView: View {
                     .listRowBackground(Color.clear)
                 }
 
-                // 没生成成功：一张小卡片，说清楚怎么办，可以重试（不弹警告框，已有的推荐照常显示）
+                // 没生成成功：和其他出错一样的样子（没有热气的碗、一句能照着做的话、「重试」），
+                // 不弹警告框，已有的推荐照常显示
                 if let failure {
                     Section {
-                        ErrorStateView(
-                            title: failure.title, message: failure.message, onRetry: { retry(failure) },
-                            onDismiss: { withAnimation(.easeOut(duration: 0.15)) { self.failure = nil } })
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
+                        BrandedStateView(kind: .error, title: failure.title, message: failure.message, visualWidth: 56) {
+                            Button("重试") { retry(failure) }
+                                .buttonStyle(.appPrimary)
+                            Button("关闭") { withAnimation(.easeOut(duration: 0.15)) { self.failure = nil } }
+                                .buttonStyle(.appTertiary)
+                        }
+                        .padding(.vertical, AppSpacing.md)
+                        .appCardRow()
                     }
                 }
 
@@ -293,14 +297,15 @@ struct RecipeSummaryLabel: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(recipe.name)
                 .font(.headline)
+                .foregroundStyle(AppColors.textPrimary)
             Text(
                 "\(recipe.caloriesKcal.noDecimal) 千卡 · 蛋白质 \(recipe.proteinG.oneDecimal) · 碳水 \(recipe.carbsG.oneDecimal) · 脂肪 \(recipe.fatG.oneDecimal) 克"
             )
             .font(.caption)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(AppColors.textSecondary)
             Text("约 \(recipe.cookingMinutes) 分钟 · \(recipe.ingredients.count) 种食材")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.textSecondary)
         }
         .padding(.vertical, 2)
     }

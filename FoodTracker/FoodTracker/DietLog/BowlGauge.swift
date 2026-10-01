@@ -4,7 +4,8 @@
 //
 //  App 图标里的那只碗，用代码画出来，有两种用法：
 //  - BowlGauge：「今日」卡片里的进度。吃了目标的几成，碗里就装到几成；吃到目标正好满碗，和 App 图标一模一样
-//  - KindbiteMark：完整的图标图案（笑脸 + 碗），引导页第一页用
+//  - KindbiteMark：完整的图标图案（笑脸 + 碗），引导页第一页、没有内容时用
+//  - SteamBowl：冒着热气的碗，全 App 的加载动画
 //  形状和图标完全一样：坐标照抄 tools/icon/concepts.mjs 里的 bowlFlatSvg（1024 × 1024 的画布）。
 //
 
@@ -127,34 +128,91 @@ struct BowlGauge: View {
     }
 }
 
-/// 加载中的碗：碗里的东西慢慢装上去、再落下来（一个来回 2.4 秒），代替系统的转圈。
-/// 整个 App 的加载（识别照片、生成食谱、换一个）都用它，见 StateViews.swift。
-/// 系统设置了「减弱动态效果」时不动，停在半碗。颜色可以换：放在橄榄绿按钮上时用暖白
-struct BowlLoadingMark: View {
-    var emptyColor = AppColors.oatEmpty
-    var fillColor = AppColors.oatBowl
-    var rimColor = AppColors.oatRim
+/// 冒着热气的碗：全 App 唯一的加载动画（识别照片、生成食谱、换一个，见 StateViews.swift）。
+/// - 碗本身几乎不动，只是很轻地「呼吸」：大小在 0.985～1.015 之间，2 秒一个来回
+/// - 碗上方三缕热气，慢慢往上飘、同时变淡，2 秒一轮，三缕错开出现
+/// - 完成时（isFinishing）：热气停下、淡出，碗轻轻放大一点
+/// - 出错时（showsSteam: false）：只有碗，没有热气
+/// 系统设置了「减弱动态效果」时什么都不动：热气停在半空、很淡
+struct SteamBowl: View {
+    var isFinishing = false
+    var showsSteam = true
+    var palette = Palette.oat
+
+    /// 颜色：平时是燕麦色；放在橄榄绿按钮上时用暖白
+    enum Palette {
+        case oat, onBrand
+    }
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// 整个图案的画布：碗（和图标一样的坐标）+ 上面留给热气的空间
+    static let box = CGRect(x: 182, y: 196, width: 660, height: 584)
+
     var body: some View {
-        TimelineView(.animation(paused: reduceMotion)) { context in
-            let box = BowlGeometry.gaugeBox
+        TimelineView(.animation(paused: reduceMotion || isFinishing || !showsSteam)) { timeline in
+            let time = timeline.date.timeIntervalSinceReferenceDate
             ZStack {
-                BowlPart(path: BowlGeometry.body, box: box).fill(emptyColor)
-                BowlContents(fraction: reduceMotion ? 0.5 : Self.fraction(at: context.date), box: box).fill(fillColor)
-                BowlPart(path: BowlGeometry.rim, box: box).fill(rimColor)
+                if showsSteam {
+                    SteamLayer(time: reduceMotion ? nil : time, color: steamColor)
+                        .opacity(isFinishing ? 0 : 1)
+                }
+                ZStack {
+                    BowlPart(path: BowlGeometry.body, box: Self.box).fill(bodyColor)
+                    BowlPart(path: BowlGeometry.rim, box: Self.box).fill(rimColor)
+                }
+                .scaleEffect(bowlScale(at: time), anchor: .bottom)
             }
-            .aspectRatio(box.width / box.height, contentMode: .fit)
         }
+        .aspectRatio(Self.box.width / Self.box.height, contentMode: .fit)
+        .animation(.easeOut(duration: 0.22), value: isFinishing)
         .accessibilityHidden(true)
     }
 
-    /// 某一时刻碗里装了几成：在 0.12 和 0.88 之间平滑地来回（不是假的进度，只是表示「正在做」）
-    static func fraction(at date: Date) -> Double {
-        let period = 2.4
-        let phase = date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: period) / period
-        return 0.5 - 0.38 * cos(phase * 2 * .pi)
+    /// 碗的大小：减弱动态效果时一直不动（完成时也不放大）；完成时放大一点；平时很轻地呼吸
+    private func bowlScale(at time: TimeInterval) -> CGFloat {
+        if reduceMotion || !showsSteam { return 1 }
+        if isFinishing { return 1.05 }
+        return 1 + 0.015 * sin(time / 2.0 * 2 * .pi)
+    }
+
+    private var bodyColor: Color { palette == .oat ? AppColors.oatBowl : AppColors.onBrand }
+    private var rimColor: Color { palette == .oat ? AppColors.oatRim : AppColors.onBrand.opacity(0.75) }
+    private var steamColor: Color { palette == .oat ? AppColors.oatRim : AppColors.onBrand }
+}
+
+/// 三缕热气：每一缕是一条 S 形的圆头细线，从碗沿上方往上飘，飘的同时先变清楚再变淡
+struct SteamLayer: View {
+    let time: TimeInterval?  // nil = 不动（减弱动态效果）
+    let color: Color
+
+    var body: some View {
+        Canvas { context, size in
+            let transform = BowlGeometry.transform(from: SteamBowl.box, to: CGRect(origin: .zero, size: size))
+            for (index, x) in [CGFloat(420), 512, 604].enumerated() {
+                let phase = Self.phase(time: time, index: index)
+                let rise = 46 * phase
+                var path = Path()
+                path.move(to: CGPoint(x: x, y: 410 - rise))
+                path.addCurve(
+                    to: CGPoint(x: x, y: 250 - rise), control1: CGPoint(x: x - 30, y: 358 - rise),
+                    control2: CGPoint(x: x + 30, y: 302 - rise))
+                let stroke = path.strokedPath(StrokeStyle(lineWidth: 24, lineCap: .round)).applying(transform)
+                context.fill(stroke, with: .color(color.opacity(Self.opacity(phase: phase, still: time == nil))))
+            }
+        }
+    }
+
+    /// 这一缕飘到哪了：0～1，三缕错开三分之一
+    static func phase(time: TimeInterval?, index: Int) -> Double {
+        guard let time else { return [0.45, 0.6, 0.3][index] }
+        let cycle = time / 2.0 + Double(index) / 3
+        return cycle - cycle.rounded(.down)
+    }
+
+    /// 透明度：刚冒出来时淡，中间最清楚，飘到上面又淡掉；不动的时候一直很淡
+    static func opacity(phase: Double, still: Bool) -> Double {
+        still ? 0.35 : 0.55 * sin(phase * .pi)
     }
 }
 
@@ -178,7 +236,7 @@ struct KindbiteMark: View {
             BowlGauge(fraction: fraction).frame(width: 120)
         }
         KindbiteMark().frame(width: 120)
-        BowlLoadingMark().frame(width: 120)
+        SteamBowl().frame(width: 120)
     }
     .padding()
 }

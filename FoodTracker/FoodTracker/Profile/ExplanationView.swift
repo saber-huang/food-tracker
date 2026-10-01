@@ -16,20 +16,22 @@ struct ExplanationView: View {
     private var t: DailyTargets { NutritionCalculator.targets(for: bodyInfo) }
 
     var body: some View {
-        List {
-            Group {
-                Section {
+        AppForm {
+            AppFormSection(nil) {
+                explanationCard {
                     Text("下面用你自己的数据，一步步演示每日目标是怎么算出来的。")
                     if units == .imperial {
                         Text(
                             "公式用的是公制单位：你的体重 \(BodyUnits.weightDisplay(kg: bodyInfo.weightKg, units: .imperial)) = \(bodyInfo.weightKg.oneDecimal) 公斤，身高 \(BodyUnits.heightDisplay(cm: bodyInfo.heightCm, units: .imperial)) = \(bodyInfo.heightCm.oneDecimal) 厘米。"
                         )
                         .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                     }
                 }
+            }
 
-                Section("第 1 步：基础代谢") {
+            AppFormSection(String(localized: "第 1 步：基础代谢")) {
+                explanationCard {
                     Text("基础代谢是身体一整天躺着不动，维持心跳、呼吸和体温也要消耗的热量。我们用营养学界常用的 Mifflin-St Jeor 公式估算：")
                     FormulaRow(
                         formula: String(localized: "10 × 体重 \(bodyInfo.weightKg.oneDecimal) + 6.25 × 身高 \(bodyInfo.heightCm.oneDecimal) − 5 × 年龄 \(bodyInfo.age) \(bodyInfo.sex == .male ? "+ 5" : "− 161")"),
@@ -37,18 +39,22 @@ struct ExplanationView: View {
                     )
                     Text("公式最后一项男女不同：男性加 5，女性减 161。")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                 }
+            }
 
-                Section("第 2 步：每日总消耗") {
+            AppFormSection(String(localized: "第 2 步：每日总消耗")) {
+                explanationCard {
                     Text("再乘上活动系数，得到一天的总消耗。你选的是「\(bodyInfo.activity.title)」（\(bodyInfo.activity.detail)），系数是 \(bodyInfo.activity.factor.threeDecimals)：")
                     FormulaRow(
                         formula: "\(t.bmr.noDecimal) × \(bodyInfo.activity.factor.threeDecimals)",
                         result: String(localized: "\(t.tdee.noDecimal) 千卡")
                     )
                 }
+            }
 
-                Section("第 3 步：按目标调整") {
+            AppFormSection(String(localized: "第 3 步：按目标调整")) {
+                explanationCard {
                     Text(goalExplanation)
                     // 碰到安全下限时，不显示公式算出来的那个更低的数，只显示最终目标
                     FormulaRow(
@@ -61,11 +67,13 @@ struct ExplanationView: View {
                             "为了让你吃够身体需要的营养，在没有医生或营养师指导时，女性每天通常不建议低于 \(NutritionCalculator.minimumCalories(for: .female).noDecimal) 千卡、男性不低于 \(NutritionCalculator.minimumCalories(for: .male).noDecimal) 千卡，所以最终目标定为 \(t.calories.noDecimal) 千卡。",
                             systemImage: "heart.circle"
                         )
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                     }
                 }
+            }
 
-                Section("第 4 步：三大营养素") {
+            AppFormSection(String(localized: "第 4 步：三大营养素")) {
+                explanationCard {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("蛋白质").font(.headline)
                         Text(proteinExplanation)
@@ -76,12 +84,12 @@ struct ExplanationView: View {
                         if t.isProteinCapped {
                             Text("这个数超过了每日热量的 \(NutritionCalculator.maxProteinShare.percent)，所以按 \(NutritionCalculator.maxProteinShare.percent) 的上限取 \(t.proteinG.noDecimal) 克，给碳水和脂肪留出空间。")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(AppColors.textSecondary)
                         }
                         if bodyInfo.age >= ProfileValidator.kidneyNoteAge {
                             Text("\(ProfileValidator.kidneyNoteAge) 岁以上、有高血压或糖尿病，或近一年没查过肾功能的话，按这个蛋白质目标吃之前先问问医生。")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(AppColors.textSecondary)
                         }
                     }
                     VStack(alignment: .leading, spacing: 6) {
@@ -101,25 +109,42 @@ struct ExplanationView: View {
                         )
                     }
                 }
+            }
 
-                Section("要记住的几点") {
+            AppFormSection(String(localized: "要记住的几点")) {
+                explanationCard {
                     Text("这些数字是根据公式估算的起点，每个人的实际消耗会有差别。")
                     Text("可以先按这个目标吃 2～3 周，看两周的平均体重再小幅调整。减脂时如果每周下降超过体重的 1%，每天多吃 150～200 千卡，或把活动量调高一档。")
                     Text("本 App 不提供医疗建议。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
                 }
+            }
 
-                Section("参考资料") {
-                    ForEach(References.all, id: \.url) { reference in
-                        Link(reference.title, destination: reference.url)
-                    }
+            AppFormSection(String(localized: "参考资料")) {
+                ForEach(Array(References.all.enumerated()), id: \.element.url) { index, reference in
+                    if index > 0 { AppFormDivider() }
+                    Link(reference.title, destination: reference.url)
+                        .foregroundStyle(AppColors.brand)
+                        .multilineTextAlignment(.leading)  // 换行时第二行也靠左（链接默认居中）
+                        .padding(.horizontal, AppSpacing.cardPadding)
+                        .padding(.vertical, AppSpacing.sm)
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 }
             }
-            .listRowBackground(AppColors.surfacePrimary)  // 卡片用暖白，不用纯白
         }
-        .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
         .navigationTitle("怎么算的")
         .navigationBarTitleDisplayMode(.inline)
         .hidesFloatingTabBar()  // 二级页面：底部标签栏收起来
+    }
+
+    /// 一块说明的卡片内容：几段话从上到下，段落之间留白，不画分隔线
+    private func explanationCard<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            content()
+        }
+        .foregroundStyle(AppColors.textPrimary)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(AppSpacing.cardPadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - 各段说明文字
@@ -193,10 +218,10 @@ private struct FormulaRow: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(formula)
                 .font(.callout.monospacedDigit())
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.textSecondary)
             Text("= \(result)")
                 .font(.headline.monospacedDigit())
-                .foregroundStyle(.tint)
+                .foregroundStyle(AppColors.brand)
         }
         .padding(.vertical, 2)
     }

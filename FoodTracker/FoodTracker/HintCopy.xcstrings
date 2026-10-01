@@ -665,18 +665,18 @@
         }
       }
     },
-    "正在生成，通常需要 10～20 秒…" : {
+    "正在生成这一餐…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Generating, usually 10–20 seconds…"
+            "value" : "Creating this meal…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在生成，通常需要 10～20 秒…"
+            "value" : "正在生成这一餐…"
           }
         }
       }

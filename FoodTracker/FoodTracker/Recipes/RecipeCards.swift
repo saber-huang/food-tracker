@@ -44,7 +44,7 @@ struct RecipeGoalSummary: View {
         }
         .padding(AppSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AppColors.surfaceSecondary, in: RoundedRectangle(cornerRadius: AppRadius.compact, style: .continuous))
+        .appCard(.muted)
         .accessibilityElement(children: .combine)
     }
 
@@ -61,12 +61,18 @@ struct MealSlotTag: View {
     let slot: MealSlot
 
     var body: some View {
-        Label(slot.title, systemImage: slot.systemImage)
-            .font(AppTypography.caption.weight(.medium))
-            .foregroundStyle(AppColors.textPrimary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(slot.tint, in: RoundedRectangle(cornerRadius: AppRadius.tag, style: .continuous))
+        // 不用 Label：放在系统列表里时，Label 会给图标留出一大块位置，图标和字离得很远
+        HStack(spacing: AppSpacing.xxs) {
+            Image(systemName: slot.systemImage)
+                .accessibilityHidden(true)
+            Text(slot.title)
+        }
+        .font(AppTypography.caption.weight(.medium))
+        .foregroundStyle(AppColors.textPrimary)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(slot.tint, in: Capsule())
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -197,8 +203,8 @@ struct RecipeCardFooter: View {
     }
 }
 
-/// 还没有推荐：空的碗 + 一句说明 + 「生成一日三餐」（这时它是这一页唯一的主按钮）。
-/// 生成中换成碗的加载动画和阶段说明（不显示假的百分比）
+/// 还没有推荐：和其他「没有内容」一样的样子（碗 + 一句说明），下面是「生成一日三餐」（这时它是这一页唯一的主按钮）。
+/// 生成中换成冒热气的碗和一句正在做什么（不显示假的百分比，也不说「通常要几秒」）
 struct EmptyRecipesCard: View {
     let isGenerating: Bool
     let onGenerate: () -> Void
@@ -206,32 +212,29 @@ struct EmptyRecipesCard: View {
     var body: some View {
         Group {
             if isGenerating {
-                LoadingStateView(
-                    title: String(localized: "正在生成今天的食谱"),
-                    stages: [String(localized: "按你的目标搭配三餐…"), String(localized: "计算每一餐的热量和营养…")],
-                    footnote: String(localized: "通常需要 10～20 秒"))
+                BrandedStateView(
+                    kind: .loading, title: String(localized: "正在生成今天的食谱"),
+                    message: String(localized: "按你的目标搭配三餐…"), visualWidth: 72)
             } else {
-                EmptyStateView(
-                    icon: .bowl, title: String(localized: "还没有今日推荐"),
-                    message: String(localized: "按你的每日目标和饮食偏好，生成早餐、午餐和晚餐。")
+                BrandedStateView(
+                    kind: .empty, title: String(localized: "还没有今日推荐"),
+                    message: String(localized: "按你的每日目标和饮食偏好，生成早餐、午餐和晚餐。"), visualWidth: 64
                 ) {
                     Button(action: onGenerate) {
-                        GenerateLabel(isGenerating: false, title: "生成一日三餐")
-                            .frame(maxWidth: .infinity, minHeight: 46)
-                            .background(AppColors.brand, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
+                        Label("生成一日三餐", systemImage: "sparkles")
                     }
-                    .buttonStyle(AppPressStyle())
+                    .buttonStyle(.appPrimary)
                     .padding(.top, AppSpacing.xxs)
                 }
             }
         }
-        .padding(.vertical, AppSpacing.xxs)
+        .padding(.vertical, AppSpacing.md)
         .frame(maxWidth: .infinity)
-        .animation(.easeOut(duration: 0.2), value: isGenerating)
+        .animation(.easeOut(duration: 0.25), value: isGenerating)
     }
 }
 
-/// 已经有推荐时的「重新生成一日三餐」：橄榄绿、46pt 高、圆角 18 的按钮，放在推荐卡片下面，比推荐内容低一级
+/// 已经有推荐时的「重新生成一日三餐」：次要按钮（燕麦色底、深橄榄字），比推荐的内容安静
 struct RegenerateButton: View {
     let isGenerating: Bool
     let isBusy: Bool
@@ -239,33 +242,19 @@ struct RegenerateButton: View {
 
     var body: some View {
         Button(action: onGenerate) {
-            GenerateLabel(isGenerating: isGenerating, title: "重新生成一日三餐")
-                .frame(maxWidth: .infinity, minHeight: 46)
-                .background(AppColors.brand, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
-        }
-        .buttonStyle(AppPressStyle())
-        .disabled(isBusy)
-        .opacity(isBusy && !isGenerating ? 0.5 : 1)
-    }
-}
-
-/// 生成按钮上的字：平时是「✦ 生成…」，生成中是转圈 + 「正在生成…」
-private struct GenerateLabel: View {
-    let isGenerating: Bool
-    let title: LocalizedStringKey
-
-    var body: some View {
-        HStack(spacing: AppSpacing.xs) {
-            if isGenerating {
-                AppLoadingIndicator(onBrand: true)
-                Text("正在生成，通常需要 10～20 秒…")
-            } else {
-                Image(systemName: "sparkles")
-                Text(title)
+            HStack(spacing: AppSpacing.xs) {
+                if isGenerating {
+                    AppLoadingIndicator()
+                    Text("正在生成今天的食谱…")
+                } else {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                    Text("重新生成一日三餐")
+                }
             }
         }
-        .font(.subheadline.weight(.semibold))
-        .foregroundStyle(AppColors.onBrand)
+        .buttonStyle(.appSecondary)
+        .disabled(isBusy && !isGenerating)
+        .allowsHitTesting(!isBusy)
     }
 }
 

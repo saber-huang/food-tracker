@@ -30,7 +30,7 @@ final class ToastCenter {
 
     /// 完成了一件事：「已记录到午餐」。没有按钮，1.4 秒后消失
     func success(_ message: String) {
-        show(Toast(message: message, systemImage: "checkmark.circle.fill", kind: .success, actionTitle: nil, action: nil), seconds: 1.4)
+        show(Toast(message: message, systemImage: "checkmark.circle", kind: .success, actionTitle: nil, action: nil), seconds: 1.4)
     }
 
     /// 删除了东西：「已删除「米饭」」+「撤销」。停 5 秒，给用户时间反悔
@@ -95,7 +95,7 @@ private struct ToastView: View {
         .padding(.trailing, toast.actionTitle == nil ? AppSpacing.md : AppSpacing.xs)
         .frame(minHeight: 48)
         .background(AppColors.toastBackground, in: Capsule())
-        .shadow(color: AppColors.shadow.opacity(0.12), radius: 12, y: 4)
+        .appShadow(AppShadow.overlay)
         .padding(.horizontal, AppSpacing.pageMargin)
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityElement(children: .contain)

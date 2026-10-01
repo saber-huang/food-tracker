@@ -2,8 +2,10 @@
 //  DesignSystem.swift
 //  FoodTracker
 //
-//  App 的设计规范写成代码：颜色（AppColors）、间距（AppSpacing）、圆角（AppRadius）、字体（AppTypography），
-//  再加上页面背景（AppBackground）和卡片样式。各个页面只从这里取值，不在页面里直接写颜色和数字。
+//  App 的设计规范写成代码：颜色（AppColors）、间距（AppSpacing）、圆角（AppRadius）、字体（AppTypography）、
+//  阴影（AppShadow），再加上页面背景（AppBackground）和卡片样式（appCard）。
+//  按钮、分段选择、表单、弹出页的统一样式在 AppComponents.swift 和 AppForm.swift。
+//  各个页面只从这里取值，不在页面里直接写颜色、圆角和间距的数字。
 //  为什么这样选、每样东西用在哪里，见仓库里的 design-system/kindbite/MASTER.md；
 //  颜色的对比度由 DesignSystemTests.swift 检查。
 //
@@ -76,6 +78,10 @@ enum AppColors {
 
         static let destructive = ColorPair(light: 0xA54A3F, dark: 0xE08A7E)  // 删除：柔和的砖红，不用系统的大红
 
+        // 分段选择（早餐 / 午餐…、15 / 30 分钟…）：燕麦色的胶囊槽，选中的一格是暖白的小胶囊（和底部标签栏同一种样子）
+        static let segmentTrack = ColorPair(light: 0xEEE8DE, dark: 0x24211D)
+        static let segmentSelected = ColorPair(light: 0xFFFDF9, dark: 0x3A3631)
+
         static let shadow = ColorPair(light: 0x3B3428, dark: 0x000000)  // 阴影用暖色，不用纯黑
     }
 
@@ -114,6 +120,8 @@ enum AppColors {
     static let toastText = Color(Pair.toastText)
     static let toastAction = Color(Pair.toastAction)
     static let destructive = Color(Pair.destructive)
+    static let segmentTrack = Color(Pair.segmentTrack)
+    static let segmentSelected = Color(Pair.segmentSelected)
     static let shadow = Color(Pair.shadow)
 
     /// 可信度小标签的底色：字的颜色的 12%
@@ -132,22 +140,40 @@ enum AppSpacing {
     static let xl: CGFloat = 24
     static let xxl: CGFloat = 32
 
-    static let pageMargin: CGFloat = 20  // 页面左右留白（三个标签页都一样）
+    static let pageMargin: CGFloat = 20  // 页面左右留白（所有页面都一样）
     static let cardGap: CGFloat = 12  // 同一块里，卡片和卡片之间（比如早餐和午餐）
     static let sectionGap: CGFloat = 28  // 两大块内容之间（块标题上面多出来的那段，见 AppSectionHeader）
-    static let cardPadding: CGFloat = 18  // 卡片里面的留白
-    static let heroPadding: CGFloat = 22  // 主卡片里面的留白（比普通卡片多一点）
+    static let formSectionGap: CGFloat = 24  // 表单页里，一块和下一块之间（见 AppForm）
+    static let cardPadding: CGFloat = 16  // 卡片、表单里面的留白（和系统列表的行一样）
+    static let heroPadding: CGFloat = 20  // 主卡片里面的留白（比普通卡片多一点）
 }
 
-/// 圆角：所有卡片都是 26（和系统列表卡片的圆角一样，三个标签页看起来是同一套）。
-/// 卡片的层级靠大小、字号和阴影区分，不靠圆角
+/// 圆角只有四个：小 12、中 18、大 24、特大 30。新页面也只从这里取，不另写数字。
+/// - small 12：照片缩略图、小标签、小控件
+/// - medium 18：按钮、表单的卡片（一行行的输入和设置）、辅助的小卡片、出错卡片
+/// - large 24：内容卡片（今日的主卡片、快速记录、食谱详情、识别结果页自己画的卡片）
+/// - extraLarge 30：悬浮的标签栏
+/// 系统自己画的列表卡片（今日饮食的每一餐、食谱卡片、「我的」的几组）圆角由 iOS 决定（量出来是 26，
+/// 和 24 在屏幕上差不到 1pt）；这几页是系统列表，左滑删除等原生手势都靠它，所以不自己重画
 enum AppRadius {
-    static let card: CGFloat = 26  // 所有卡片：主卡片、快速记录、列表卡片
-    static let compact: CGFloat = 20  // 小一号的辅助卡片（食谱页的每日目标摘要）
-    static let button: CGFloat = 18  // 整行宽的按钮（重新生成一日三餐）
-    static let tabBar: CGFloat = 32  // 底部悬浮的标签栏
-    static let thumbnail: CGFloat = 14  // 照片缩略图
-    static let tag: CGFloat = 8  // 小标签（早餐、午餐…）
+    static let small: CGFloat = 12
+    static let medium: CGFloat = 18
+    static let large: CGFloat = 24
+    static let extraLarge: CGFloat = 30
+}
+
+/// 阴影：大部分卡片没有阴影，靠和页面底色的差别、留白分出层级。
+/// 只有每一页的主卡片、悬浮的标签栏和轻提示这类浮在上面的东西有一层很淡的暖色阴影
+nonisolated struct AppShadowStyle: Sendable {
+    let opacity: Double
+    let radius: CGFloat
+    let y: CGFloat
+}
+
+enum AppShadow {
+    static let hero = AppShadowStyle(opacity: 0.05, radius: 20, y: 6)  // 主卡片（今日的热量卡片、我的每日目标）
+    static let floating = AppShadowStyle(opacity: 0.06, radius: 20, y: 6)  // 悬浮的标签栏
+    static let overlay = AppShadowStyle(opacity: 0.06, radius: 16, y: 4)  // 轻提示等盖在内容上的小东西
 }
 
 // MARK: - 字体
@@ -346,14 +372,33 @@ struct AppIconTile: View {
     }
 }
 
+/// 卡片的几种层级：只靠底色、圆角和（主卡片才有的）阴影区分
+enum AppCardLevel {
+    case hero  // 每一页最重要的那张（今日的热量卡片、我的每日目标）：大圆角 + 很淡的阴影
+    case primary  // 普通的内容卡片：大圆角，没有阴影
+    case form  // 表单、设置里的一组：中圆角
+    case muted  // 辅助的小卡片（食谱页的每日目标摘要、提示）：燕麦色底、中圆角
+}
+
 extension View {
-    /// 卡片：暖白底、圆角，不描边。普通卡片没有阴影，靠和页面底色的差别分出来；
-    /// elevated 为 true 时加一层很轻的暖色阴影，只给每一页的主卡片（首页的热量卡片、「我的」的每日目标）
-    func appCard(radius: CGFloat = AppRadius.card, elevated: Bool = false) -> some View {
-        background {
+    /// 卡片：暖白（或燕麦色）底、圆角，不描边
+    func appCard(_ level: AppCardLevel = .primary) -> some View {
+        let radius = (level == .hero || level == .primary) ? AppRadius.large : AppRadius.medium
+        let fill = level == .muted ? AppColors.surfaceSecondary : AppColors.surfacePrimary
+        return background {
             RoundedRectangle(cornerRadius: radius, style: .continuous)
-                .fill(AppColors.surfacePrimary)
-                .shadow(color: AppColors.shadow.opacity(elevated ? 0.05 : 0), radius: elevated ? 22 : 0, y: elevated ? 6 : 0)
+                .fill(fill)
+                .appShadow(level == .hero ? AppShadow.hero : nil)
+        }
+    }
+
+    /// 统一的阴影（nil = 没有阴影）
+    @ViewBuilder
+    func appShadow(_ style: AppShadowStyle?) -> some View {
+        if let style {
+            shadow(color: AppColors.shadow.opacity(style.opacity), radius: style.radius, y: style.y)
+        } else {
+            self
         }
     }
 
@@ -411,14 +456,18 @@ extension View {
 extension Color {
     /// 浅色、深色模式各用一个颜色：系统切换外观时自动换
     init(_ pair: ColorPair) {
-        self.init(
-            uiColor: UIColor { traits in
-                UIColor(hex: traits.userInterfaceStyle == .dark ? pair.dark : pair.light)
-            })
+        self.init(uiColor: UIColor(pair))
     }
 }
 
 extension UIColor {
+    /// 给 UIKit 的控件（月历）用的同一组颜色，也会跟着浅色、深色模式自动换
+    convenience init(_ pair: ColorPair) {
+        self.init { traits in
+            UIColor(hex: traits.userInterfaceStyle == .dark ? pair.dark : pair.light)
+        }
+    }
+
     /// 0xRRGGBB → 颜色
     convenience init(hex: UInt32) {
         self.init(

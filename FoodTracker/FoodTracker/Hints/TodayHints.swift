@@ -84,7 +84,7 @@ struct TodayHints: View {
             Section {
                 Text(HintCopy.debugFakeNowCaption(now))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
                     .hintRow()
             }
         }
@@ -132,7 +132,7 @@ struct TodayHints: View {
                 Button(HintCopy.adjustTargetLater) {
                     snoozeAdjust(from: now)
                 }
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.textSecondary)
                 .hintRow()
             }
         case .weeklySummary(let summary):
@@ -151,22 +151,23 @@ struct TodayHints: View {
                 )
                 .font(.subheadline)
                 .monospacedDigit()
+                .foregroundStyle(AppColors.textPrimary)
                 .hintRow()
             }
             Text(verdict(for: summary))
                 .font(.callout)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.textSecondary)
                 .hintRow()
             if summary.targetChangedRecently {
                 Text(HintCopy.weeklyTargetChangedNote)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
                     .hintRow()
             }
             if summary.suggestsAdjustingTarget {
                 Text(HintCopy.weeklyAdjustSuggestion)
                     .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
                     .hintRow()
                 Button(HintCopy.adjustTargetAction) { sheet = .editProfile }
                     .accessibilityHint(HintCopy.adjustTargetA11y)
@@ -196,7 +197,7 @@ struct TodayHints: View {
     private func note(_ text: String, icon: String) -> some View {
         Label(text, systemImage: icon)
             .font(.callout)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(AppColors.textSecondary)
     }
 
     /// 7 天内不再问要不要调整目标（按提示用的「现在」算，模拟器里假装的时间也一样）

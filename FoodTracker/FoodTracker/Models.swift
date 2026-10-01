@@ -44,7 +44,8 @@ nonisolated enum Confidence: String, Codable, Hashable {
     case high, medium, low
 }
 
-extension Double {
+// 只是把数字变成文字，哪里都能用（不限主线程）
+nonisolated extension Double {
     /// 最多保留 1 位小数，例如 24.0 → "24"，3.86 → "3.9"
     var oneDecimal: String { formatted(.number.precision(.fractionLength(0...1))) }
 

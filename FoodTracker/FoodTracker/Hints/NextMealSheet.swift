@@ -32,9 +32,12 @@ struct NextMealSheet: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
+            AppForm {
+                // 这一餐按多少千卡推荐：一段说明 + 一行三大营养素（燕麦色的辅助卡片）
+                VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text(introText)
+                        .foregroundStyle(AppColors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
                     let meal = budget.mealTargets
                     Text(
                         HintCopy.nextMealBudgetLine(
@@ -42,15 +45,18 @@ struct NextMealSheet: View {
                             carbsG: Int(meal.carbsG.rounded()), fatG: Int(meal.fatG.rounded()))
                     )
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
                 }
+                .padding(AppSpacing.cardPadding)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .appCard(.muted)
 
-                Section {
+                VStack(spacing: AppSpacing.xs) {
                     Button {
                         // 没同意过使用 AI 时，先弹出说明；同意后才发送这一餐的目标和偏好
                         AIConsent.perform(pending: $pendingAIAction) { Task { await generate() } }
                     } label: {
-                        HStack {
+                        HStack(spacing: AppSpacing.xs) {
                             if isGenerating {
                                 AppLoadingIndicator(onBrand: true)
                                 Text(HintCopy.generatingNextMeal)
@@ -58,56 +64,55 @@ struct NextMealSheet: View {
                                 Label(HintCopy.generateNextMeal(mealName: mealName), systemImage: "sparkles")
                             }
                         }
-                        .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(isGenerating || remaining == 0)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                } footer: {
+                    .buttonStyle(.appPrimary)
+                    .disabled(remaining == 0)
+                    .allowsHitTesting(!isGenerating)
                     if let remaining {
                         Text(remaining == 0 ? HintCopy.quotaUsedUp : HintCopy.quotaRemaining(remaining))
+                            .font(.caption2)
+                            .foregroundStyle(AppColors.textTertiary)
+                            .multilineTextAlignment(.center)
                     }
                 }
 
-                // 没生成成功：一张小卡片说明怎么办，可以重试（不弹警告框）
+                // 没生成成功：和其他出错一样的样子，可以重试（不弹警告框）
                 if let errorMessage {
-                    Section {
-                        ErrorStateView(
-                            title: HintCopy.generateFailedTitle, message: errorMessage,
-                            onRetry: { AIConsent.perform(pending: $pendingAIAction) { Task { await generate() } } },
-                            onDismiss: { self.errorMessage = nil })
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
+                    BrandedStateView(kind: .error, title: HintCopy.generateFailedTitle, message: errorMessage, visualWidth: 56) {
+                        Button("重试") { AIConsent.perform(pending: $pendingAIAction) { Task { await generate() } } }
+                            .buttonStyle(.appPrimary)
+                        Button("关闭") { self.errorMessage = nil }
+                            .buttonStyle(.appTertiary)
                     }
+                    .padding(.vertical, AppSpacing.md)
+                    .appCard(.primary)
                 }
 
                 if let recipe {
-                    Section {
+                    AppFormSection(title: recipe.meal.title, accessory: { EmptyView() }) {
                         NavigationLink {
                             RecipeDetailView(recipe: recipe)
                         } label: {
-                            RecipeSummaryLabel(recipe: recipe)
+                            HStack(spacing: AppSpacing.xs) {
+                                RecipeSummaryLabel(recipe: recipe)
+                                Spacer(minLength: AppSpacing.xs)
+                                AppChevron()
+                            }
+                            .padding(AppSpacing.cardPadding)
+                            .contentShape(Rectangle())
                         }
-                    } header: {
-                        Label(recipe.meal.title, systemImage: recipe.meal.systemImage)
+                        .buttonStyle(AppPressStyle(scales: false))
                     }
                 }
 
                 // 只在最下面说一次「估算值」，点 ⓘ 看完整说明
-                Section {
-                } footer: {
-                    AIFootnote()
-                }
+                AIFootnote()
+                    .frame(maxWidth: .infinity)
             }
-            .navigationTitle(HintCopy.nextMealTitle(mealName: mealName))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(HintCopy.done) { dismiss() }
-                }
-            }
+            .toolbar(.hidden, for: .navigationBar)
+            .appSheetHeader(
+                AppSheetHeader(
+                    title: HintCopy.nextMealTitle(mealName: mealName), confirmTitle: HintCopy.done, onConfirm: { dismiss() }))
             // 第一次生成前：说明会发送什么、发给谁，同意后才发送（见 AIConsent.swift）
             .aiConsentSheet(pending: $pendingAIAction)
             // 打开时问一下今天还能生成几次（不花钱、不占次数）；问不到就不显示
@@ -118,6 +123,7 @@ struct NextMealSheet: View {
             }
         }
         .presentationDetents([.medium, .large], selection: $detent)
+        .appSheet()
         .onChange(of: recipe == nil) { _, isEmpty in
             if !isEmpty { withAnimation { detent = .large } }
         }

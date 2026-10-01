@@ -2,7 +2,7 @@
 //  NumberRow.swift
 //  FoodTracker
 //
-//  一行数字输入：标题、输入框、单位；填错时在下面显示红色提示。资料页和饮食记录的表单共用。
+//  一行数字输入：标题、输入框、单位；填错时在下面显示砖红色的提示。资料页和饮食记录的表单共用（放在 AppFormSection 的卡片里）。
 //
 //  - 正在输入时不显示错误（比如年龄刚输入「1」时还不算错），离开这个输入框后才提示
 //  - 离开输入框时把数字整理成标准写法（「0450」→「450」「12.50」→「12.5」）；单位固定写在右边，不用输入
@@ -40,14 +40,17 @@ struct NumberRow<Field: Hashable>: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(title)
+                    .foregroundStyle(AppColors.textPrimary)
                     .accessibilityHidden(true)  // 旁白读输入框自己的名字（下面），这里不重复读
-                TextField(title, text: $text, prompt: Text(prompt))
+                TextField(title, text: $text, prompt: Text(prompt).foregroundStyle(AppColors.textTertiary))
                     .keyboardType(keyboard)
                     .multilineTextAlignment(.trailing)
+                    .foregroundStyle(AppColors.textPrimary)
+                    .monospacedDigit()
                     .focused(focus, equals: field)
                     .accessibilityLabel("\(title)（\(unit)）")
                 Text(unit)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
                     .accessibilityHidden(true)
             }
             // 整行都能点：点标题或单位也会开始输入
@@ -57,9 +60,12 @@ struct NumberRow<Field: Hashable>: View {
             if let shownError {
                 Text(shownError)
                     .font(.caption)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(AppColors.destructive)
             }
         }
+        .padding(.horizontal, AppSpacing.cardPadding)
+        .padding(.vertical, AppSpacing.sm)
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
         // 离开这个输入框时，把数字整理成标准的写法（「0450」→「450」）；单位不用用户输入，写在右边
         .onChange(of: isEditing) { wasEditing, editing in
             if wasEditing && !editing, let tidy = NumberText.normalized(text) {

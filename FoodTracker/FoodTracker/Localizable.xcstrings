@@ -1157,6 +1157,22 @@
         }
       }
     },
+    "你填写的过敏食材和忌口会用于食谱推荐，推荐会尽量避开这些食材和用它们做的食品。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The allergies and foods to avoid you enter are used for recipe suggestions, which try to leave out these ingredients and foods made from them."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你填写的过敏食材和忌口会用于食谱推荐，推荐会尽量避开这些食材和用它们做的食品。"
+          }
+        }
+      }
+    },
     "你的 BMI 约为 %@，低于 %@，属于偏轻范围，所以这里不提供减脂目标。可以选择「维持」或「增肌」；如果对体重有顾虑，建议咨询医生或营养师。" : {
       "localizations" : {
         "en" : {
@@ -2165,6 +2181,22 @@
         }
       }
     },
+    "取消分析" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel Analysis"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消分析"
+          }
+        }
+      }
+    },
     "可以先按这个目标吃 2～3 周，看两周的平均体重再小幅调整。减脂时如果每周下降超过体重的 1%，每天多吃 150～200 千卡，或把活动量调高一档。" : {
       "localizations" : {
         "en" : {
@@ -2437,18 +2469,18 @@
         }
       }
     },
-    "多个食材用顿号或逗号分开。食谱里绝对不会出现这些食材和它们制成的食品。" : {
+    "多个食材用顿号或逗号分开。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Separate items with commas. Recipes will never include these ingredients or foods made from them."
+            "value" : "Separate multiple items with commas."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "多个食材用顿号或逗号分开。食谱里绝对不会出现这些食材和它们制成的食品。"
+            "value" : "多个食材用顿号或逗号分开。"
           }
         }
       }
@@ -3325,22 +3357,6 @@
         }
       }
     },
-    "无法完成识别" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't Analyze"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法完成识别"
-          }
-        }
-      }
-    },
     "日常活动量" : {
       "localizations" : {
         "en" : {
@@ -3465,6 +3481,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最近使用"
+          }
+        }
+      }
+    },
+    "有严重过敏时，做菜前请再自己核对一遍食材。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you have a severe allergy, double-check the ingredients yourself before cooking."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有严重过敏时，做菜前请再自己核对一遍食材。"
           }
         }
       }
@@ -3741,22 +3773,6 @@
         }
       }
     },
-    "正在估算份量和营养…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estimating portions and nutrition…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在估算份量和营养…"
-          }
-        }
-      }
-    },
     "正在分析 %lld 张照片" : {
       "localizations" : {
         "en" : {
@@ -3785,18 +3801,18 @@
         }
       }
     },
-    "正在分析这顿饭…" : {
+    "正在分析这顿饭" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Analyzing your meal…"
+            "value" : "Analyzing your meal"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在分析这顿饭…"
+            "value" : "正在分析这顿饭"
           }
         }
       }
@@ -3817,22 +3833,6 @@
         }
       }
     },
-    "正在合并不同角度…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Combining the different angles…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在合并不同角度…"
-          }
-        }
-      }
-    },
     "正在换…" : {
       "localizations" : {
         "en" : {
@@ -3845,6 +3845,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在换…"
+          }
+        }
+      }
+    },
+    "正在整理这顿饭的营养信息…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Putting together this meal's nutrition…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在整理这顿饭的营养信息…"
           }
         }
       }
@@ -3865,34 +3881,50 @@
         }
       }
     },
-    "正在生成，通常需要 10～20 秒…" : {
+    "正在生成今天的食谱…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Generating, usually 10–20 seconds…"
+            "value" : "Creating today's recipes…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在生成，通常需要 10～20 秒…"
+            "value" : "正在生成今天的食谱…"
           }
         }
       }
     },
-    "正在识别食物…" : {
+    "正在结合不同角度判断份量…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Identifying foods…"
+            "value" : "Using the different angles to judge portions…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在识别食物…"
+            "value" : "正在结合不同角度判断份量…"
+          }
+        }
+      }
+    },
+    "正在识别食物和估算份量…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identifying foods and estimating portions…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在识别食物和估算份量…"
           }
         }
       }
@@ -4025,6 +4057,22 @@
         }
       }
     },
+    "每餐可接受的烹饪时间（分钟）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cooking Time per Meal (min)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每餐可接受的烹饪时间（分钟）"
+          }
+        }
+      }
+    },
     "比目标多 %@ 千卡" : {
       "localizations" : {
         "en" : {
@@ -4085,6 +4133,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "没有可用的相机"
+          }
+        }
+      }
+    },
+    "没有完成识别" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Finish Analyzing"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有完成识别"
           }
         }
       }
@@ -4261,22 +4325,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "热量需要在 0～5000 千卡之间"
-          }
-        }
-      }
-    },
-    "烹饪时间" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cooking Time"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "烹饪时间"
           }
         }
       }
@@ -5113,22 +5161,6 @@
         }
       }
     },
-    "计算每一餐的热量和营养…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Working out calories and nutrition for each meal…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "计算每一餐的热量和营养…"
-          }
-        }
-      }
-    },
     "记到哪一餐" : {
       "localizations" : {
         "en" : {
@@ -5765,6 +5797,22 @@
         }
       }
     },
+    "过敏和忌口" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allergies and Restrictions"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "过敏和忌口"
+          }
+        }
+      }
+    },
     "过敏食材" : {
       "localizations" : {
         "en" : {
@@ -5809,6 +5857,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "运动营养联合声明（热量缺口、脂肪比例）：ACSM 等，2016 年"
+          }
+        }
+      }
+    },
+    "返回照片" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Photos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "返回照片"
           }
         }
       }
@@ -5973,6 +6037,22 @@
         }
       }
     },
+    "这几张照片里的食物不够清晰，可以换个角度再试一次。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The food in these photos isn't clear enough. Try again from another angle."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这几张照片里的食物不够清晰，可以换个角度再试一次。"
+          }
+        }
+      }
+    },
     "这台设备现在不能拍照，请点「相册」。" : {
       "localizations" : {
         "en" : {
@@ -5985,6 +6065,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这台设备现在不能拍照，请点「相册」。"
+          }
+        }
+      }
+    },
+    "这张照片里的食物不够清晰，可以换个角度再试一次。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The food in this photo isn't clear enough. Try again from another angle."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这张照片里的食物不够清晰，可以换个角度再试一次。"
           }
         }
       }
@@ -6113,38 +6209,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选择日期"
-          }
-        }
-      }
-    },
-    "通常需要 10～20 秒" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usually takes 10–20 seconds"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通常需要 10～20 秒"
-          }
-        }
-      }
-    },
-    "通常需要 5～10 秒" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usually takes 5–10 seconds"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通常需要 5～10 秒"
           }
         }
       }
@@ -6405,7 +6469,7 @@
         }
       }
     },
-    "饮食偏好（可不填）" : {
+    "饮食偏好（可选）" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6416,7 +6480,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "饮食偏好（可不填）"
+            "value" : "饮食偏好（可选）"
           }
         }
       }

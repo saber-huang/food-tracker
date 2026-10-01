@@ -2,8 +2,8 @@
 //  ProfileFormSections.swift
 //  FoodTracker
 //
-//  填写资料用的三块表单：基本信息、活动量、目标。
-//  引导页每一步用其中一块，「编辑资料」页把三块放在一起用。
+//  填写资料用的三块表单：基本信息、活动量、目标。和其他表单页同一套样子（AppFormSection，见 AppForm.swift）。
+//  引导页每一步用其中一块，「编辑资料」页把三块放在一起用（都放在 AppForm 里）。
 //  @Bindable 让这些界面可以直接修改 ProfileDraft 里的数据。
 //
 
@@ -22,36 +22,32 @@ struct BasicInfoSection: View {
     private enum Field { case age, height, feet, inches, weight }
 
     var body: some View {
-        Section {
-            Picker("性别", selection: $draft.sex) {
-                ForEach(Sex.allCases, id: \.self) { sex in
-                    Text(sex.title).tag(sex)
+        AppFormSection(String(localized: "基本信息"), footer: String(localized: "性别只用于计算基础代谢，公式里男女的数值不同。")) {
+            AppSegmentedControl(title: String(localized: "性别"), selection: $draft.sex, options: Sex.allCases) { $0.title }
+                .padding(AppSpacing.sm)
+                // 数字键盘没有「完成」键，在键盘上方加一个。
+                // 注意只挂在这一个地方：挂在每一行上会出现好几个「完成」
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("完成") { focusedField = nil }
+                    }
                 }
-            }
-            .pickerStyle(.segmented)
-            // 数字键盘没有「完成」键，在键盘上方加一个。
-            // 注意只挂在这一行上：挂在整个 Section 上会给每一行各加一个，出现好几个「完成」
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("完成") { focusedField = nil }
-                }
-            }
+            AppFormDivider()
 
             NumberRow(
                 title: String(localized: "年龄"), unit: String(localized: "岁"), text: $draft.ageText,
                 keyboard: .numberPad, error: draft.ageError,
                 focus: $focusedField, field: .age
             )
+            AppFormDivider()
 
             // 单位：切换时已经填好的身高、体重会换算过去
-            Picker("单位", selection: $units) {
-                ForEach(UnitSystem.allCases, id: \.self) { system in
-                    Text(system.shortTitle).tag(system)
-                }
+            AppSegmentedControl(title: String(localized: "单位"), selection: $units, options: UnitSystem.allCases) {
+                $0.shortTitle
             }
-            .pickerStyle(.segmented)
-            .accessibilityLabel("单位")
+            .padding(AppSpacing.sm)
+            AppFormDivider()
 
             switch draft.units {
             case .metric:
@@ -67,6 +63,7 @@ struct BasicInfoSection: View {
                 )
             }
 
+            AppFormDivider()
             NumberRow(
                 title: String(localized: "体重"), unit: draft.units == .metric ? String(localized: "公斤") : String(localized: "磅"),
                 text: $draft.weightText,
@@ -78,12 +75,10 @@ struct BasicInfoSection: View {
             if let warning = draft.unitWarning {
                 Label(warning, systemImage: "info.circle")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
+                    .padding(.horizontal, AppSpacing.cardPadding)
+                    .padding(.bottom, AppSpacing.sm)
             }
-        } header: {
-            Text("基本信息")
-        } footer: {
-            Text("性别只用于计算基础代谢，公式里男女的数值不同。")
         }
         // 草稿的单位跟着设置走：打开页面时对齐一次，之后设置一变就换算
         .onAppear { draft.switchUnits(to: units) }
@@ -115,6 +110,7 @@ private struct FeetInchesRow<Field: Hashable>: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text("身高")
+                    .foregroundStyle(AppColors.textPrimary)
                     .accessibilityHidden(true)
                 Spacer()
                 TextField("身高（英尺）", text: $feet, prompt: Text(verbatim: "5"))
@@ -123,7 +119,7 @@ private struct FeetInchesRow<Field: Hashable>: View {
                     .frame(maxWidth: 56)
                     .focused(focus, equals: feetField)
                 Text("英尺")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
                     .accessibilityHidden(true)
                 TextField("身高（英寸）", text: $inches, prompt: Text(verbatim: "7"))
                     .keyboardType(.decimalPad)
@@ -131,16 +127,19 @@ private struct FeetInchesRow<Field: Hashable>: View {
                     .frame(maxWidth: 56)
                     .focused(focus, equals: inchesField)
                 Text("英寸")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
                     .accessibilityHidden(true)
             }
 
             if let shownError {
                 Text(shownError)
                     .font(.caption)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(AppColors.destructive)
             }
         }
+        .padding(.horizontal, AppSpacing.cardPadding)
+        .padding(.vertical, AppSpacing.sm)
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
         // 红色提示出现时，让旁白念出来
         .onChange(of: shownError) { _, newError in
             if let newError {
@@ -156,16 +155,13 @@ struct ActivitySection: View {
     @Bindable var draft: ProfileDraft
 
     var body: some View {
-        Section {
-            ForEach(ActivityLevel.allCases, id: \.self) { level in
-                ChoiceRow(title: level.title, detail: level.detail, isSelected: draft.activity == level) {
+        AppFormSection(String(localized: "日常活动量"), footer: String(localized: "按大多数星期的实际情况选；2～3 周后再根据体重变化调整。")) {
+            ForEach(Array(ActivityLevel.allCases.enumerated()), id: \.element) { index, level in
+                if index > 0 { AppFormDivider() }
+                AppChoiceRow(title: level.title, detail: level.detail, isSelected: draft.activity == level) {
                     draft.activity = level
                 }
             }
-        } header: {
-            Text("日常活动量")
-        } footer: {
-            Text("按大多数星期的实际情况选；2～3 周后再根据体重变化调整。")
         }
     }
 }
@@ -176,11 +172,12 @@ struct GoalSection: View {
     @Bindable var draft: ProfileDraft
 
     var body: some View {
-        Section {
-            ForEach(Goal.allCases, id: \.self) { goal in
+        AppFormSection(String(localized: "你的目标")) {
+            ForEach(Array(Goal.allCases.enumerated()), id: \.element) { index, goal in
                 // 不适合减脂的人（体重偏轻，或 65 岁以上且 BMI 低于 30），「减脂」这一项不能选
                 let disabled = goal == .loseFat && draft.fatLossRestriction != nil
-                ChoiceRow(title: goal.title, detail: goal.detail, isSelected: draft.goal == goal) {
+                if index > 0 { AppFormDivider() }
+                AppChoiceRow(title: goal.title, detail: goal.detail, isSelected: draft.goal == goal) {
                     draft.goal = goal
                 }
                 .disabled(disabled)
@@ -188,47 +185,22 @@ struct GoalSection: View {
             }
             // 用平静的灰色说明，不用红色或橙色的「警告」样式
             if let message = draft.fatLossRestriction {
-                Label(message, systemImage: "info.circle")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                AppFormDivider()
+                note(message)
             }
-            ForEach(draft.goalNotes, id: \.self) { note in
-                Label(note, systemImage: "info.circle")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+            ForEach(draft.goalNotes, id: \.self) { message in
+                AppFormDivider()
+                note(message)
             }
-        } header: {
-            Text("你的目标")
         }
     }
-}
 
-/// 一个可以点选的选项：标题 + 说明 + 选中时的对勾
-private struct ChoiceRow: View {
-    let title: String
-    let detail: String
-    let isSelected: Bool
-    let onSelect: () -> Void
-
-    var body: some View {
-        Button(action: onSelect) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .foregroundStyle(.primary)
-                    Text(detail)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(.tint)
-                        .fontWeight(.semibold)
-                }
-            }
-            .contentShape(Rectangle())  // 整行都可以点
-        }
-        .buttonStyle(.plain)  // 不用按钮默认的蓝色，标题保持黑色、说明保持灰色
+    private func note(_ text: String) -> some View {
+        Label(text, systemImage: "info.circle")
+            .font(.callout)
+            .foregroundStyle(AppColors.textSecondary)
+            .padding(.horizontal, AppSpacing.cardPadding)
+            .padding(.vertical, AppSpacing.sm)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

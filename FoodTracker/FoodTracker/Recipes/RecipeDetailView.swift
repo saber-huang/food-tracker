@@ -151,15 +151,10 @@ struct RecipeDetailView: View {
                 logged.map { String(localized: "已记录到\($0.title)") } ?? String(localized: "记录这餐"),
                 systemImage: logged == nil ? "plus" : "checkmark"
             )
-            .font(.body.weight(.semibold))
-            .foregroundStyle(logged == nil ? AppColors.onBrand : AppColors.brandDeep)
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .background(
-                logged == nil ? AppColors.brand : AppColors.brandSoft,
-                in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
         }
-        .buttonStyle(AppPressStyle())
-        .disabled(logged != nil)
+        // 记过之后换成次要按钮的样子（不是变灰），表示已经完成；不能再点，防止记成两条
+        .buttonStyle(AppButtonStyle(kind: logged == nil ? .primary : .secondary))
+        .allowsHitTesting(logged == nil)
         .sensoryFeedback(.success, trigger: logged)
         // 选记到哪一餐：这道菜本来是哪一餐，就在那一项后面标「（推荐）」
         .confirmationDialog("记到哪一餐？", isPresented: $showMealChoice, titleVisibility: .visible) {

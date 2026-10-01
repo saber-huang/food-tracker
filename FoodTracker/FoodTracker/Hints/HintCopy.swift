@@ -117,7 +117,7 @@ nonisolated enum HintCopy {
     }
     /// 按钮和状态
     static func generateNextMeal(mealName: String) -> String { String(localized: "生成\(mealName)推荐", table: "HintCopy") }
-    static let generatingNextMeal = String(localized: "正在生成，通常需要 10～20 秒…", table: "HintCopy")
+    static let generatingNextMeal = String(localized: "正在生成这一餐…", table: "HintCopy")
     /// 页面底部：和「食谱」页共用生成次数
     static func quotaRemaining(_ count: Int) -> String {
         String(localized: "今天还可以生成 \(count) 次（和「食谱」页共用次数）。条件不变时重新生成会直接用上次的结果，不占次数。", table: "HintCopy")

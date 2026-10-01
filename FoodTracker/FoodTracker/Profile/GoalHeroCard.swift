@@ -50,7 +50,7 @@ struct GoalHeroCard: View {
         }
         .padding(AppSpacing.heroPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .appCard(elevated: true)
+        .appCard(.hero)
     }
 }
 

@@ -3,7 +3,7 @@
 //  FoodTracker
 //
 //  说明文字的放法：界面上不长期挂着灰色说明。需要解释的地方放一个 ⓘ，点开是一个半屏的说明，看完点「知道了」。
-//  - InfoTopic：每一种说明的标题和正文（关于 AI 估算、健康提示、热量和份量）
+//  - InfoTopic：每一种说明的标题和正文（关于 AI 估算、健康提示、热量和份量、过敏和忌口）
 //  - InfoSheet：半屏说明
 //  - InfoButton：一个 ⓘ，点开对应的说明
 //  - AIEstimateBadge：「AI 估算 ⓘ」小标签，只放在 AI 算出来的数字旁边（识别结果、食谱）
@@ -18,6 +18,7 @@ enum InfoTopic: String, Identifiable {
     case aiEstimate  // 关于 AI 估算
     case health  // 健康提示（每日目标不是医疗建议）
     case caloriesAndPortion  // 热量和份量（千焦换算、按比例换算）
+    case allergies  // 过敏和忌口怎么用（食谱偏好里的 ⓘ）
 
     var id: String { rawValue }
 
@@ -26,6 +27,7 @@ enum InfoTopic: String, Identifiable {
         case .aiEstimate: String(localized: "关于 AI 估算")
         case .health: String(localized: "健康提示")
         case .caloriesAndPortion: String(localized: "热量和份量")
+        case .allergies: String(localized: "过敏和忌口")
         }
     }
 
@@ -47,6 +49,13 @@ enum InfoTopic: String, Identifiable {
                 String(localized: "包装上的「能量」一般是千焦（kJ），除以 4.2 大约就是千卡。"),
                 String(localized: "先填份量、再填热量，之后改份量时，热量和三大营养素会按比例一起变；直接改某一项，就只改那一项。"),
             ]
+        case .allergies:
+            // 不承诺「绝对不会出现」：后端会检查并重做，但 AI 仍可能有疏漏
+            [
+                String(localized: "你填写的过敏食材和忌口会用于食谱推荐，推荐会尽量避开这些食材和用它们做的食品。"),
+                String(localized: "多个食材用顿号或逗号分开。"),
+                String(localized: "有严重过敏时，做菜前请再自己核对一遍食材。"),
+            ]
         }
     }
 
@@ -55,7 +64,7 @@ enum InfoTopic: String, Identifiable {
         switch self {
         case .aiEstimate:
             [String(localized: "疾病"), String(localized: "孕期"), String(localized: "过敏"), String(localized: "特殊饮食需求")]
-        case .health, .caloriesAndPortion:
+        case .health, .caloriesAndPortion, .allergies:
             []
         }
     }
@@ -101,16 +110,8 @@ struct InfoSheet: View {
             }
             .scrollBounceBehavior(.basedOnSize)
 
-            Button {
-                dismiss()
-            } label: {
-                Text("知道了")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(AppColors.onBrand)
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(AppColors.brand, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
-            }
-            .buttonStyle(AppPressStyle())
+            Button("知道了") { dismiss() }
+                .buttonStyle(.appPrimary)
         }
         .padding(.horizontal, AppSpacing.xl)
         .padding(.top, AppSpacing.xxl)

@@ -117,12 +117,15 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
         if entries.isEmpty {
             Section {
                 // 快速记录就在上面，这里不再放按钮
-                EmptyStateView(
-                    icon: .bowl,
+                BrandedStateView(
+                    kind: .empty,
                     title: isToday ? String(localized: "今天还没有记录") : String(localized: "这一天没有记录"),
                     message: isToday
-                        ? String(localized: "拍一张照片，或手动添加第一餐。") : String(localized: "可以用上面的「快速记录」补记。"))
-                    .listRowBackground(Color.clear)
+                        ? String(localized: "拍一张照片，或手动添加第一餐。") : String(localized: "可以用上面的「快速记录」补记。"),
+                    visualWidth: 64
+                )
+                .padding(.vertical, AppSpacing.md)
+                .listRowBackground(Color.clear)
             } header: {
                 AppSectionHeader(title: title)
             }
@@ -150,13 +153,17 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
                 onAddToMeal(meal)
             } label: {
                 EmptyMealRow(meal: meal)
+                    .padding(.horizontal, AppSpacing.sm)
+                    .padding(.vertical, 6)
+                    // 最轻：没有底色，只有一圈很淡的边（画在内容上，圆角用统一的 24）
+                    .background {
+                        RoundedRectangle(cornerRadius: AppRadius.large, style: .continuous)
+                            .strokeBorder(AppColors.divider, lineWidth: 1)
+                    }
             }
             .buttonStyle(AppPressStyle(scales: false))
-            .listRowInsets(EdgeInsets(top: 6, leading: AppSpacing.cardPadding - 4, bottom: 6, trailing: AppSpacing.cardPadding - 4))
-            // 最轻：没有底色，只有一圈很淡的边
-            .listRowBackground(
-                RoundedRectangle(cornerRadius: AppRadius.card, style: .continuous)
-                    .strokeBorder(AppColors.divider, lineWidth: 1))
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(Color.clear)
         } else {
             let mealTotal = DietLogMath.total(of: mealEntries.map(\.values))
             // 三种营养素都是 0（只填了热量）时没有最后那一行营养素，最后一行下面多留一点

@@ -69,14 +69,14 @@ struct FloatingTabBar: View {
         }
         .padding(AppSpacing.xs)
         .background {
-            RoundedRectangle(cornerRadius: AppRadius.tabBar, style: .continuous)
+            RoundedRectangle(cornerRadius: AppRadius.extraLarge, style: .continuous)
                 .fill(.ultraThinMaterial)
                 .overlay {
                     // 一层暖白，盖住大部分模糊：只有一点点透出下面的内容，不是明显的毛玻璃
-                    RoundedRectangle(cornerRadius: AppRadius.tabBar, style: .continuous)
+                    RoundedRectangle(cornerRadius: AppRadius.extraLarge, style: .continuous)
                         .fill(AppColors.surfacePrimary.opacity(0.92))
                 }
-                .shadow(color: AppColors.shadow.opacity(0.08), radius: 18, y: 6)
+                .appShadow(AppShadow.floating)
         }
         .padding(.horizontal, AppSpacing.md + 2)
         .padding(.top, AppSpacing.xxs)

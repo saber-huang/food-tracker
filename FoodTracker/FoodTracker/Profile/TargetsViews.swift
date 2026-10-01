@@ -7,17 +7,21 @@
 
 import SwiftUI
 
-/// 每日目标的完整展示：大号热量 + 三大营养素
+/// 每日目标的完整展示：大号热量 + 三大营养素（数字用 App 统一的圆体等宽数字，单位小一号、浅一点）
 struct TargetsSummaryView: View {
     let targets: DailyTargets
 
+    @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 40
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline) {
+            HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xxs) {
                 Text(targets.calories.noDecimal)
-                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .font(AppTypography.heroNumber(size: numberSize))
+                    .foregroundStyle(AppColors.textPrimary)
                 Text("千卡 / 天")
-                    .foregroundStyle(.secondary)
+                    .font(AppTypography.heroCaption)
+                    .foregroundStyle(AppColors.textSecondary)
             }
             HStack {
                 NutrientColumn(name: String(localized: "蛋白质"), value: targets.proteinG.noDecimal, color: AppColors.protein)
@@ -39,14 +43,15 @@ struct NutrientColumn: View {
     var body: some View {
         VStack(spacing: 6) {
             Text("\(value) 克")
-                .font(.headline.monospacedDigit())
+                .font(AppTypography.number)
+                .foregroundStyle(AppColors.textPrimary)
             HStack(spacing: 5) {
                 Capsule()
                     .fill(color)
                     .frame(width: 12, height: 4)
                 Text(name)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
             }
         }
         .frame(maxWidth: .infinity)
@@ -147,7 +152,7 @@ struct FloorNotice: View {
                 systemImage: "heart.circle"
             )
             .font(.callout)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(AppColors.textSecondary)
         }
     }
 }
@@ -160,7 +165,7 @@ struct GoalNotesView: View {
         ForEach(ProfileValidator.goalNotes(for: bodyInfo), id: \.self) { note in
             Label(note, systemImage: "info.circle")
                 .font(.callout)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.textSecondary)
         }
     }
 }

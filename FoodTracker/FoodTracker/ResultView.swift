@@ -119,13 +119,12 @@ struct ResultView: View {
                     // 记到哪一天（打开这页时就定好了，这里只显示）、哪一餐；紧挨着下面的保存按钮，保存前最后看一眼
                     Section {
                         LabeledContent("记录日期", value: DayMath.dayTitle(for: day, today: today))
-                        Picker("记到哪一餐", selection: $meal) {
-                            ForEach(MealType.allCases) { meal in
-                                Text(meal.title).tag(meal)
-                            }
+                            .foregroundStyle(AppColors.textPrimary)
+                        // 四个餐次一看就懂，不另写标题；旁白会读出「记到哪一餐」
+                        AppSegmentedControl(title: String(localized: "记到哪一餐"), selection: $meal, options: MealType.allCases) {
+                            $0.title
                         }
-                        .pickerStyle(.segmented)  // 四个餐次一看就懂，不另写标题；旁白会读出「记到哪一餐」
-                        .sensoryFeedback(.selection, trigger: meal)
+                        .listRowInsets(EdgeInsets(top: AppSpacing.sm, leading: AppSpacing.sm, bottom: AppSpacing.sm, trailing: AppSpacing.sm))
                     }
                 } else {
                     Section {
@@ -143,17 +142,9 @@ struct ResultView: View {
         .safeAreaInset(edge: .bottom) {
             if showsList {
                 let canSave = !items.isEmpty && !isSaving
-                Button(action: save) {
-                    Text(DayMath.saveButtonTitle(day: day, today: today))
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(AppColors.onBrand)
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .background(
-                            AppColors.brand.opacity(canSave ? 1 : 0.4),
-                            in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
-                }
-                .buttonStyle(AppPressStyle())
-                .disabled(!canSave)
+                Button(DayMath.saveButtonTitle(day: day, today: today), action: save)
+                    .buttonStyle(.appPrimary)
+                    .disabled(!canSave)
                 .padding(.horizontal, AppSpacing.pageMargin)
                 .padding(.vertical, AppSpacing.xs)
                 .appBottomBar()
@@ -183,57 +174,21 @@ struct ResultView: View {
         }
     }
 
-    /// 没认出食物：不给出任何热量。写清楚怎么拍更容易认出来，可以回去重新拍，也可以手动添加
+    /// 没认出食物：不给出任何热量（平时由「确认照片」页处理，这里只在调试的示例结果里出现）。
+    /// 和其他出错状态同一个样子：没有热气的碗、一句能照着做的话、「重新拍摄」「手动添加」
     private var notFoodState: some View {
-        VStack(spacing: AppSpacing.md) {
-            EmptyStateView(
-                icon: .symbol("camera.viewfinder"), title: String(localized: "没有识别到足够清晰的食物"),
-                message: result.message.isEmpty ? nil : result.message)
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                ForEach(
-                    [String(localized: "换个角度再拍一张"), String(localized: "靠近食物一些"), String(localized: "确保主要食物没有被遮挡")],
-                    id: \.self
-                ) { tip in
-                    HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
-                        Circle()
-                            .fill(AppColors.oatRim)
-                            .frame(width: 5, height: 5)
-                            .alignmentGuide(.firstTextBaseline) { d in d[.bottom] + 4 }
-                            .accessibilityHidden(true)
-                        Text(tip)
-                            .font(AppTypography.detail)
-                            .foregroundStyle(AppColors.textSecondary)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, AppSpacing.md)
-            HStack(spacing: AppSpacing.sm) {
-                // 回到「确认照片」页：照片都还在，可以重拍、补拍
-                Button {
-                    dismiss()
-                } label: {
-                    Label("重新拍摄", systemImage: "camera")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(AppColors.onBrand)
-                        .frame(maxWidth: .infinity, minHeight: 46)
-                        .background(AppColors.brand, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
-                }
-                .buttonStyle(AppPressStyle())
-                // 手动加的一项会进入列表，之后就和识别到食物一样：可以再改、再加，最后一起保存
-                Button {
-                    isAddingItem = true
-                } label: {
-                    Text("手动添加")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(AppColors.brand)
-                        .frame(maxWidth: .infinity, minHeight: 46)
-                        .background(AppColors.brandSoft, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
-                }
-                .buttonStyle(AppPressStyle())
-            }
+        BrandedStateView(
+            kind: .error, title: String(localized: "没有识别到足够清晰的食物"),
+            message: String(localized: "这张照片里的食物不够清晰，可以换个角度再试一次。"), visualWidth: 72
+        ) {
+            // 回到「确认照片」页：照片都还在，可以重拍、补拍
+            Button("重新拍摄") { dismiss() }
+                .buttonStyle(.appPrimary)
+            // 手动加的一项会进入列表，之后就和识别到食物一样：可以再改、再加，最后一起保存
+            Button("手动添加") { isAddingItem = true }
+                .buttonStyle(.appSecondary)
         }
-        .padding(.vertical, AppSpacing.xs)
+        .padding(.vertical, AppSpacing.md)
     }
 
     /// 照片缩略图（就是刚才拍的或选的照片，旁白不用读）
@@ -242,7 +197,7 @@ struct ResultView: View {
             .resizable()
             .scaledToFill()
             .frame(width: size, height: size)
-            .clipShape(RoundedRectangle(cornerRadius: AppRadius.thumbnail, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
             .accessibilityHidden(true)
     }
 
@@ -277,11 +232,12 @@ private struct FoodRow: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(item.name)
                     .font(.headline)
+                    .foregroundStyle(AppColors.textPrimary)
                     .lineLimit(2)
                 Spacer(minLength: AppSpacing.xs)
                 Text("\(item.values.caloriesKcal.noDecimal) 千卡")
-                    .font(.headline)
-                    .monospacedDigit()
+                    .font(AppTypography.number)
+                    .foregroundStyle(AppColors.textPrimary)
                     .fixedSize()
             }
             // AI 没把握的份量不假装准确：写「份量不确定」，点这一行就能调整
@@ -291,7 +247,7 @@ private struct FoodRow: View {
                 // 不知道重量的一项不显示这一行
                 Text("约 \(weight.oneDecimal) 克")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
             }
             // 三种营养素都是 0（只填了热量）时不显示，免得看起来像「没有蛋白质、碳水、脂肪」
             if item.values.proteinG > 0 || item.values.carbsG > 0 || item.values.fatG > 0 {
@@ -299,7 +255,7 @@ private struct FoodRow: View {
                     "蛋白质 \(item.values.proteinG.oneDecimal) 克 · 碳水 \(item.values.carbsG.oneDecimal) 克 · 脂肪 \(item.values.fatG.oneDecimal) 克"
                 )
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.textSecondary)
             }
         }
         .padding(.vertical, 4)
@@ -338,16 +294,18 @@ private struct TotalView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(total.caloriesKcal.noDecimal)
                     .font(AppTypography.heroNumber(size: numberSize))  // 和首页的大数字同一种字，跟着系统字号变大
+                    .foregroundStyle(AppColors.textPrimary)
                 Text("千卡")
-                    .foregroundStyle(.secondary)
+                    .font(AppTypography.heroCaption)
+                    .foregroundStyle(AppColors.textSecondary)
                 Spacer()
                 // 有一项不知道重量，总重量就算不准，写明「部分未填重量」
                 if items.contains(where: { $0.weightG == nil }) {
                     Text("部分未填份量")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                 } else {
                     Text("共约 \(items.compactMap(\.weightG).reduce(0, +).noDecimal) 克")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                 }
             }
             HStack {

@@ -2,229 +2,133 @@
 //  StateViews.swift
 //  FoodTracker
 //
-//  全 App 统一的几种「状态」，各个页面不再各自做转圈、各自写出错弹窗：
-//  - AppLoadingIndicator：小的加载动画（按钮里、一行字旁边），就是一只慢慢装满又落下的碗
-//  - LoadingStateView：大的加载状态（识别照片、生成食谱）：碗 + 标题 + 轮流出现的阶段说明。
-//    阶段说明只表示「现在大概在做什么」，按时间往下走、停在最后一句，不显示假的百分比
-//  - EmptyStateView：没有内容时（今天还没有记录、还没有食谱、没认出食物）：小碗或图标 + 标题 + 一句说明，
-//    要不要放按钮由页面决定（旁边已经有入口的就不放）
-//  - ErrorStateView：出错时：图标 + 标题 + 一句能照着做的话 +「重试」。技术细节（错误码、HTTP 状态）只写进日志
-//  品牌的碗只出现在这些状态里（空、加载），平时不到处放
+//  全 App 统一的「状态」：加载、没有内容、出错都用 BrandedStateView，同一只碗、同样的字号、留白和按钮层级。
+//  成功不做成一整页：用轻提示（见 Toast.swift）。
+//  - 加载：冒着热气的碗（SteamBowl）+ 标题 + 一句正在做什么（等得久了自然换一句，不显示假的百分比和「通常要几秒」）
+//  - 没有内容：完整的碗图案（笑脸 + 碗）+ 标题 + 一句说明；要不要放按钮由页面决定（旁边已经有入口的就不放）
+//  - 出错：一只没有热气的碗 + 标题 + 一句能照着做的话 + 按钮（主要：重试 / 重新拍摄；次要：手动添加）。
+//    技术细节（错误码、HTTP、JSON）不给用户看，只写进日志
+//  - AppLoadingIndicator：按钮里、一行字旁边用的小号加载动画（也是冒热气的碗）
 //
 
 import SwiftUI
 
-// MARK: - 加载
+// MARK: - 统一的状态
 
-/// 小的加载动画：一只小碗。放在橄榄绿的按钮上时用 onBrand: true（暖白色的碗）
-struct AppLoadingIndicator: View {
-    var onBrand = false
-    @ScaledMetric(relativeTo: .body) private var size: CGFloat = 20
-
-    var body: some View {
-        Group {
-            if onBrand {
-                BowlLoadingMark(
-                    emptyColor: AppColors.onBrand.opacity(0.28), fillColor: AppColors.onBrand,
-                    rimColor: AppColors.onBrand.opacity(0.85))
-            } else {
-                BowlLoadingMark()
-            }
-        }
-        .frame(width: size)
-    }
-}
-
-/// 大的加载状态：碗的动画、标题、阶段说明（每隔几秒换下一句，到最后一句就停住）、一行小字
-struct LoadingStateView: View {
-    let title: String
-    var stages: [String] = []
-    var footnote: String?
-
-    @State private var stageIndex = 0
-    @ScaledMetric(relativeTo: .largeTitle) private var bowlWidth: CGFloat = 76
-
-    var body: some View {
-        VStack(spacing: AppSpacing.md) {
-            BowlLoadingMark()
-                .frame(width: bowlWidth)
-                .padding(.bottom, AppSpacing.xxs)
-            VStack(spacing: 6) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundStyle(AppColors.textPrimary)
-                if stages.indices.contains(stageIndex) {
-                    Text(stages[stageIndex])
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.textSecondary)
-                        .id(stageIndex)  // 换一句时淡入淡出
-                        .transition(.opacity)
-                }
-                if let footnote {
-                    Text(footnote)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.textTertiary)
-                        .padding(.top, AppSpacing.xxs)
-                }
-            }
-            .multilineTextAlignment(.center)
-            .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, AppSpacing.lg)
-        // 阶段说明按时间往下走：每句停 2.8 秒，到最后一句就停住（真正的进度不知道，所以不假装）
-        .task(id: stages) {
-            stageIndex = 0
-            while stageIndex < stages.count - 1 {
-                try? await Task.sleep(for: .seconds(2.8))
-                guard !Task.isCancelled else { return }
-                withAnimation(.easeOut(duration: 0.2)) { stageIndex += 1 }
-            }
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(.updatesFrequently)
-    }
-}
-
-// MARK: - 没有内容
-
-/// 没有内容时：小碗（或一个系统图标）、标题、一句说明；actions 里放按钮（可以没有）
-struct EmptyStateView<Actions: View>: View {
-    enum Icon {
-        case bowl  // 品牌的碗
-        case symbol(String)  // 系统图标，放在燕麦色的圆里
+struct BrandedStateView<Accessory: View, Actions: View>: View {
+    enum Kind {
+        case loading, empty, error
     }
 
-    let icon: Icon
+    let kind: Kind
     let title: String
     var message: String?
+    /// 加载完成：热气停下、碗轻轻放大一点（之后页面再切走）
+    var isFinishing = false
+    /// 碗的大小：整页的状态用默认的，放在卡片里的小一点
+    var visualWidth: CGFloat = 96
+    /// 标题下面的附加内容（照片缩略图、几条建议）
+    @ViewBuilder var accessory: Accessory
+    /// 按钮：从上到下是主要、次要、第三级（用 AppButtonStyle）
     @ViewBuilder var actions: Actions
 
-    @ScaledMetric(relativeTo: .largeTitle) private var iconSize: CGFloat = 52
+    @ScaledMetric(relativeTo: .largeTitle) private var scale: CGFloat = 1
 
     var body: some View {
-        VStack(spacing: AppSpacing.md) {
-            iconView
-            VStack(spacing: 6) {
+        VStack(spacing: AppSpacing.lg) {
+            visual
+                .frame(width: visualWidth * min(scale, 1.4))
+            VStack(spacing: AppSpacing.xs) {
                 Text(title)
-                    .font(.headline)
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(AppColors.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
                 if let message {
                     Text(message)
-                        .font(AppTypography.detail)
+                        .font(.subheadline)
                         .foregroundStyle(AppColors.textSecondary)
+                        .id(message)  // 换一句时淡入淡出
+                        .transition(.opacity)
                 }
             }
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
-            .accessibilityElement(children: .combine)
-            actions
+            accessory
+            VStack(spacing: AppSpacing.xs) {
+                actions
+            }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, AppSpacing.md)
+        .animation(.easeOut(duration: 0.25), value: message)
     }
 
     @ViewBuilder
-    private var iconView: some View {
-        switch icon {
-        case .bowl:
-            // 完整的碗图案（燕麦色，和 App 图标一样）；空碗的颜色太接近页面底色，看不清
-            KindbiteMark()
-                .frame(width: iconSize)
-        case .symbol(let name):
-            AppIconTile(systemImage: name, size: iconSize)
+    private var visual: some View {
+        switch kind {
+        case .loading: SteamBowl(isFinishing: isFinishing)
+        case .empty: KindbiteMark()
+        case .error: SteamBowl(showsSteam: false).opacity(0.85)
         }
     }
 }
 
-extension EmptyStateView where Actions == EmptyView {
-    init(icon: Icon, title: String, message: String? = nil) {
-        self.init(icon: icon, title: title, message: message) { EmptyView() }
+extension BrandedStateView where Accessory == EmptyView {
+    init(
+        kind: Kind, title: String, message: String? = nil, isFinishing: Bool = false, visualWidth: CGFloat = 96,
+        @ViewBuilder actions: () -> Actions
+    ) {
+        self.init(
+            kind: kind, title: title, message: message, isFinishing: isFinishing, visualWidth: visualWidth,
+            accessory: { EmptyView() }, actions: actions)
     }
 }
 
-// MARK: - 出错
+extension BrandedStateView where Accessory == EmptyView, Actions == EmptyView {
+    init(kind: Kind, title: String, message: String? = nil, visualWidth: CGFloat = 96) {
+        self.init(
+            kind: kind, title: title, message: message, visualWidth: visualWidth, accessory: { EmptyView() },
+            actions: { EmptyView() })
+    }
+}
 
-/// 出错时的一张小卡片：图标 + 标题，下面一句能照着做的话，再下面是「重试」和一个备选的做法（比如「手动添加」）。
-/// 不弹大的警告框：页面还能照常用，用户可以先做别的
-struct ErrorStateView: View {
-    let title: String
-    let message: String
-    var retryTitle = String(localized: "重试")
-    var onRetry: (() -> Void)?
-    var secondaryTitle: String?
-    var onSecondary: (() -> Void)?
-    var onDismiss: (() -> Void)?
+/// 加载中的几句话：按时间往下走（到最后一句就停住）。真正的进度不知道，所以只换说法，不显示百分比
+struct LoadingMessages: Equatable {
+    let lines: [String]
+    /// 第几秒换到这一句（和 lines 一一对应，第一句是 0）
+    let switchAt: [Double]
+
+    /// 等了 elapsed 秒时显示哪一句
+    func line(after elapsed: Double) -> String {
+        var current = lines.first ?? ""
+        for (index, start) in switchAt.enumerated() where elapsed >= start && lines.indices.contains(index) {
+            current = lines[index]
+        }
+        return current
+    }
+}
+
+// MARK: - 小号的加载动画
+
+/// 按钮里、一行字旁边的加载动画：一只冒热气的小碗。放在橄榄绿按钮上时用 onBrand: true（暖白色）
+struct AppLoadingIndicator: View {
+    var onBrand = false
+    @ScaledMetric(relativeTo: .body) private var size: CGFloat = 22
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
-                Image(systemName: "exclamationmark.circle")
-                    .foregroundStyle(AppColors.confidenceLow)
-                    .accessibilityHidden(true)
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(AppColors.textPrimary)
-                Spacer(minLength: AppSpacing.xs)
-                if let onDismiss {
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(AppColors.textTertiary)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.borderless)
-                    .padding(-AppSpacing.sm)
-                    .accessibilityLabel("关闭")
-                }
-            }
-            Text(message)
-                .font(AppTypography.detail)
-                .foregroundStyle(AppColors.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-            if onRetry != nil || onSecondary != nil {
-                HStack(spacing: AppSpacing.md) {
-                    if let onRetry {
-                        Button(action: onRetry) {
-                            Label(retryTitle, systemImage: "arrow.clockwise")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(AppColors.onBrand)
-                                .padding(.horizontal, AppSpacing.md)
-                                .frame(minHeight: 40)
-                                .background(AppColors.brand, in: Capsule())
-                                .frame(minHeight: 44)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(AppPressStyle())
-                    }
-                    if let secondaryTitle, let onSecondary {
-                        Button(secondaryTitle, action: onSecondary)
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(AppColors.brand)
-                            .frame(minHeight: 44)
-                            .buttonStyle(.borderless)
-                    }
-                }
-            }
-        }
-        .padding(AppSpacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AppColors.surfacePrimary, in: RoundedRectangle(cornerRadius: AppRadius.compact, style: .continuous))
-        .accessibilityElement(children: .contain)
+        SteamBowl(palette: onBrand ? .onBrand : .oat)
+            .frame(width: size)
     }
 }
 
-#Preview("加载、空、出错") {
+#Preview("加载、没有内容、出错") {
     ScrollView {
-        VStack(spacing: 24) {
-            LoadingStateView(
-                title: "正在分析 3 张照片", stages: ["正在识别食物…", "正在合并不同角度…", "正在估算份量和营养…"],
-                footnote: "通常需要 10～20 秒")
-            EmptyStateView(icon: .bowl, title: "今天还没有记录", message: "拍一张照片，或手动添加第一餐。")
-            ErrorStateView(
-                title: "无法完成识别", message: "没有联网。检查网络后再试一次。", onRetry: {}, secondaryTitle: "手动添加",
-                onSecondary: {}, onDismiss: {})
+        VStack(spacing: 48) {
+            BrandedStateView(kind: .loading, title: "正在分析这顿饭", message: "正在识别食物和估算份量…")
+            BrandedStateView(kind: .empty, title: "今天还没有记录", message: "拍一张照片，或手动添加第一餐。", visualWidth: 72)
+            BrandedStateView(kind: .error, title: "没有完成识别", message: "手机没有联网。检查网络后再试一次。") {
+                Button("重试") {}.buttonStyle(.appPrimary)
+                Button("手动添加") {}.buttonStyle(.appSecondary)
+            }
             HStack {
                 AppLoadingIndicator()
                 Text("正在换…")

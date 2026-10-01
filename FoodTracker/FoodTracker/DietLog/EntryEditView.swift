@@ -10,7 +10,7 @@
 //  - 新的一项打开时，光标直接在「食物名称」里；下面是「最近使用」：点一下就填好名字和上次的份量、营养，
 //    常吃的东西两下就能记完（没有记录过时不显示这一块）
 //  - 数字框用数字键盘，单位（千卡、克）固定写在右边，离开输入框时数字自动整理（见 NumberRow）
-//  - 还差必填项时「保存」是浅色的，但仍然可以点：点了在最近的那一项下面提示「请输入食物名称」或「请输入热量」，
+//  - 「保存」在顶栏右边（和其他表单一样）。还差必填项时是浅色的，但仍然可以点：点了在最近的那一项下面提示「请输入食物名称」或「请输入热量」，
 //    光标跳过去，轻轻震一下。一次只提示一项，不弹警告框
 //  - 蛋白质、碳水、脂肪收在「更多营养信息（可选）」里，点开才显示；收起来不会清空已经填的数字
 //    （右边写一行摘要）；已经有数字（比如修改识别结果）时一打开就是展开的
@@ -78,8 +78,8 @@ struct EntryEditView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Group {
+            ScrollViewReader { proxy in
+                AppForm {
                     nameSection
                     if showsMealPicker || showsDate {
                         whenSection
@@ -87,37 +87,35 @@ struct EntryEditView: View {
                     caloriesSection
                     nutritionSection
                     if let onDelete {
-                        Section {
-                            // 先关掉表单再删：表单还开着的时候删掉它正在显示的记录，会出错
-                            Button("删除这一项", role: .destructive) {
-                                dismiss()
-                                onDelete()
-                            }
-                            .foregroundStyle(AppColors.destructive)
+                        // 先关掉表单再删：表单还开着的时候删掉它正在显示的记录，会出错
+                        Button("删除这一项", role: .destructive) {
+                            dismiss()
+                            onDelete()
                         }
+                        .buttonStyle(.appDestructive)
                     }
                 }
-                .appCardRow()
+                // 光标到了哪一行，就把那一行滚到中间：键盘弹出来也挡不住正在填的框
+                .onChange(of: focusedField) { _, field in
+                    guard let field else { return }
+                    withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(field, anchor: .center) }
+                }
             }
-            .listSectionSpacing(AppSpacing.md)
-            .appListBackground()
             // 任何一个数字框变了，交给草稿判断要不要按比例换算
             .onChange(of: draft.allTexts) { draft.textsChanged() }
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
+            // 和「偏好和忌口」「编辑资料」同一个顶栏：左「取消」、右「保存」。
+            // 还差必填项时「保存」是浅色的，但仍然可以点（点了提示缺什么）；键盘弹出来时也看得见
+            .appSheetHeader(
+                AppSheetHeader(
+                    title: title, onCancel: { dismiss() }, confirmTitle: String(localized: "保存"),
+                    confirmEnabled: !didSave, confirmDimmed: draft.output == nil, onConfirm: save))
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
-                }
                 // 数字键盘没有「完成」键，在键盘上方加一个
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button("完成") { focusedField = nil }
                 }
-            }
-            // 保存按钮固定在最下面：键盘弹出时跟着升上来，填完马上能点
-            .safeAreaInset(edge: .bottom) {
-                saveButton
             }
             .sheet(isPresented: $showsDatePicker) {
                 datePickerSheet
@@ -129,19 +127,25 @@ struct EntryEditView: View {
                 if focusedField == nil { focusedField = .name }
             }
             .sensoryFeedback(.warning, trigger: missingTick)
-            .sensoryFeedback(.selection, trigger: draft.meal)
         }
+        .appSheet()
     }
 
     // MARK: - 表单的几块
 
     private var nameSection: some View {
-        Section {
-            TextField("名称", text: $draft.name, prompt: Text("例如：米饭"))
+        AppFormSection(String(localized: "食物名称")) {
+            TextField("名称", text: $draft.name, prompt: Text("例如：米饭").foregroundStyle(AppColors.textTertiary))
+                .foregroundStyle(AppColors.textPrimary)
                 .focused($focusedField, equals: .name)
                 .submitLabel(.next)
                 .onSubmit { focusedField = .calories }
                 .accessibilityLabel("食物名称")
+                .padding(.horizontal, AppSpacing.cardPadding)
+                .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+                .contentShape(Rectangle())
+                .onTapGesture { focusedField = .name }  // 点这一行的任何地方都能开始输入
+                .id(Field.name)
             if firstMissing == .name {
                 fieldHint(String(localized: "请输入食物名称"))
             } else if let error = draft.nameError, !draft.name.isEmpty, focusedField != .name {
@@ -149,67 +153,64 @@ struct EntryEditView: View {
             }
             let shown = shownSuggestions
             if !shown.isEmpty {
+                AppFormDivider()
                 RecentFoodSuggestions(foods: shown) { food in
                     draft.prefill(from: food)
                     // 填好了：收起键盘，填上的数字和「保存」都看得见
                     focusedField = nil
                 }
+                .padding(.horizontal, AppSpacing.cardPadding)
+                .padding(.vertical, AppSpacing.xs)
             }
-        } header: {
-            sectionHeader("食物名称")
         }
     }
 
     /// 记录到哪一餐、哪一天
     private var whenSection: some View {
-        Section {
+        AppFormSection(String(localized: "记录到")) {
             if showsMealPicker {
                 // 默认按现在的时间选好（或者是从某一餐的 + 打开的那一餐），可以直接改
-                Picker("记到哪一餐", selection: $draft.meal) {
-                    ForEach(MealType.allCases) { meal in
-                        Text(meal.title).tag(meal)
-                    }
-                }
-                .pickerStyle(.segmented)
+                AppSegmentedControl(
+                    title: String(localized: "记到哪一餐"), selection: $draft.meal, options: MealType.allCases
+                ) { $0.title }
+                .padding(AppSpacing.sm)
+            }
+            if showsMealPicker && showsDate {
+                AppFormDivider()
             }
             if showsDate {
                 Button {
                     focusedField = nil
                     showsDatePicker = true
                 } label: {
-                    HStack {
-                        Text("日期")
-                            .foregroundStyle(AppColors.textPrimary)
-                        Spacer()
-                        Text(DayMath.dayTitle(for: draft.displayDay, today: .now))
-                            .foregroundStyle(AppColors.textSecondary)
-                        AppChevron()
-                    }
-                    .contentShape(Rectangle())
+                    AppFormLinkLabel(title: String(localized: "日期"), value: DayMath.dayTitle(for: draft.displayDay, today: .now))
                 }
                 .buttonStyle(AppPressStyle(scales: false))
             }
-        } header: {
-            sectionHeader("记录到")
         }
     }
 
-    /// 热量（必填）和份量（选填）；旁边的 ⓘ 里是千焦换算和按比例换算的说明
+    /// 热量（必填）和份量（选填）；标题旁边的 ⓘ 里是千焦换算和按比例换算的说明
     private var caloriesSection: some View {
-        Section {
+        AppFormSection(title: String(localized: "热量和份量"), accessory: { InfoButton(topic: .caloriesAndPortion) }) {
             NumberRow(
                 title: String(localized: "热量"), unit: String(localized: "千卡"), text: $draft.caloriesText, keyboard: .numberPad,
                 error: draft.caloriesError, focus: $focusedField, field: .calories, prompt: String(localized: "必填"))
+                .id(Field.calories)
             if firstMissing == .calories {
                 fieldHint(String(localized: "请输入热量"))
             }
+            AppFormDivider()
             NumberRow(
                 title: String(localized: "份量"), unit: String(localized: "克"), text: $draft.weightText, keyboard: .decimalPad,
                 error: draft.weightError, focus: $focusedField, field: .weight, prompt: String(localized: "选填"))
+                .id(Field.weight)
             if let note {
                 Text(note)
                     .font(.caption)
                     .foregroundStyle(AppColors.textSecondary)
+                    .padding(.horizontal, AppSpacing.cardPadding)
+                    .padding(.bottom, AppSpacing.sm)
             }
             // 可能填错了的提醒：不阻止保存，只在真的对不上时出现
             if let warning = draft.kcalMismatchWarning {
@@ -218,19 +219,12 @@ struct EntryEditView: View {
             if let warning = draft.macrosExceedWeightWarning {
                 warningRow(warning)
             }
-        } header: {
-            HStack {
-                sectionHeader("热量和份量")
-                Spacer()
-                InfoButton(topic: .caloriesAndPortion)
-                    .padding(.vertical, -AppSpacing.sm)  // 点击范围够大，但不把标题撑高
-            }
         }
     }
 
-    /// 更多营养信息：蛋白质、碳水、脂肪，点一下展开或收起
+    /// 更多营养信息：蛋白质、碳水、脂肪，点一下展开或收起（收起不会清空已经填的数字）
     private var nutritionSection: some View {
-        Section {
+        AppFormSection(nil) {
             Button {
                 withAnimation(.easeOut(duration: 0.15)) { showsNutrition.toggle() }
             } label: {
@@ -238,7 +232,7 @@ struct EntryEditView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(showsNutrition ? "收起营养信息" : "更多营养信息（可选）")
                             .foregroundStyle(AppColors.brand)
-                        // 收起来的时候，如果已经填了，就在下面写一行摘要，免得以为没填（收起不会清空）
+                        // 收起来的时候，如果已经填了，就在下面写一行摘要，免得以为没填
                         if !showsNutrition, let summary = macroSummary {
                             Text(summary)
                                 .font(.caption)
@@ -251,22 +245,32 @@ struct EntryEditView: View {
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(AppColors.textTertiary)
                         .rotationEffect(.degrees(showsNutrition ? 180 : 0))
+                        .accessibilityHidden(true)
                 }
+                .padding(.horizontal, AppSpacing.cardPadding)
+                .padding(.vertical, AppSpacing.xs)
+                .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
                 .contentShape(Rectangle())
             }
-            // 用列表自带的按钮行：整行都能点（高度和其他行一样），按下时整行变灰
+            .buttonStyle(AppPressStyle(scales: false))
             .accessibilityHint(showsNutrition ? "收起蛋白质、碳水、脂肪" : "填写蛋白质、碳水、脂肪")
 
             if showsNutrition {
+                AppFormDivider()
                 NumberRow(
                     title: String(localized: "蛋白质"), unit: String(localized: "克"), text: $draft.proteinText, keyboard: .decimalPad,
                     error: draft.proteinError, focus: $focusedField, field: .protein, prompt: String(localized: "选填"))
+                    .id(Field.protein)
+                AppFormDivider()
                 NumberRow(
                     title: String(localized: "碳水"), unit: String(localized: "克"), text: $draft.carbsText, keyboard: .decimalPad,
                     error: draft.carbsError, focus: $focusedField, field: .carbs, prompt: String(localized: "选填"))
+                    .id(Field.carbs)
+                AppFormDivider()
                 NumberRow(
                     title: String(localized: "脂肪"), unit: String(localized: "克"), text: $draft.fatText, keyboard: .decimalPad,
                     error: draft.fatError, focus: $focusedField, field: .fat, prompt: String(localized: "选填"))
+                    .id(Field.fat)
             }
         }
     }
@@ -279,18 +283,13 @@ struct EntryEditView: View {
         return String(localized: "蛋白质 \(shown[0]) · 碳水 \(shown[1]) · 脂肪 \(shown[2]) 克")
     }
 
-    private func sectionHeader(_ text: LocalizedStringKey) -> some View {
-        Text(text)
-            .font(AppTypography.detail.weight(.medium))
-            .foregroundStyle(AppColors.textSecondary)
-            .textCase(nil)
-    }
-
     /// 就近的一行提示（缺了必填项、填错了）：小字、柔和的砖红
     private func fieldHint(_ text: String) -> some View {
         Text(text)
             .font(.caption)
             .foregroundStyle(AppColors.destructive)
+            .padding(.horizontal, AppSpacing.cardPadding)
+            .padding(.bottom, AppSpacing.sm)
             .transition(.opacity)
     }
 
@@ -298,48 +297,26 @@ struct EntryEditView: View {
         Label(text, systemImage: "info.circle")
             .font(.caption)
             .foregroundStyle(AppColors.textSecondary)
-    }
-
-    /// 最下面的「保存」：还差必填项时是浅色的，但仍然可以点（点了提示缺什么，不会什么反应都没有）
-    private var saveButton: some View {
-        let isComplete = draft.output != nil
-        return Button(action: save) {
-            Text("保存")
-                .font(.body.weight(.semibold))
-                .foregroundStyle(AppColors.onBrand)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(
-                    AppColors.brand.opacity(isComplete ? 1 : 0.45),
-                    in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
-        }
-        .buttonStyle(AppPressStyle())
-        .disabled(didSave)
-        .accessibilityHint(isComplete ? "" : String(localized: "还有必填项没有填"))
-        .padding(.horizontal, AppSpacing.pageMargin)
-        .padding(.vertical, AppSpacing.xs)
-        .appBottomBar()
+            .padding(.horizontal, AppSpacing.cardPadding)
+            .padding(.bottom, AppSpacing.sm)
     }
 
     /// 选日期：只能选到今天为止，不能记到未来。日期按中文显示（2026年9月29日）；
     /// 月历从周一开始：这要靠日历设置（只设地区的话还是从周日开始）
     private var datePickerSheet: some View {
-        NavigationStack {
-            DatePicker("日期", selection: $draft.displayDay, in: ...Date.now, displayedComponents: .date)
-                .datePickerStyle(.graphical)
-                .environment(\.locale, DayMath.locale)
-                .environment(\.calendar, DayMath.calendar)
-                .tint(AppColors.brand)
-                .padding(.horizontal, AppSpacing.md)
-                .frame(maxHeight: .infinity, alignment: .top)
-                .navigationTitle("选择日期")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("完成") { showsDatePicker = false }
-                    }
-                }
-        }
-        .presentationDetents([.height(500), .large])
+        DatePicker("日期", selection: $draft.displayDay, in: ...Date.now, displayedComponents: .date)
+            .datePickerStyle(.graphical)
+            .environment(\.locale, DayMath.locale)
+            .environment(\.calendar, DayMath.calendar)
+            .tint(AppColors.brand)
+            .padding(.horizontal, AppSpacing.md)
+            .frame(maxHeight: .infinity, alignment: .top)
+            .appSheetHeader(
+                AppSheetHeader(title: String(localized: "选择日期"), confirmTitle: String(localized: "完成")) {
+                    showsDatePicker = false
+                })
+            .presentationDetents([.height(500), .large])
+            .appSheet()
     }
 
     private func save() {

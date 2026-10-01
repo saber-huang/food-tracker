@@ -4,7 +4,7 @@
 //
 //  月历：把 UIKit 的 UICalendarView 包一层给 SwiftUI 用（和 CameraPicker 包相机是同一种做法）。
 //  为什么不用 SwiftUI 自带的日期选择器：它不能在日期下面画小圆点，而我们要用圆点标出有记录的日子。
-//  有记录的日期下面一个灰色小圆点；未来的日期变灰、不能点；点一天就把它交给 onPick。
+//  有记录的日期下面一个燕麦色小圆点；未来的日期变灰、不能点；点一天就把它交给 onPick。
 //
 
 import SwiftUI
@@ -24,6 +24,9 @@ struct MonthCalendar: UIViewRepresentable {
         // 先设能选的范围，再设显示哪个月（显示的月份必须在范围之内）
         view.availableDateRange = DayMath.availableRange(today: today)
         view.visibleDateComponents = DayMath.components(of: selectedDay)
+        view.tintColor = UIColor(AppColors.Pair.brand)  // 选中的日期：品牌绿（不用系统蓝）
+        // 月历自己想要的宽度比手机屏幕还宽一点：允许它缩到页面给的宽度，不然整页被撑宽、顶栏的「取消」贴到边上
+        view.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         view.delegate = context.coordinator
         let selection = UICalendarSelectionSingleDate(delegate: context.coordinator)
         selection.selectedDate = DayMath.components(of: selectedDay)
@@ -53,10 +56,10 @@ struct MonthCalendar: UIViewRepresentable {
             self.parent = parent
         }
 
-        /// 这一天下面画什么：有记录就画一个灰色小圆点，没有就不画（nil）
+        /// 这一天下面画什么：有记录就画一个燕麦色小圆点，没有就不画（nil）
         func calendarView(_ calendarView: UICalendarView, decorationFor dateComponents: DateComponents) -> UICalendarView.Decoration? {
             guard let day = DayMath.day(from: dateComponents), parent.recordDays.contains(day) else { return nil }
-            return .default(color: .systemGray, size: .small)
+            return .default(color: UIColor(AppColors.Pair.oatMark), size: .small)
         }
 
         /// 这一天能不能选：未来的和太早的都不能（月历会把不能选的日期变灰）

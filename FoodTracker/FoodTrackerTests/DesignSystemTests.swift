@@ -3,7 +3,8 @@
 //  FoodTrackerTests
 //
 //  设计规范的检查：文字和按钮的对比度够不够（WCAG：普通文字 4.5:1，粗体大字和图形 3:1），
-//  Assets 里的 AccentColor 和代码里的主色是不是同一个颜色，以及「今日」卡片里那只碗的装满高度。
+//  Assets 里的 AccentColor 和代码里的主色是不是同一个颜色，圆角、间距、阴影只用规定的几个数，
+//  以及「今日」卡片里那只碗的装满高度。
 //
 
 import Foundation
@@ -125,6 +126,72 @@ struct DesignSystemColorTests {
         let darkBackground = blend(pair.dark, over: P.surfacePrimary.dark, opacity: AppColors.badgeOpacity)
         #expect(contrast(pair.light, lightBackground) >= 4.5)
         #expect(contrast(pair.dark, darkBackground) >= 4.5)
+    }
+}
+
+@Suite("设计规范：圆角、间距、阴影、按钮和分段选择")
+struct DesignSystemTokenTests {
+    @Test("圆角只有 12、18、24、30 四个")
+    func radii() {
+        #expect([AppRadius.small, AppRadius.medium, AppRadius.large, AppRadius.extraLarge] == [12, 18, 24, 30])
+    }
+
+    @Test("间距都是 4 的倍数；页面左右 20，大块之间 24～32，卡片里面 16～20")
+    func spacing() {
+        let all: [CGFloat] = [
+            AppSpacing.xxs, AppSpacing.xs, AppSpacing.sm, AppSpacing.md, AppSpacing.lg, AppSpacing.xl, AppSpacing.xxl,
+            AppSpacing.pageMargin, AppSpacing.cardGap, AppSpacing.sectionGap, AppSpacing.formSectionGap,
+            AppSpacing.cardPadding, AppSpacing.heroPadding,
+        ]
+        for value in all {
+            #expect(value.truncatingRemainder(dividingBy: 4) == 0)
+        }
+        #expect(AppSpacing.pageMargin == 20)
+        #expect((24...32).contains(AppSpacing.sectionGap))
+        #expect((24...32).contains(AppSpacing.formSectionGap))
+        #expect((16...20).contains(AppSpacing.cardPadding))
+        #expect((16...20).contains(AppSpacing.heroPadding))
+    }
+
+    @Test("阴影都很淡：透明度 0.03～0.06，模糊 16～24")
+    func shadows() {
+        for style in [AppShadow.hero, AppShadow.floating, AppShadow.overlay] {
+            #expect((0.03...0.06).contains(style.opacity))
+            #expect((16...24).contains(style.radius))
+        }
+    }
+
+    @Test("次要按钮、删除按钮：字放在燕麦色圆底上 >= 4.5:1")
+    func buttonContrast() {
+        #expect(contrast(P.brandDeep.light, P.surfaceSecondary.light) >= 4.5)
+        #expect(contrast(P.brandDeep.dark, P.surfaceSecondary.dark) >= 4.5)
+        #expect(contrast(P.destructive.light, P.surfaceSecondary.light) >= 4.5)
+        #expect(contrast(P.destructive.dark, P.surfaceSecondary.dark) >= 4.5)
+    }
+
+    @Test("分段选择：选中的深橄榄字在暖白小胶囊上 >= 4.5:1；没选中的灰字守住设计稿的值")
+    func segmentContrast() {
+        #expect(contrast(P.brandDeep.light, P.segmentSelected.light) >= 4.5)
+        #expect(contrast(P.brandDeep.dark, P.segmentSelected.dark) >= 4.5)
+        #expect(contrast(P.textSecondary.dark, P.segmentTrack.dark) >= 4.5)
+        // 设计稿指定：没选中的字 #777169、槽 #EEE8DE，是 3.96:1（略低于小字的 4.5:1；
+        // 选中的一格另外有暖白小胶囊标出来，旁白也会读「已选择」）。这里守住不再更低
+        #expect(contrast(P.textSecondary.light, P.segmentTrack.light) >= 3.9)
+    }
+
+    @Test("UIKit 用的颜色（月历）和 SwiftUI 的是同一组值，也跟着深色模式换")
+    func uiKitColorsMatch() {
+        for pair in [P.brand, P.oatMark] {
+            for (style, hex) in [(UIUserInterfaceStyle.light, pair.light), (.dark, pair.dark)] {
+                var (r, g, b, a): (CGFloat, CGFloat, CGFloat, CGFloat) = (0, 0, 0, 0)
+                UIColor(pair).resolvedColor(with: UITraitCollection(userInterfaceStyle: style)).getRed(
+                    &r, green: &g, blue: &b, alpha: &a)
+                let expected = [(hex >> 16) & 0xFF, (hex >> 8) & 0xFF, hex & 0xFF].map { CGFloat($0) / 255 }
+                for (actual, wanted) in zip([r, g, b], expected) {
+                    #expect(abs(actual - wanted) < 1.0 / 255)
+                }
+            }
+        }
     }
 }
 

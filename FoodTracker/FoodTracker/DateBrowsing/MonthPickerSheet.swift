@@ -44,21 +44,20 @@ struct MonthPickerSheet: View {
                 if voiceOverOn {
                     Text("有记录的日期下方有小圆点；未来的日期不能选择")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding()
                 }
                 Spacer(minLength: 0)
             }
-            .navigationTitle("选择日期")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
-                }
-            }
+            .padding(.top, AppSpacing.xs)
+            .toolbar(.hidden, for: .navigationBar)
+            // 和其他弹出页同一个顶栏：左「取消」、中间标题
+            .appSheetHeader(AppSheetHeader(title: String(localized: "选择日期"), onCancel: { dismiss() }))
+            .background { AppBackground(glow: false) }
         }
         .presentationDetents([.large])
+        .appSheet()
     }
 }
 

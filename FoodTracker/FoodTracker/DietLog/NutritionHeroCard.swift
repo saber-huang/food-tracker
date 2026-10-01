@@ -83,7 +83,7 @@ struct NutritionHeroCard: View {
         .padding(.horizontal, AppSpacing.heroPadding)
         .padding(.vertical, AppSpacing.heroPadding + 2)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .appCard(elevated: true)
+        .appCard(.hero)
     }
 
     /// 碗：品牌的点缀，比数字小得多、淡一些，像水印
