@@ -2,7 +2,12 @@
 //  RecipesView.swift
 //  FoodTracker
 //
-//  「食谱」页：按每日目标和偏好生成一日三餐，每一餐一张卡片，可以点开看详情，也可以单独「换一个」。
+//  「食谱」页，从上到下：
+//  1. 每日目标的摘要（食谱就是按它生成的）
+//  2. 今日推荐：早餐、午餐、晚餐各一张卡片（点卡片或「查看做法」看详情，「换一个」单独重新生成这一餐）；
+//     还没有推荐时是一张带「生成一日三餐」的卡片。下面是不太大的「重新生成一日三餐」和剩余次数
+//  3. 饮食偏好的摘要（点了修改）；最下面固定一行 AI 估算的提示
+//  卡片的样子在 RecipeCards.swift。
 //
 
 import SwiftData
@@ -25,6 +30,7 @@ struct RecipesView: View {
     @State private var remaining: Int?  // 今天还能生成几次
     @State private var pendingAIAction: PendingAIAction?  // 还没同意使用 AI 时，先记下要做的生成，同意后再做
     @State private var showPreferences = false
+    @State private var openedRecipe: Recipe?  // 有值时打开这道菜的详情
     @State private var showError = false
     @State private var errorMessage = ""
 
@@ -33,18 +39,77 @@ struct RecipesView: View {
     var body: some View {
         NavigationStack {
             List {
-                Group {
-                    targetsSection
-                    preferencesSection
-                    generateSection
-                    ForEach(recipes) { recipe in
-                        mealSection(recipe)
+                Section {
+                    RecipeGoalSummary(targets: profile.targets, goalTitle: profile.bodyInfo.goal.title)
+                        .appCardRow()
+                } header: {
+                    Text("按你的每日目标推荐")
+                        .font(AppTypography.detail)
+                        .foregroundStyle(AppColors.textSecondary)
+                        .textCase(nil)
+                }
+
+                if recipes.isEmpty {
+                    Section {
+                        EmptyRecipesCard(isGenerating: isGeneratingAll) { generateTapped() }
+                            .appCardRow()
+                    } header: {
+                        AppSectionHeader(title: String(localized: "今日推荐"))
+                    } footer: {
+                        remainingCaption
+                    }
+                } else {
+                    ForEach(Array(recipes.enumerated()), id: \.element.id) { index, recipe in
+                        recipeSection(recipe, showsHeader: index == 0)
+                    }
+                    Section {
+                        VStack(spacing: AppSpacing.xs) {
+                            RegenerateButton(isGenerating: isGeneratingAll, isBusy: isBusy) { generateTapped() }
+                            remainingCaption
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .listRowInsets(EdgeInsets(top: AppSpacing.xxs, leading: 0, bottom: 0, trailing: 0))
+                        .listRowBackground(Color.clear)
                     }
                 }
-                .listRowBackground(AppColors.surfacePrimary)  // 卡片用暖白，不用纯白
+
+                // 饮食偏好：设置条件，放在推荐下面，比推荐安静
+                Section {
+                    Button {
+                        showPreferences = true
+                    } label: {
+                        PreferenceSummary(
+                            preferences: preferencesText, allergies: allergiesText, dislikes: dislikesText,
+                            cookingMinutes: cookingMinutes)
+                    }
+                    .buttonStyle(AppPressStyle(scales: false))
+                    .appCardRow()
+                } header: {
+                    AppSectionHeaderWithAction(title: String(localized: "饮食偏好"), actionTitle: String(localized: "编辑")) {
+                        showPreferences = true
+                    }
+                }
             }
+            .listStyle(.insetGrouped)
+            .listSectionSpacing(AppSpacing.cardGap)
+            .contentMargins(.horizontal, AppSpacing.pageMargin, for: .scrollContent)
             .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
             .navigationTitle("食谱")
+            .navigationDestination(item: $openedRecipe) { recipe in
+                RecipeDetailView(recipe: recipe)
+            }
+            #if DEBUG && targetEnvironment(simulator)
+            // 只在模拟器里出现的调试菜单：不花钱就能看食谱卡片的样子
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu("调试") {
+                        Button("用示例食谱") { recipes = SampleData.recipePlan }
+                        Button("清空食谱") { recipes = [] }
+                    }
+                }
+            }
+            #endif
             .sheet(isPresented: $showPreferences) {
                 RecipePreferencesView()
             }
@@ -58,11 +123,11 @@ struct RecipesView: View {
             // 固定在页面最底部的提示
             .safeAreaInset(edge: .bottom) {
                 Text(RecipeCopy.disclaimer)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.textSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, AppSpacing.pageMargin)
+                    .padding(.vertical, AppSpacing.xs)
                     .frame(maxWidth: .infinity)
                     .appBottomBar()
             }
@@ -75,109 +140,44 @@ struct RecipesView: View {
 
     // MARK: - 页面的各个部分
 
-    /// 今天的目标：食谱就是按这个生成的
-    private var targetsSection: some View {
-        let t = profile.targets
-        return Section("按你的每日目标推荐") {
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(t.calories.noDecimal)
-                    .font(.title2.bold())
-                Text("千卡")
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text("蛋白质 \(t.proteinG.noDecimal) · 碳水 \(t.carbsG.noDecimal) · 脂肪 \(t.fatG.noDecimal) 克")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Text("目标：\(profile.bodyInfo.goal.title) · 三餐按 30% / 40% / 30% 分配")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    /// 偏好和忌口的摘要，点进去修改
-    private var preferencesSection: some View {
-        Section("偏好和忌口") {
-            Button {
-                showPreferences = true
-            } label: {
-                VStack(alignment: .leading, spacing: 4) {
-                    summaryRow(String(localized: "偏好"), preferencesText.isEmpty ? String(localized: "未填写") : preferencesText)
-                    summaryRow(String(localized: "过敏"), allergiesText.isEmpty ? String(localized: "无") : allergiesText)
-                    summaryRow(String(localized: "忌口"), dislikesText.isEmpty ? String(localized: "无") : dislikesText)
-                    summaryRow(String(localized: "烹饪时间"), String(localized: "每餐不超过 \(cookingMinutes) 分钟"))
-                }
-            }
-            .foregroundStyle(.primary)
-        }
-    }
-
-    private func summaryRow(_ label: String, _ value: String) -> some View {
-        HStack(alignment: .top) {
-            Text(label)
-                .foregroundStyle(.secondary)
-                .frame(width: 64, alignment: .leading)
-            Text(value)
-                .lineLimit(2)
-            Spacer()
-        }
-        .font(.subheadline)
-    }
-
-    /// 生成按钮和剩余次数
-    private var generateSection: some View {
+    /// 一餐一张卡片：点卡片或「查看做法」看详情，点「换一个」重新生成这一餐
+    private func recipeSection(_ recipe: Recipe, showsHeader: Bool) -> some View {
         Section {
             Button {
-                // 没同意过使用 AI 时，先弹出说明；同意后才发送目标和偏好
-                AIConsent.perform(pending: $pendingAIAction) { Task { await generateAll() } }
+                openedRecipe = recipe
             } label: {
-                HStack {
-                    if isGeneratingAll {
-                        ProgressView()
-                        Text("正在生成，通常需要 10～20 秒…")
-                    } else {
-                        Label(recipes.isEmpty ? "生成一日三餐" : "重新生成一日三餐", systemImage: "sparkles")
-                    }
-                }
-                .frame(maxWidth: .infinity)
+                RecipeCard(recipe: recipe)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(isBusy)
-            .listRowInsets(EdgeInsets())
-            .listRowBackground(Color.clear)
-        } footer: {
-            if let remaining {
-                Text("今天还可以生成 \(remaining) 次（含「换一个」）。短时间内用相同的条件重新生成，会直接使用上次的结果，不占次数。")
-            }
-        }
-    }
+            .buttonStyle(AppPressStyle(scales: false))
+            .listRowSeparator(.hidden)
+            .appCardRow()
 
-    /// 一餐一张卡片：点卡片看详情，点「换一个」重新生成这一餐
-    private func mealSection(_ recipe: Recipe) -> some View {
-        Section {
-            NavigationLink {
-                RecipeDetailView(recipe: recipe)
-            } label: {
-                RecipeSummaryLabel(recipe: recipe)
-            }
-
-            Button {
-                AIConsent.perform(pending: $pendingAIAction) { Task { await swap(recipe.meal) } }
-            } label: {
-                HStack {
-                    if swappingMeal == recipe.meal {
-                        ProgressView()
-                        Text("正在换…")
-                    } else {
-                        Label("换一个", systemImage: "arrow.triangle.2.circlepath")
-                    }
-                }
-            }
-            .disabled(isBusy)
+            RecipeCardFooter(
+                isSwapping: swappingMeal == recipe.meal, isBusy: isBusy, onOpen: { openedRecipe = recipe },
+                onSwap: { AIConsent.perform(pending: $pendingAIAction) { Task { await swap(recipe.meal) } } }
+            )
+            .listRowInsets(EdgeInsets(top: 0, leading: AppSpacing.cardPadding, bottom: 0, trailing: AppSpacing.cardPadding))
+            .appCardRow()
         } header: {
-            Label(recipe.meal.title, systemImage: recipe.meal.systemImage)
+            if showsHeader {
+                AppSectionHeader(title: String(localized: "今日推荐"))
+            }
         }
+    }
+
+    /// 今天还能生成几次（含「换一个」）：小字，不抢推荐的风头；问不到就不显示
+    @ViewBuilder
+    private var remainingCaption: some View {
+        if let remaining {
+            Text("今天还可以生成 \(remaining) 次（含「换一个」）。短时间内用相同的条件重新生成，会直接使用上次的结果，不占次数。")
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColors.textSecondary)
+        }
+    }
+
+    /// 点了生成：没同意过使用 AI 时，先弹出说明；同意后才发送目标和偏好
+    private func generateTapped() {
+        AIConsent.perform(pending: $pendingAIAction) { Task { await generateAll() } }
     }
 
     // MARK: - 功能

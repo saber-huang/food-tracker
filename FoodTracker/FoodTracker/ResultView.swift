@@ -235,12 +235,14 @@ private struct ConfidenceBadge: View {
 private struct TotalView: View {
     let items: [EditableItem]
 
+    @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 36
+
     var body: some View {
         let total = DietLogMath.total(of: items.map(\.values))
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
                 Text(total.caloriesKcal.noDecimal)
-                    .font(AppTypography.heroNumber(size: 36))  // 和首页的大数字同一种字
+                    .font(AppTypography.heroNumber(size: numberSize))  // 和首页的大数字同一种字，跟着系统字号变大
                 Text("千卡")
                     .foregroundStyle(.secondary)
                 Spacer()

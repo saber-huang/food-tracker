@@ -34,7 +34,7 @@ struct HomeView: View {
     @State private var showError = false  // 是否显示出错提示
     @State private var errorMessage = ""  // 出错提示的内容
     @State private var showNoCamera = false  // 是否提示「没有相机」
-    @State private var showManualEntry = false  // 是否打开「手动添加」
+    @State private var manualEntry: ManualEntryRequest?  // 有值时打开「手动添加」：默认记到哪一餐、哪一天
     @State private var showMonthPicker = false  // 是否打开月历
     @State private var hintSheet: HintSheet?  // 热量提示里的按钮要打开的页面（弹窗挂在一直都在的列表上，提示消失了也不影响）
 
@@ -51,7 +51,9 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            DayLogView(day: selectedDay, today: today, bodyInfo: profile.bodyInfo) {
+            DayLogView(day: selectedDay, today: today, bodyInfo: profile.bodyInfo, onAddToMeal: { meal in
+                openManualEntry(meal: meal)
+            }) {
                 quickLogDock
             } hints: {
                 // 热量提示只在看今天时出现，放在快速记录下面
@@ -117,11 +119,13 @@ struct HomeView: View {
                     }
                 }
                 // 手动添加：填好后存成一条记录，记到正在看的那一天
-                .sheet(isPresented: $showManualEntry) {
-                    // 打开表单时就把「哪一天」换成数字定下来，填表中途手机换了时区也不会记到别的一天
+                // 用 sheet(item:)：打开时带着「哪一餐、哪一天」，表单第一次出现就是对的
+                // （用 isPresented 加另一个状态的话，第一次弹出时可能读到旧的餐次）
+                .sheet(item: $manualEntry) { request in
                     EntryEditView(
-                        draft: EntryDraft(meal: suggestedMeal, dayKey: DayMath.dayKey(for: selectedDay)), title: String(localized: "手动添加"),
-                        showsMealPicker: true, showsDate: true
+                        draft: EntryDraft(meal: request.meal, dayKey: request.dayKey),
+                        title: String(localized: "手动添加"),
+                        showsMealPicker: true, mealIsSuggested: request.mealIsSuggested, showsDate: true
                     ) { item in
                         modelContext.insert(
                             FoodEntry(
@@ -243,7 +247,7 @@ struct HomeView: View {
     private var quickLogDock: some View {
         QuickLogDock(
             photo: photo, isAnalyzing: isAnalyzing, analyzeRemaining: analyzeRemaining, pickerItem: $pickerItem,
-            onCamera: openCamera, onManual: openManualEntry, onAnalyze: startAnalyzing,
+            onCamera: openCamera, onManual: { openManualEntry() }, onAnalyze: startAnalyzing,
             onRemovePhoto: { photo = nil })
     }
 
@@ -268,10 +272,12 @@ struct HomeView: View {
         AIConsent.perform(pending: $pendingAIAction) { Task { await analyze() } }
     }
 
-    /// 打开「手动添加」表单
-    private func openManualEntry() {
+    /// 打开「手动添加」表单。meal：默认记到哪一餐（从某一餐的 + 打开时）；不传就按现在的时间推荐。
+    /// 打开时就把「哪一天」换成数字定下来，填表中途手机换了时区也不会记到别的一天
+    private func openManualEntry(meal: MealType? = nil) {
         refreshToday(appBecameActive: false)  // 打开前确认一下今天是哪天（可能刚过午夜）
-        showManualEntry = true
+        manualEntry = ManualEntryRequest(
+            meal: meal ?? suggestedMeal, mealIsSuggested: meal == nil, dayKey: DayMath.dayKey(for: selectedDay))
     }
 
     /// 检查今天是不是换了一天（过了午夜、换了时区、时钟被调过），需要的话更新「今天」和正在看的那天。
@@ -358,6 +364,14 @@ struct HomeView: View {
         resultRoute = ResultRoute(result: result, dayKey: DayMath.dayKey(for: selectedDay))
     }
     #endif
+}
+
+/// 打开「手动添加」需要的两样东西：默认记到哪一餐，记到哪一天（20260929 这样的数字）
+private struct ManualEntryRequest: Identifiable {
+    let id = UUID()
+    let meal: MealType
+    let mealIsSuggested: Bool  // 餐次是不是按时间猜的（表单里会写「按现在的时间默认推荐」）
+    let dayKey: Int
 }
 
 /// 跳到结果页需要的两样东西：识别结果，以及这餐要记到哪一天（20260929 这样的数字）

@@ -42,6 +42,27 @@ enum SampleData {
         cookingMinutes: 30, caloriesKcal: 590, proteinG: 48, carbsG: 63, fatG: 16
     )
 
+    /// 模拟器调试菜单「用示例食谱」：一日三餐的示例（不调用后端，不花钱）
+    static let recipePlan: [Recipe] = [
+        Recipe(
+            meal: .breakfast, name: "鸡蛋豆腐脑配全麦馒头",
+            ingredients: [
+                Ingredient(name: "内酯豆腐", grams: 200), Ingredient(name: "鸡蛋", grams: 50),
+                Ingredient(name: "全麦馒头", grams: 80), Ingredient(name: "香油", grams: 3),
+            ],
+            steps: ["豆腐蒸热，淋上蛋液再蒸 3 分钟。", "调少许酱油和香油。", "配全麦馒头。"],
+            cookingMinutes: 15, caloriesKcal: 430, proteinG: 28, carbsG: 52, fatG: 12),
+        recipe,
+        Recipe(
+            meal: .dinner, name: "番茄豆腐鱼片汤配杂粮饭",
+            ingredients: [
+                Ingredient(name: "龙利鱼", grams: 150), Ingredient(name: "番茄", grams: 200),
+                Ingredient(name: "北豆腐", grams: 100), Ingredient(name: "杂粮米", grams: 50),
+            ],
+            steps: ["番茄炒出汁，加水煮开。", "放豆腐和鱼片，煮 5 分钟。", "杂粮饭提前蒸好。"],
+            cookingMinutes: 25, caloriesKcal: 480, proteinG: 41, carbsG: 50, fatG: 11),
+    ]
+
     /// 预览用的个人资料
     static let profile = UserProfile(
         body: BodyInfo(sex: .male, age: 30, heightCm: 178, weightKg: 75, activity: .moderate, goal: .maintain))

@@ -30,9 +30,10 @@ enum AppColors {
         static let surfaceMuted = ColorPair(light: 0xEBE6DE, dark: 0x2C2924)  // 进度条的底槽
         static let divider = ColorPair(light: 0xE6E0D7, dark: 0x2E2A25)
 
-        // 文字：不用纯黑。次要文字比设计稿的 #777169 深一点点，在页面底色上也够 4.5:1
+        // 文字：不用纯黑。次要文字按设计稿用 #777169：在卡片上 4.75:1，在页面底色上 4.4:1（略低于小字的 4.5:1，
+        // 设计稿指定的颜色，2026-10-01 用户再次确认）
         static let textPrimary = ColorPair(light: 0x262522, dark: 0xF2EEE7)
-        static let textSecondary = ColorPair(light: 0x6F695F, dark: 0xA8A196)
+        static let textSecondary = ColorPair(light: 0x777169, dark: 0xA8A196)
         static let textTertiary = ColorPair(light: 0xAAA39A, dark: 0x6F6961)  // 对比度低，只给不能点的未来日期这类地方
 
         // 品牌主色：深橄榄绿。选中、主按钮、可以点的文字都用它，全 App 只有这一种绿
@@ -41,6 +42,7 @@ enum AppColors {
         static let brandSoft = ColorPair(light: 0xE7E9DF, dark: 0x2B3128)  // 选中的标签底色
         static let onBrand = ColorPair(light: 0xFAF7F1, dark: 0xFAF7F1)  // 主色上面的文字、图标（暖白）
         static let iconSecondary = ColorPair(light: 0x756B5E, dark: 0xB5AA9A)  // 次要按钮的图标
+        static let tabInactive = ColorPair(light: 0x8D887F, dark: 0x8D887F)  // 标签栏没选中的图标和文字（设计稿指定）
 
         // 燕麦色：和 App 图标里的碗是同一组颜色
         static let oatBowl = ColorPair(light: 0xDED2BF, dark: 0xB9AC96)  // 碗身 = 已经吃了的部分
@@ -59,6 +61,13 @@ enum AppColors {
         static let confidenceMedium = ColorPair(light: 0x7E5A22, dark: 0xD3AC6A)
         static let confidenceLow = ColorPair(light: 0x8D4A45, dark: 0xDD958C)
 
+        // 三餐的小标签底色：很淡的燕麦、鼠尾草、灰褐，只用来区分是哪一餐
+        static let tintBreakfast = ColorPair(light: 0xF4ECDF, dark: 0x2F2A23)
+        static let tintLunch = ColorPair(light: 0xE9EEE4, dark: 0x262C24)
+        static let tintDinner = ColorPair(light: 0xECE7E3, dark: 0x2B2725)
+
+        static let destructive = ColorPair(light: 0xA54A3F, dark: 0xE08A7E)  // 删除：柔和的砖红，不用系统的大红
+
         static let shadow = ColorPair(light: 0x3B3428, dark: 0x000000)  // 阴影用暖色，不用纯黑
     }
 
@@ -76,6 +85,7 @@ enum AppColors {
     static let brandSoft = Color(Pair.brandSoft)
     static let onBrand = Color(Pair.onBrand)
     static let iconSecondary = Color(Pair.iconSecondary)
+    static let tabInactive = Color(Pair.tabInactive)
     static let oatBowl = Color(Pair.oatBowl)
     static let oatRim = Color(Pair.oatRim)
     static let oatEmpty = Color(Pair.oatEmpty)
@@ -87,6 +97,10 @@ enum AppColors {
     static let confidenceHigh = Color(Pair.confidenceHigh)
     static let confidenceMedium = Color(Pair.confidenceMedium)
     static let confidenceLow = Color(Pair.confidenceLow)
+    static let tintBreakfast = Color(Pair.tintBreakfast)
+    static let tintLunch = Color(Pair.tintLunch)
+    static let tintDinner = Color(Pair.tintDinner)
+    static let destructive = Color(Pair.destructive)
     static let shadow = Color(Pair.shadow)
 
     /// 可信度小标签的底色：字的颜色的 12%
@@ -105,28 +119,34 @@ enum AppSpacing {
     static let xl: CGFloat = 24
     static let xxl: CGFloat = 32
 
-    static let pageMargin: CGFloat = 20  // 页面左右留白
-    static let sectionGap: CGFloat = 28  // 两块内容之间
-    static let cardPadding: CGFloat = 20  // 卡片里面的留白
+    static let pageMargin: CGFloat = 20  // 页面左右留白（三个标签页都一样）
+    static let cardGap: CGFloat = 12  // 同一块里，卡片和卡片之间（比如早餐和午餐）
+    static let sectionGap: CGFloat = 28  // 两大块内容之间（块标题上面多出来的那段，见 AppSectionHeader）
+    static let cardPadding: CGFloat = 18  // 卡片里面的留白
+    static let heroPadding: CGFloat = 22  // 主卡片里面的留白（比普通卡片多一点）
 }
 
-/// 圆角按层级分：越重要、越大的卡片圆角越大
+/// 圆角：所有卡片都是 26（和系统列表卡片的圆角一样，三个标签页看起来是同一套）。
+/// 卡片的层级靠大小、字号和阴影区分，不靠圆角
 enum AppRadius {
-    static let hero: CGFloat = 30  // 首页的主卡片
-    static let dock: CGFloat = 26  // 快速记录
+    static let card: CGFloat = 26  // 所有卡片：主卡片、快速记录、列表卡片
     static let tabBar: CGFloat = 32  // 底部悬浮的标签栏
     static let thumbnail: CGFloat = 14  // 照片缩略图
+    static let tag: CGFloat = 8  // 小标签（早餐、午餐…）
 }
 
 // MARK: - 字体
 
 /// 文字用系统字体；数字用系统的圆体（和「健康」App 一样），一眼就能看出哪些是数字
 enum AppTypography {
-    static let heroNumberSize: CGFloat = 40  // 首页的大数字（用 @ScaledMetric 跟着系统字号变大）
+    static let pageTitleSize: CGFloat = 30  // 「食谱」「我的」的大标题（在 FoodTrackerApp 里设置）
+    static let heroNumberSize: CGFloat = 42  // 页面上最大的数字（用 @ScaledMetric 跟着系统字号变大）
     static func heroNumber(size: CGFloat) -> Font { .system(size: size, weight: .semibold, design: .rounded) }
-    static let heroCaption = Font.subheadline.weight(.medium)  // 大数字下面的说明
+    static let heroCaption = Font.subheadline  // 大数字下面的说明
     static let sectionTitle = Font.headline  // 「快速记录」「今日饮食」
-    static let cardTitle = Font.subheadline.weight(.semibold)  // 卡片里的小标题（早餐、午餐…）
+    static let cardTitle = Font.subheadline.weight(.semibold)  // 卡片左上角的小标题（今天、每日目标…）
+    static let mealTitle = Font.headline  // 早餐、午餐…（一餐的卡片标题）
+    static let recipeName = Font.title3.weight(.semibold)  // 食谱卡片上的菜名
     static let itemName = Font.callout.weight(.medium)  // 食物名称
     static let detail = Font.footnote  // 说明文字
     static let caption = Font.caption  // 最小的说明
@@ -194,24 +214,105 @@ struct AppSectionHeader: View {
             }
         }
         .textCase(nil)
+        .padding(.top, AppSpacing.sectionGap - AppSpacing.cardGap)  // 列表的卡片间距只有 12，块标题上面补足到 28
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }
 }
 
+/// 块标题右边是一个按钮（比如「个人资料」右边的「编辑」）
+struct AppSectionHeaderWithAction: View {
+    let title: String
+    let actionTitle: String
+    let action: () -> Void
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(title)
+                .font(AppTypography.sectionTitle)
+                .foregroundStyle(AppColors.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+            Spacer(minLength: AppSpacing.sm)
+            Button(actionTitle, action: action)
+                .font(AppTypography.detail.weight(.medium))
+                .foregroundStyle(AppColors.brand)
+                .frame(minWidth: 44, minHeight: 32, alignment: .trailing)
+                .contentShape(Rectangle())
+        }
+        .textCase(nil)
+        .padding(.top, AppSpacing.sectionGap - AppSpacing.cardGap)
+    }
+}
+
+// MARK: - 小组件：按下去的反馈、箭头、图标底
+
+/// 统一的按下反馈：轻轻缩到 0.98、稍微变淡，0.12 秒，不弹跳。
+/// scales 为 false 时只变淡（列表里的一整行用这个，缩放一整行看起来会晃）
+struct AppPressStyle: ButtonStyle {
+    var scales = true
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && scales && !reduceMotion ? 0.98 : 1)
+            .opacity(configuration.isPressed ? 0.94 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+/// 统一的小箭头（表示点了会进入下一页）：所有自己画的箭头都用它，大小和颜色一样
+struct AppChevron: View {
+    var body: some View {
+        Image(systemName: "chevron.right")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(AppColors.textTertiary)
+            .accessibilityHidden(true)
+    }
+}
+
+/// 圆形的图标底：燕麦色的圆 + 棕灰色的描边图标（餐次、快速记录的次要按钮都用它）
+struct AppIconTile: View {
+    let systemImage: String
+    var size: CGFloat = 36
+    var tint: Color = AppColors.surfaceSecondary
+    var iconColor: Color = AppColors.iconSecondary
+
+    var body: some View {
+        Circle()
+            .fill(tint)
+            .frame(width: size, height: size)
+            .overlay {
+                Image(systemName: systemImage)
+                    .font(.system(size: size * 0.42, weight: .medium))
+                    .foregroundStyle(iconColor)
+            }
+            .accessibilityHidden(true)
+    }
+}
+
 extension View {
-    /// 卡片：暖白底、圆角，不描边。elevated 为 true 时加一层很轻的暖色阴影（只给首页主卡片这种最上层的卡片）
-    func appCard(radius: CGFloat, elevated: Bool = false) -> some View {
+    /// 卡片：暖白底、圆角，不描边。普通卡片没有阴影，靠和页面底色的差别分出来；
+    /// elevated 为 true 时加一层很轻的暖色阴影，只给每一页的主卡片（首页的热量卡片、「我的」的每日目标）
+    func appCard(radius: CGFloat = AppRadius.card, elevated: Bool = false) -> some View {
         background {
             RoundedRectangle(cornerRadius: radius, style: .continuous)
                 .fill(AppColors.surfacePrimary)
-                .shadow(color: AppColors.shadow.opacity(elevated ? 0.06 : 0.035), radius: elevated ? 24 : 14, y: elevated ? 8 : 4)
+                .shadow(color: AppColors.shadow.opacity(elevated ? 0.05 : 0), radius: elevated ? 22 : 0, y: elevated ? 6 : 0)
         }
     }
 
-    /// 固定在页面底部的一条（保存按钮、提示文字）：和页面同样的暖色，上边缘淡出，不用系统的灰色毛玻璃
+    /// 列表里一张卡片的一行：暖白底，分隔线很淡（三个标签页的列表卡片都用它）
+    func appCardRow() -> some View {
+        listRowBackground(AppColors.surfacePrimary)
+            .listRowSeparatorTint(AppColors.divider)
+    }
+
+    /// 固定在页面底部的一条（保存按钮、提示文字）：和页面同样的暖色，上边缘淡出，不用系统的灰色毛玻璃。
+    /// 字号最多放大到「特特大」：这一条一直占着屏幕底部，再大就会挡住小半个屏幕
     func appBottomBar() -> some View {
-        background {
+        dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+        .background {
             LinearGradient(
                 stops: [
                     .init(color: AppColors.background.opacity(0), location: 0),

@@ -56,6 +56,85 @@ struct NutrientColumn: View {
     }
 }
 
+/// 一种营养素的目标：上面是小色条 + 名称，下面是克数（左对齐）。
+/// 「食谱」页的每日目标和「我的」页的每日目标都用它，两边看起来一样
+struct MacroStat: View {
+    let name: String
+    let grams: Double
+    let color: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Capsule()
+                    .fill(color)
+                    .frame(width: 10, height: 4)
+                Text(name)
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.textSecondary)
+            }
+            Text("\(grams.noDecimal) 克")
+                .font(AppTypography.number)
+                .monospacedDigit()
+                .foregroundStyle(AppColors.textPrimary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        // 旁白读成「蛋白质 120 克」
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(name) \(grams.noDecimal) 克")
+    }
+}
+
+/// 三种营养素的目标并排（蛋白质、碳水、脂肪）。字号特别大时改成上下三行，免得挤成「蛋白 / 质」
+struct MacroStatsRow: View {
+    let proteinG: Double
+    let carbsG: Double
+    let fatG: Double
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                MacroStatLine(name: String(localized: "蛋白质"), grams: proteinG, color: AppColors.protein)
+                MacroStatLine(name: String(localized: "碳水"), grams: carbsG, color: AppColors.carbs)
+                MacroStatLine(name: String(localized: "脂肪"), grams: fatG, color: AppColors.fat)
+            }
+        } else {
+            HStack(alignment: .top, spacing: AppSpacing.md) {
+                MacroStat(name: String(localized: "蛋白质"), grams: proteinG, color: AppColors.protein)
+                MacroStat(name: String(localized: "碳水"), grams: carbsG, color: AppColors.carbs)
+                MacroStat(name: String(localized: "脂肪"), grams: fatG, color: AppColors.fat)
+            }
+        }
+    }
+}
+
+/// 字号特别大时的一行：小色条 + 名称，右边是克数
+private struct MacroStatLine: View {
+    let name: String
+    let grams: Double
+    let color: Color
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
+            Capsule()
+                .fill(color)
+                .frame(width: 10, height: 4)
+                .alignmentGuide(.firstTextBaseline) { $0[.bottom] + 6 }
+            Text(name)
+                .foregroundStyle(AppColors.textSecondary)
+            Spacer(minLength: AppSpacing.xs)
+            Text("\(grams.noDecimal) 克")
+                .monospacedDigit()
+                .foregroundStyle(AppColors.textPrimary)
+        }
+        .font(AppTypography.number)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(name) \(grams.noDecimal) 克")
+    }
+}
+
 /// 碰到安全下限时的温和提示
 struct FloorNotice: View {
     let targets: DailyTargets

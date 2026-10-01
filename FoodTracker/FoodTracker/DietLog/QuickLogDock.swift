@@ -2,8 +2,8 @@
 //  QuickLogDock.swift
 //  FoodTracker
 //
-//  「今日」页的快速记录：一个完整的卡片，里面并排三个动作——拍照（主要动作，橄榄绿的圆）、
-//  相册、手动（次要动作，燕麦色的圆）。三个动作共用一个容器，不各自是一个大按钮。
+//  「今日」页的快速记录：一张卡片，左边是主要动作「拍照」（橄榄绿的大圆 + 文字和一句说明），
+//  右边是两个次要动作「相册」「手动」（燕麦色的小圆）。一眼就能看出拍照是主功能。
 //  选了照片以后，卡片上方多出一行：照片缩略图 + 「开始识别」；这时「开始识别」是唯一的主要动作，拍照变回次要样式。
 //  这里只负责样子：拍照、选照片、识别、手动添加都由「今日」页（HomeView）来做。
 //
@@ -28,76 +28,88 @@ struct QuickLogDock: View {
                     photo: photo, isAnalyzing: isAnalyzing, analyzeRemaining: analyzeRemaining, onAnalyze: onAnalyze,
                     onRemove: onRemovePhoto)
             }
-            HStack(alignment: .top, spacing: 0) {
+            HStack(alignment: .center, spacing: AppSpacing.xs) {
                 Button(action: onCamera) {
-                    QuickLogActionLabel(title: "拍照", systemImage: "camera", isPrimary: photo == nil)
+                    CameraActionLabel(isPrimary: photo == nil)
                 }
-                .buttonStyle(QuickLogPressStyle())
+                .buttonStyle(AppPressStyle())
+
+                Spacer(minLength: 0)
 
                 // PhotosPicker 是系统自带的相册选择器，不需要申请相册权限
                 PhotosPicker(selection: $pickerItem, matching: .images) {
-                    QuickLogActionLabel(title: "相册", systemImage: "photo.on.rectangle", isPrimary: false)
+                    SecondaryActionLabel(title: "相册", systemImage: "photo.on.rectangle")
                 }
-                .buttonStyle(QuickLogPressStyle())
+                .buttonStyle(AppPressStyle())
 
                 Button(action: onManual) {
-                    QuickLogActionLabel(title: "手动", systemImage: "square.and.pencil", isPrimary: false)
+                    SecondaryActionLabel(title: "手动", systemImage: "square.and.pencil")
                 }
-                .buttonStyle(QuickLogPressStyle())
+                .buttonStyle(AppPressStyle())
             }
             .disabled(isAnalyzing)
             // 用特大字号的人长按按钮，会弹出放大的图标和文字（这一块的字号有上限，见下面）
             .accessibilityShowsLargeContentViewer()
         }
-        .padding(.horizontal, AppSpacing.sm)
-        .padding(.vertical, AppSpacing.md - 2)
+        .padding(.horizontal, AppSpacing.cardPadding)
+        .padding(.vertical, AppSpacing.md)
         .frame(maxWidth: .infinity)
-        .appCard(radius: AppRadius.dock)
+        .appCard()
         // 字号最多放大到「特特大」：圆形按钮大小固定，字再大就挤不下了（长按按钮可以看放大的文字）
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 }
 
-/// 一个动作：圆形图标在上，文字在下。主要动作是橄榄绿实心圆 + 暖白图标；次要动作是燕麦色圆 + 棕灰图标
-private struct QuickLogActionLabel: View {
-    let title: LocalizedStringKey
-    let systemImage: String
+/// 主要动作「拍照」：56pt 的橄榄绿圆 + 「拍照」+ 一句说明，横着排，占卡片左边一大块。
+/// 选了照片以后变成次要样式（燕麦色的圆），把主色让给「开始识别」
+private struct CameraActionLabel: View {
     let isPrimary: Bool
 
     @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
-        VStack(spacing: 6) {
-            Circle()
-                .fill(isPrimary ? AppColors.brand : AppColors.surfaceSecondary)
-                .frame(width: 50, height: 50)
-                .overlay {
-                    Image(systemName: systemImage)
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(isPrimary ? AppColors.onBrand : AppColors.iconSecondary)
-                }
-            Text(title)
-                .font(AppTypography.actionLabel)
-                .foregroundStyle(AppColors.textPrimary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+        HStack(spacing: AppSpacing.sm) {
+            AppIconTile(
+                systemImage: "camera", size: 56,
+                tint: isPrimary ? AppColors.brand : AppColors.surfaceSecondary,
+                iconColor: isPrimary ? AppColors.onBrand : AppColors.iconSecondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("拍照")
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(AppColors.textPrimary)
+                Text("AI 估算热量")
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.textSecondary)
+            }
+            .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(maxWidth: .infinity, minHeight: 72)  // 每个动作占三分之一宽，整块都能点（远大于 44 × 44）
-        .contentShape(Rectangle())
+        .frame(minHeight: 56)
+        .contentShape(Rectangle())  // 圆和文字之间的空白也能点
         .opacity(isEnabled ? 1 : 0.45)
         .animation(.easeOut(duration: 0.2), value: isPrimary)
+        .accessibilityElement(children: .combine)
     }
 }
 
-/// 按下去的反馈：轻轻缩小到 0.97、稍微变淡；系统设置了「减弱动态效果」时只变淡不缩放
-struct QuickLogPressStyle: ButtonStyle {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+/// 次要动作：42pt 的燕麦色圆 + 下面一行小字
+private struct SecondaryActionLabel: View {
+    let title: LocalizedStringKey
+    let systemImage: String
 
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
-            .opacity(configuration.isPressed ? 0.8 : 1)
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    @Environment(\.isEnabled) private var isEnabled
+
+    var body: some View {
+        VStack(spacing: 6) {
+            AppIconTile(systemImage: systemImage, size: 42)
+            Text(title)
+                .font(AppTypography.caption.weight(.medium))
+                .foregroundStyle(AppColors.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(minWidth: 60, minHeight: 64)  // 能点的范围大于 44 × 44
+        .contentShape(Rectangle())
+        .opacity(isEnabled ? 1 : 0.45)
     }
 }
 
@@ -152,7 +164,7 @@ private struct SelectedPhotoRow: View {
                         .background(AppColors.brand, in: Capsule())
                         .contentShape(Capsule())
                 }
-                .buttonStyle(QuickLogPressStyle())
+                .buttonStyle(AppPressStyle())
                 .disabled(isAnalyzing)
                 .opacity(isAnalyzing ? 0.6 : 1)
 
@@ -169,7 +181,6 @@ private struct SelectedPhotoRow: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(.horizontal, AppSpacing.xs)
     }
 }
 

@@ -33,22 +33,6 @@
         }
       }
     },
-    "%@ / %@ 克" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ / %2$@ g"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ / %@ 克"
-          }
-        }
-      }
-    },
     "%@ 克" : {
       "localizations" : {
         "en" : {
@@ -193,6 +177,22 @@
         }
       }
     },
+    "%@，还没有记录" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, nothing logged yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@，还没有记录"
+          }
+        }
+      }
+    },
     "%lld" : {
       "localizations" : {
         "en" : {
@@ -321,6 +321,22 @@
         }
       }
     },
+    "/ %@ 克" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "/ %@ g"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "/ %@ 克"
+          }
+        }
+      }
+    },
     "10 × 体重 %@ + 6.25 × 身高 %@ − 5 × 年龄 %lld %@" : {
       "localizations" : {
         "en" : {
@@ -349,6 +365,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "= %@"
+          }
+        }
+      }
+    },
+    "AI 估算热量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI calorie estimate"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 估算热量"
           }
         }
       }
@@ -761,22 +793,6 @@
         }
       }
     },
-    "今天还没有记录" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nothing Logged Today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天还没有记录"
-          }
-        }
-      }
-    },
     "今日" : {
       "localizations" : {
         "en" : {
@@ -789,6 +805,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日"
+          }
+        }
+      }
+    },
+    "今日推荐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's Picks"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日推荐"
           }
         }
       }
@@ -1205,22 +1237,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "修改食物"
-          }
-        }
-      }
-    },
-    "偏好" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tastes"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "偏好"
           }
         }
       }
@@ -1849,22 +1865,6 @@
         }
       }
     },
-    "可以用上方的「快速记录」补记。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use Quick Log above to add a meal."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "可以用上方的「快速记录」补记。"
-          }
-        }
-      }
-    },
     "可以返回换一张照片，也可以手动添加。" : {
       "localizations" : {
         "en" : {
@@ -2393,6 +2393,22 @@
         }
       }
     },
+    "忌口：%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avoid: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忌口：%@"
+          }
+        }
+      }
+    },
     "快速记录" : {
       "localizations" : {
         "en" : {
@@ -2537,6 +2553,22 @@
         }
       }
     },
+    "手动添加%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add %@ manually"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手动添加%@"
+          }
+        }
+      }
+    },
     "手机没有联网，请检查网络设置。" : {
       "localizations" : {
         "en" : {
@@ -2601,22 +2633,6 @@
         }
       }
     },
-    "拍一张餐食照片，或点「手动」。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Take a photo of your meal, or tap Manual."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "拍一张餐食照片，或点「手动」。"
-          }
-        }
-      }
-    },
     "拍照" : {
       "localizations" : {
         "en" : {
@@ -2677,6 +2693,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "按三大营养素算约 %@ 千卡，和填写的热量差得比较多，可以再核对一下。"
+          }
+        }
+      }
+    },
+    "按你的每日目标和饮食偏好，生成早餐、午餐和晚餐。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get breakfast, lunch and dinner based on your daily targets and food preferences."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按你的每日目标和饮食偏好，生成早餐、午餐和晚餐。"
           }
         }
       }
@@ -3113,6 +3145,22 @@
         }
       }
     },
+    "查看做法" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Recipe"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看做法"
+          }
+        }
+      }
+    },
     "查看完整的隐私政策" : {
       "localizations" : {
         "en" : {
@@ -3481,6 +3529,22 @@
         }
       }
     },
+    "清空食谱" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Recipes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清空食谱"
+          }
+        }
+      }
+    },
     "热量" : {
       "localizations" : {
         "en" : {
@@ -3689,6 +3753,22 @@
         }
       }
     },
+    "用示例食谱" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Sample Recipes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用示例食谱"
+          }
+        }
+      }
+    },
     "男" : {
       "localizations" : {
         "en" : {
@@ -3717,6 +3797,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目标"
+          }
+        }
+      }
+    },
+    "目标与活动" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goal & Activity"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标与活动"
           }
         }
       }
@@ -3957,6 +4053,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "维持"
+          }
+        }
+      }
+    },
+    "编辑" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑"
           }
         }
       }
@@ -4309,6 +4421,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "记录日期"
+          }
+        }
+      }
+    },
+    "设置" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置"
           }
         }
       }
@@ -4809,22 +4937,6 @@
         }
       }
     },
-    "过敏" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Allergies"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "过敏"
-          }
-        }
-      }
-    },
     "过敏食材" : {
       "localizations" : {
         "en" : {
@@ -4837,6 +4949,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "过敏食材"
+          }
+        }
+      }
+    },
+    "过敏：%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allergies: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "过敏：%@"
           }
         }
       }
@@ -4873,18 +5001,34 @@
         }
       }
     },
-    "这一天没有记录" : {
+    "还没有今日推荐" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nothing Logged This Day"
+            "value" : "No picks for today yet"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这一天没有记录"
+            "value" : "还没有今日推荐"
+          }
+        }
+      }
+    },
+    "还没有记录" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing logged yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有记录"
           }
         }
       }
@@ -4949,6 +5093,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这些数字是根据公式估算的起点，每个人的实际消耗会有差别。"
+          }
+        }
+      }
+    },
+    "这些目标是如何计算的？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How are these targets calculated?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这些目标是如何计算的？"
           }
         }
       }
@@ -5317,6 +5477,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "食谱与营养数据为 AI 估算，仅供参考；如有疾病、处于孕期或有特殊饮食需求，请咨询医生或营养师"
+          }
+        }
+      }
+    },
+    "饮食偏好" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Food Preferences"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "饮食偏好"
           }
         }
       }

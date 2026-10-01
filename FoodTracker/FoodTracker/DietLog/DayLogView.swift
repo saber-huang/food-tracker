@@ -6,7 +6,7 @@
 //  1. 主卡片：还可以吃多少、碗形进度、已摄入和目标、三大营养素（右上角的 ⓘ 打开「每日目标是怎么算的」）
 //  2. 快速记录：拍照、相册、手动（由「今日」页传进来）
 //  3. 热量提示（只在看今天时有，由「今日」页传进来）
-//  4. 今日饮食：一张卡片里按早餐、午餐、晚餐、加餐分组列出每一条记录
+//  4. 今日饮食：早餐、午餐、晚餐、加餐各一张卡片（见 MealCard.swift）；还没有记录的一餐点 + 直接手动添加
 //  点一条记录可以修改（包括改到别的餐、别的日期）或删除；向左滑也能删除。
 //  「今日」页用它显示今天；翻看往日也用它。
 //
@@ -20,6 +20,7 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
     let bodyInfo: BodyInfo  // 算每日目标用
     private let quickLog: QuickLog  // 快速记录（拍照、相册、手动）
     private let hints: Hints  // 热量提示：「今日」页放在快速记录下面；翻看往日时什么都没有
+    private let onAddToMeal: (MealType) -> Void  // 点了还没有记录的那一餐的 +：由「今日」页打开手动添加
 
     @Query private var entries: [FoodEntry]
     @Environment(\.modelContext) private var modelContext
@@ -27,12 +28,13 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
     @State private var showsExplanation = false  // 是否打开「每日目标是怎么算的」
 
     init(
-        day: Date, today: Date, bodyInfo: BodyInfo, @ViewBuilder quickLog: () -> QuickLog,
-        @ViewBuilder hints: () -> Hints
+        day: Date, today: Date, bodyInfo: BodyInfo, onAddToMeal: @escaping (MealType) -> Void,
+        @ViewBuilder quickLog: () -> QuickLog, @ViewBuilder hints: () -> Hints
     ) {
         self.day = day
         self.today = today
         self.bodyInfo = bodyInfo
+        self.onAddToMeal = onAddToMeal
         self.quickLog = quickLog()
         self.hints = hints()
         // 查询条件在创建页面时算好：换了一天，SwiftUI 会重新创建这个页面，查询也跟着换
@@ -77,7 +79,8 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
             mealsSection
         }
         .listStyle(.insetGrouped)
-        .listSectionSpacing(AppSpacing.sectionGap)
+        // 卡片之间 12；大块之间更宽的间距由块标题补上（见 AppSectionHeader）
+        .listSectionSpacing(AppSpacing.cardGap)
         .contentMargins(.horizontal, AppSpacing.pageMargin, for: .scrollContent)
         .contentMargins(.top, AppSpacing.xs, for: .scrollContent)
         .appListBackground(glow: true)
@@ -103,24 +106,27 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
         }
     }
 
-    /// 今日饮食：一张卡片，按餐分组；每一餐一个小标题，下面是这一餐的记录
+    /// 今日饮食：每一餐一张卡片。有记录的卡片：标题（这一餐的合计）+ 每一条记录；没有记录的卡片只有一行和一个 +
     @ViewBuilder
     private var mealsSection: some View {
-        let meals = MealType.allCases.filter { !entries(for: $0).isEmpty }
-        Section {
-            if entries.isEmpty {
-                EmptyMealsRow(isToday: isToday)
-                    .listRowBackground(AppColors.surfacePrimary)
-            } else {
-                ForEach(meals) { meal in
-                    let mealEntries = entries(for: meal)
-                    MealHeaderRow(
-                        meal: meal, kcal: DietLogMath.total(of: mealEntries.map(\.values)).caloriesKcal,
-                        showsDivider: meal != meals.first
-                    )
-                    .listRowInsets(rowInsets)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(AppColors.surfacePrimary)
+        let dayTotal = DietLogMath.total(of: entries.map(\.values)).caloriesKcal
+        ForEach(Array(MealType.allCases.enumerated()), id: \.element) { index, meal in
+            let mealEntries = entries(for: meal)
+            Section {
+                if mealEntries.isEmpty {
+                    Button {
+                        onAddToMeal(meal)
+                    } label: {
+                        EmptyMealCard(meal: meal)
+                    }
+                    .buttonStyle(AppPressStyle(scales: false))
+                    .listRowInsets(EdgeInsets(top: 12, leading: AppSpacing.cardPadding, bottom: 12, trailing: AppSpacing.cardPadding))
+                    .appCardRow()
+                } else {
+                    MealCardHeader(meal: meal, total: DietLogMath.total(of: mealEntries.map(\.values)))
+                        .listRowInsets(EdgeInsets(top: 16, leading: AppSpacing.cardPadding, bottom: 6, trailing: AppSpacing.cardPadding))
+                        .listRowSeparator(.hidden)
+                        .appCardRow()
 
                     ForEach(mealEntries) { entry in
                         // 点一下打开修改表单
@@ -129,28 +135,29 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
                         } label: {
                             MealRow(entry: entry)
                         }
-                        .buttonStyle(.plain)
-                        .listRowInsets(rowInsets)
+                        .buttonStyle(AppPressStyle(scales: false))
+                        // 往右缩进，和这一餐的标题文字对齐（图标 36 + 间距 12）；最后一条下面多留一点
+                        .listRowInsets(
+                            EdgeInsets(
+                                top: 2, leading: AppSpacing.cardPadding + 48,
+                                bottom: entry.id == mealEntries.last?.id ? 12 : 2, trailing: AppSpacing.cardPadding))
                         .listRowSeparator(.hidden)
-                        .listRowBackground(AppColors.surfacePrimary)
+                        .appCardRow()
                     }
                     // 向左滑动出现「删除」
                     .onDelete { offsets in
                         delete(offsets.map { mealEntries[$0] })
                     }
                 }
+            } header: {
+                // 只有第一张卡片上面有块标题「今日饮食」
+                if index == 0 {
+                    AppSectionHeader(
+                        title: isToday ? String(localized: "今日饮食") : String(localized: "这一天的饮食"),
+                        trailing: entries.isEmpty ? nil : String(localized: "\(dayTotal.noDecimal) 千卡"))
+                }
             }
-        } header: {
-            AppSectionHeader(
-                title: isToday ? String(localized: "今日饮食") : String(localized: "这一天的饮食"),
-                trailing: entries.isEmpty
-                    ? nil : String(localized: "\(DietLogMath.total(of: entries.map(\.values)).caloriesKcal.noDecimal) 千卡"))
         }
-    }
-
-    /// 卡片里每一行的留白
-    private var rowInsets: EdgeInsets {
-        EdgeInsets(top: 6, leading: AppSpacing.cardPadding, bottom: 6, trailing: AppSpacing.cardPadding)
     }
 
     private func delete(_ list: [FoodEntry]) {
@@ -164,7 +171,7 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
 extension DayLogView where QuickLog == EmptyView, Hints == EmptyView {
     /// 只看记录、不放快速记录和提示的写法（预览用）
     init(day: Date, today: Date, bodyInfo: BodyInfo) {
-        self.init(day: day, today: today, bodyInfo: bodyInfo) { EmptyView() } hints: { EmptyView() }
+        self.init(day: day, today: today, bodyInfo: bodyInfo, onAddToMeal: { _ in }) { EmptyView() } hints: { EmptyView() }
     }
 }
 

@@ -42,17 +42,32 @@ private typealias P = AppColors.Pair
 
 @Suite("设计规范：颜色")
 struct DesignSystemColorTests {
-    @Test("正文和次要文字：在页面底色、卡片、燕麦色底上都至少 4.5:1（浅色、深色模式）")
+    @Test("正文：在页面底色和卡片上都至少 4.5:1；次要文字在卡片上至少 4.5:1（浅色、深色模式）")
     func textContrast() {
         for surface in [P.background, P.backgroundTop, P.surfacePrimary] {
             #expect(contrast(P.textPrimary.light, surface.light) >= 4.5)
-            #expect(contrast(P.textSecondary.light, surface.light) >= 4.5)
             #expect(contrast(P.textPrimary.dark, surface.dark) >= 4.5)
             #expect(contrast(P.textSecondary.dark, surface.dark) >= 4.5)
         }
+        #expect(contrast(P.textSecondary.light, P.surfacePrimary.light) >= 4.5)
+        // 设计稿指定的 #777169 直接放在页面底色上是 4.4:1（块标题右边的小字），略低于 4.5:1，用户确认过；
+        // 这里守住不再更低
+        #expect(contrast(P.textSecondary.light, P.background.light) >= 4.35)
         // 次要按钮的燕麦色圆底上，图标至少 3:1
         #expect(contrast(P.iconSecondary.light, P.surfaceSecondary.light) >= 3)
         #expect(contrast(P.iconSecondary.dark, P.surfaceSecondary.dark) >= 3)
+    }
+
+    @Test("标签栏没选中的图标至少 3:1（设计稿指定 #8D887F，文字是 3.5:1）；三餐标签、删除按钮的字看得清")
+    func tabsTagsAndDestructive() {
+        #expect(contrast(P.tabInactive.light, P.surfacePrimary.light) >= 3)
+        #expect(contrast(P.tabInactive.dark, P.surfacePrimary.dark) >= 3)
+        for tint in [P.tintBreakfast, P.tintLunch, P.tintDinner] {
+            #expect(contrast(P.textPrimary.light, tint.light) >= 4.5)
+            #expect(contrast(P.textPrimary.dark, tint.dark) >= 4.5)
+        }
+        #expect(contrast(P.destructive.light, P.surfacePrimary.light) >= 4.5)
+        #expect(contrast(P.destructive.dark, P.surfacePrimary.dark) >= 4.5)
     }
 
     @Test("主色橄榄绿：当文字看得清；暖白字放在主色上也看得清")

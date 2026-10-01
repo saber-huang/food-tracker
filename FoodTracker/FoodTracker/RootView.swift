@@ -59,7 +59,15 @@ struct MainTabView: View {
     let profile: UserProfile
     let onEraseAll: () -> Void  // 「我的」页确认「删除所有数据」后调用
 
-    @State private var selection = AppTab.today
+    @State private var selection: AppTab = {
+        #if DEBUG && targetEnvironment(simulator)
+        // 只在模拟器里：用启动参数 -startTab recipes 直接打开某个标签（截图检查用）
+        if let raw = UserDefaults.standard.string(forKey: "startTab"), let tab = AppTab(rawValue: raw) {
+            return tab
+        }
+        #endif
+        return .today
+    }()
 
     var body: some View {
         VStack(spacing: 0) {

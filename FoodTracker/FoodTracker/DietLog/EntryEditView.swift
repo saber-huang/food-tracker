@@ -12,6 +12,7 @@ import SwiftUI
 struct EntryEditView: View {
     let title: String
     let showsMealPicker: Bool  // 是否显示「记到哪一餐」
+    let mealIsSuggested: Bool  // 餐次是不是按时间猜的（从「今日饮食」某一餐的 + 打开时是用户自己选的）
     let showsDate: Bool  // 是否显示「记录日期」（只显示，不能改：新记录固定记到正在看的那天）
     let showsDayPicker: Bool  // 是否显示可以改的「日期」（修改已保存的记录时用）
     let note: String?  // 分量下面的一行灰字（比如从食谱记的一餐：「重量按食材生重合计。」）
@@ -25,13 +26,14 @@ struct EntryEditView: View {
     private enum Field { case name, weight, calories, protein, carbs, fat }
 
     init(
-        draft: EntryDraft, title: String, showsMealPicker: Bool = false, showsDate: Bool = false,
-        showsDayPicker: Bool = false, note: String? = nil, onSave: @escaping (EditableItem) -> Void,
-        onDelete: (() -> Void)? = nil
+        draft: EntryDraft, title: String, showsMealPicker: Bool = false, mealIsSuggested: Bool = true,
+        showsDate: Bool = false, showsDayPicker: Bool = false, note: String? = nil,
+        onSave: @escaping (EditableItem) -> Void, onDelete: (() -> Void)? = nil
     ) {
         _draft = State(initialValue: draft)
         self.title = title
         self.showsMealPicker = showsMealPicker
+        self.mealIsSuggested = mealIsSuggested
         self.showsDate = showsDate
         self.showsDayPicker = showsDayPicker
         self.note = note
@@ -88,8 +90,8 @@ struct EntryEditView: View {
                     } header: {
                         Text("记到哪一餐")
                     } footer: {
-                        // 只有新记录的餐次是按时间猜的；修改已保存的记录时选中的是原来的餐次，不加这句
-                        if showsDate {
+                        // 只有新记录、而且餐次是按时间猜的才加这句；修改已保存的记录、或者从某一餐的 + 打开时不加
+                        if showsDate && mealIsSuggested {
                             Text("按现在的时间默认推荐，可以改。")
                         }
                     }

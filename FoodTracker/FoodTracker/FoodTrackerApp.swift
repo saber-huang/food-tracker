@@ -7,9 +7,27 @@
 
 import SwiftData
 import SwiftUI
+import UIKit
 
 @main
 struct FoodTrackerApp: App {
+    init() {
+        // 顶栏标题：「食谱」「我的」的大标题 30pt（比系统的 34pt 小一点，三个标签页的标题一样大），
+        // 颜色用 App 的正文颜色（暖黑），不用纯黑
+        let bar = UINavigationBar.appearance()
+        let titleColor = UIColor { traits in
+            UIColor(hex: traits.userInterfaceStyle == .dark ? AppColors.Pair.textPrimary.dark : AppColors.Pair.textPrimary.light)
+        }
+        let large = UIFont.systemFont(ofSize: AppTypography.pageTitleSize, weight: .bold)
+        bar.largeTitleTextAttributes = [
+            .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large), .foregroundColor: titleColor,
+        ]
+        let inline = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        bar.titleTextAttributes = [
+            .font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: inline), .foregroundColor: titleColor,
+        ]
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()  // 没有资料时显示引导流程，有资料时显示主界面

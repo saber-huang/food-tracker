@@ -3,14 +3,14 @@
 //  FoodTracker
 //
 //  底部悬浮的标签栏：一个完整的圆角条，左右和底部都留出空隙，像浮在页面上。
-//  三个标签：今日、食谱、我的。没选中是灰色；选中的是深橄榄绿，背后一块很浅的橄榄色圆角底。
+//  三个标签：今日、食谱、我的。没选中是暖灰色；选中的是深橄榄绿，背后一块很浅的橄榄色圆角底（比格子窄一点）。
 //  图标都用同一种描边样式（不在选中时换成实心的）。系统自带的标签栏藏起来，由这个代替（见 RootView）。
 //
 
 import SwiftUI
 
 /// 主界面的三个标签
-enum AppTab: Hashable, CaseIterable, Identifiable {
+enum AppTab: String, Hashable, CaseIterable, Identifiable {
     case today, recipes, profile
 
     var id: Self { self }
@@ -51,16 +51,19 @@ struct FloatingTabBar: View {
                         Text(tab.title)
                             .font(AppTypography.tabLabel)
                     }
-                    .foregroundStyle(isSelected ? AppColors.brandDeep : AppColors.textSecondary)
+                    .foregroundStyle(isSelected ? AppColors.brandDeep : AppColors.tabInactive)
                     .frame(maxWidth: .infinity, minHeight: 54)
                     .background {
                         if isSelected {
-                            Capsule().fill(AppColors.brandSoft)
+                            // 比格子窄 15% 左右、颜色淡一点：选中很明确，但不像一个大按钮
+                            Capsule()
+                                .fill(AppColors.brandSoft.opacity(0.8))
+                                .padding(.horizontal, AppSpacing.xs)
                         }
                     }
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(QuickLogPressStyle())
+                .buttonStyle(AppPressStyle())
                 .accessibilityAddTraits(isSelected ? [.isSelected] : [])
             }
         }

@@ -2,8 +2,12 @@
 //  ProfileView.swift
 //  FoodTracker
 //
-//  「我的」页面：查看每日目标和个人资料，点「编辑资料」修改；
-//  下面是热量提示的设置、隐私与数据（隐私政策、AI 功能的同意、删除所有数据）和关于（意见反馈、版本号）。
+//  「我的」页面，从上到下：
+//  1. 每日目标（主卡片，见 GoalHeroCard），下面一个小链接「这些目标是如何计算的？」
+//  2. 个人资料（性别、年龄、身高、体重），标题右边是「编辑」
+//  3. 目标与活动（活动量、目标）
+//  4. 设置（单位、热量提示）、隐私与数据（隐私政策、AI 功能的同意、删除所有数据）、关于（意见反馈、版本号）
+//  每一组是一张卡片，不是一整页的设置列表。
 //
 
 import SwiftData
@@ -15,6 +19,7 @@ struct ProfileView: View {
     let onEraseAll: () -> Void
 
     @State private var isEditing = false
+    @State private var showsExplanation = false  // 是否打开「这些目标是如何计算的？」
     @State private var confirmErase = false  // 是否弹出「删除所有数据？」的确认
     // 同意过第几版 AI 数据说明（0 = 没同意或撤回了）；在别的页面点了同意，这里也会马上变
     @AppStorage(AIConsent.key) private var aiConsentVersion = 0
@@ -29,40 +34,64 @@ struct ProfileView: View {
 
         NavigationStack {
             List {
+                // 1. 每日目标：这一页的主卡片；紧贴在下面的是一个小链接，不是一行列表
+                Section {
+                    VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                        GoalHeroCard(targets: targets, bodyInfo: bodyInfo)
+                        Button {
+                            showsExplanation = true
+                        } label: {
+                            Label("这些目标是如何计算的？", systemImage: "info.circle")
+                                .font(AppTypography.detail.weight(.medium))
+                                .foregroundStyle(AppColors.brand)
+                                .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)  // 字号很大时换行，不截断
+                                .frame(minHeight: 44)
+                                .padding(.horizontal, AppSpacing.xxs)
+                                .contentShape(Rectangle())
+                        }
+                        // 只有点到这个链接才打开（不是整行都能点）
+                        .buttonStyle(.borderless)
+                    }
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                }
+
                 Group {
-                    Section("每日目标") {
-                        TargetsSummaryView(targets: targets)
-                        FloorNotice(targets: targets)
-                        GoalNotesView(bodyInfo: bodyInfo)
-                        NavigationLink("这些数字是怎么算的？") {
-                            ExplanationView(bodyInfo: bodyInfo)
+                    // 2. 个人资料
+                    Section {
+                        ProfileInfoRow(label: "性别", value: bodyInfo.sex.title)
+                        ProfileInfoRow(label: "年龄", value: String(localized: "\(bodyInfo.age) 岁"))
+                        ProfileInfoRow(label: "身高", value: BodyUnits.heightDisplay(cm: bodyInfo.heightCm, units: units))
+                        ProfileInfoRow(label: "体重", value: BodyUnits.weightDisplay(kg: bodyInfo.weightKg, units: units))
+                    } header: {
+                        AppSectionHeaderWithAction(title: String(localized: "个人资料"), actionTitle: String(localized: "编辑")) {
+                            isEditing = true
                         }
                     }
 
-                    Section("个人资料") {
-                        LabeledContent("性别", value: bodyInfo.sex.title)
-                        LabeledContent("年龄", value: String(localized: "\(bodyInfo.age) 岁"))
-                        LabeledContent("身高", value: BodyUnits.heightDisplay(cm: bodyInfo.heightCm, units: units))
-                        LabeledContent("体重", value: BodyUnits.weightDisplay(kg: bodyInfo.weightKg, units: units))
-                        LabeledContent("活动量", value: bodyInfo.activity.title)
-                        LabeledContent("目标", value: bodyInfo.goal.title)
+                    // 3. 目标与活动
+                    Section {
+                        ProfileInfoRow(label: "活动量", value: bodyInfo.activity.title)
+                        ProfileInfoRow(label: "目标", value: bodyInfo.goal.title)
+                    } header: {
+                        AppSectionHeader(title: String(localized: "目标与活动"))
+                    }
+
+                    // 4. 设置：单位；热量提示（全部开启 / 只看每周小结 / 关闭，文案都在 HintCopy 里）
+                    Section {
                         Picker("单位", selection: $units) {
                             ForEach(UnitSystem.allCases, id: \.self) { system in
                                 Text(system.title).tag(system)
                             }
                         }
-                        Button("编辑资料") { isEditing = true }
-                    }
-
-                    // 热量提示：全部开启 / 只看每周小结 / 关闭（文案都在 HintCopy 里）
-                    Section {
                         Picker(HintCopy.settingsPickerLabel, selection: $hintLevel) {
                             ForEach(HintLevel.allCases, id: \.self) { level in
                                 Text(HintCopy.levelTitle(level)).tag(level)
                             }
                         }
                     } header: {
-                        Text(HintCopy.settingsHeader)
+                        AppSectionHeader(title: String(localized: "设置"))
                     } footer: {
                         Text(HintCopy.levelExplanation(hintLevel) + "\n\n" + HintCopy.settingsGoalNote)
                     }
@@ -82,8 +111,9 @@ struct ProfileView: View {
                             Button("撤回 AI 功能的同意") { AIConsent.revoke() }
                         }
                         Button("删除所有数据", role: .destructive) { confirmErase = true }
+                            .foregroundStyle(AppColors.destructive)
                     } header: {
-                        Text("隐私与数据")
+                        AppSectionHeader(title: String(localized: "隐私与数据"))
                     } footer: {
                         Text("撤回同意后，下次拍照识别或生成食谱前会再问你，手动记录不受影响。")
                     }
@@ -96,7 +126,7 @@ struct ProfileView: View {
                         }
                         LabeledContent("版本", value: SupportInfo.versionText)
                     } header: {
-                        Text("关于")
+                        AppSectionHeader(title: String(localized: "关于"))
                     } footer: {
                         Text("热量和营养目标是根据公式估算的参考值，不是医疗建议。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。")
                     }
@@ -106,10 +136,17 @@ struct ProfileView: View {
                     DebugHintSection(profile: profile)
                     #endif
                 }
-                .listRowBackground(AppColors.surfacePrimary)  // 卡片用暖白，不用纯白
+                .appCardRow()  // 卡片用暖白，分隔线很淡
             }
+            .listStyle(.insetGrouped)
+            .listSectionSpacing(AppSpacing.cardGap)
+            .contentMargins(.horizontal, AppSpacing.pageMargin, for: .scrollContent)
+            .environment(\.defaultMinListRowHeight, 56)  // 每一行至少 56pt 高，不像密密的设置列表
             .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
             .navigationTitle("我的")
+            .navigationDestination(isPresented: $showsExplanation) {
+                ExplanationView(bodyInfo: profile.bodyInfo)
+            }
             .sheet(isPresented: $isEditing) {
                 ProfileEditView(profile: profile)
             }

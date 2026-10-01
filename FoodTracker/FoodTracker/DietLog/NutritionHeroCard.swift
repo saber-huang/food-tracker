@@ -2,10 +2,12 @@
 //  NutritionHeroCard.swift
 //  FoodTracker
 //
-//  「今日」页的主卡片，也是这一页的视觉中心：
-//  最上面一行是哪一天（今天 / 昨天 / 9月28日 周一）和 ⓘ（打开「每日目标是怎么算的」）；
-//  中间是还可以吃多少（大数字），旁边是 App 图标里的那只碗，吃了目标的几成就装到几成；
-//  下面是已摄入、目标，最后是三大营养素的细进度条。
+//  「今日」页的主卡片，也是这一页的视觉中心。看的顺序是：
+//  1. 还可以吃多少（42pt 的大数字）
+//  2. 下面一行小字「千卡可摄入」，再下面是已摄入、目标（很轻）
+//  3. 三大营养素的细进度条
+//  App 图标里的那只碗缩小放在数字右边，是品牌的点缀：先看到数字，之后才注意到碗。
+//  右上角的 ⓘ 打开「每日目标是怎么算的」。
 //  超过目标时只用灰色写出多了多少，不用红色；碗也只是满碗，不会「溢出来」。
 //
 
@@ -19,7 +21,7 @@ struct NutritionHeroCard: View {
     let onExplain: () -> Void  // 点右上角的 ⓘ
 
     @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = AppTypography.heroNumberSize
-    @ScaledMetric(relativeTo: .body) private var bowlWidth: CGFloat = 88
+    @ScaledMetric(relativeTo: .body) private var bowlWidth: CGFloat = 64
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var isToday: Bool { DayMath.startOfDay(day) == DayMath.startOfDay(today) }
@@ -28,15 +30,15 @@ struct NutritionHeroCard: View {
 
     var body: some View {
         let large = dynamicTypeSize.isAccessibilitySize
-        // 字号特别大时：碗放到数字上面，三种营养素改成上下排，免得挤在一行里显示不全
-        let mainLayout =
-            large
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: AppSpacing.md))
-            : AnyLayout(HStackLayout(alignment: .center, spacing: AppSpacing.md))
+        // 字号特别大时：碗放到数字下面，统计和三种营养素改成上下排，免得挤在一行里显示不全
         let macroLayout =
             large
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: AppSpacing.md))
             : AnyLayout(HStackLayout(alignment: .top, spacing: AppSpacing.md))
+        let statsLayout =
+            large
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: AppSpacing.xxs))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: AppSpacing.lg))
 
         VStack(alignment: .leading, spacing: AppSpacing.lg) {
             HStack(alignment: .center) {
@@ -47,24 +49,22 @@ struct NutritionHeroCard: View {
                 explainButton
             }
 
-            mainLayout {
-                headline
-                if !large { Spacer(minLength: 0) }
-                BowlGauge(fraction: progress.kcalFraction)
-                    .frame(width: min(bowlWidth, 128))  // 碗是品牌的点缀，比数字小
-            }
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                HStack(alignment: .center, spacing: AppSpacing.md) {
+                    headline
+                    Spacer(minLength: 0)
+                    if !large { bowl }
+                }
+                if large { bowl }
 
-            // 字号特别大时「已摄入」「目标」上下排，数字不会被挤成两行
-            let statsLayout =
-                large
-                ? AnyLayout(VStackLayout(alignment: .leading, spacing: AppSpacing.sm))
-                : AnyLayout(HStackLayout(alignment: .top, spacing: AppSpacing.xxl))
-            statsLayout {
-                StatItem(label: String(localized: "已摄入"), value: progress.consumedKcal.noDecimal)
-                // 往日也按现在的目标比较，所以写明「当前目标」
-                StatItem(
-                    label: isToday ? String(localized: "目标") : String(localized: "当前目标"),
-                    value: progress.targetKcal.noDecimal)
+                // 已摄入、目标：一行小字，不和大数字抢
+                statsLayout {
+                    StatInline(label: String(localized: "已摄入"), value: progress.consumedKcal.noDecimal)
+                    // 往日也按现在的目标比较，所以写明「当前目标」
+                    StatInline(
+                        label: isToday ? String(localized: "目标") : String(localized: "当前目标"),
+                        value: progress.targetKcal.noDecimal)
+                }
             }
 
             macroLayout {
@@ -79,9 +79,16 @@ struct NutritionHeroCard: View {
                     fraction: progress.fatFraction, color: AppColors.fat)
             }
         }
-        .padding(AppSpacing.cardPadding + 2)
+        .padding(AppSpacing.heroPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .appCard(radius: AppRadius.hero, elevated: true)
+        .appCard(elevated: true)
+    }
+
+    /// 碗：品牌的点缀，比数字小、稍微淡一点
+    private var bowl: some View {
+        BowlGauge(fraction: progress.kcalFraction)
+            .frame(width: min(bowlWidth, 96))
+            .opacity(0.9)
     }
 
     /// 大数字 + 下面一行说明：还可以吃 / 比目标少（往日）/ 比目标多 / 刚好达到目标
@@ -91,6 +98,7 @@ struct NutritionHeroCard: View {
         return VStack(alignment: .leading, spacing: 2) {
             Text(number)
                 .font(AppTypography.heroNumber(size: heroSize))
+                .tracking(0.6)
                 .monospacedDigit()
                 // 多了的时候数字用灰色，不用红色
                 .foregroundStyle(remaining >= 0 ? AppColors.textPrimary : AppColors.textSecondary)
@@ -135,26 +143,26 @@ struct NutritionHeroCard: View {
     }
 }
 
-/// 一个小统计：上面一行小字说明，下面是数字（已摄入、目标）
-private struct StatItem: View {
+/// 一行里的一个小统计：「已摄入 1,144 千卡」，说明是灰色、数字是正文颜色，都是小字
+private struct StatInline: View {
     let label: String
     let value: String  // 排好版的千卡数
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xxs) {
             Text(label)
-                .font(AppTypography.caption)
                 .foregroundStyle(AppColors.textSecondary)
             Text("\(value) 千卡")
-                .font(AppTypography.number)
                 .monospacedDigit()
                 .foregroundStyle(AppColors.textPrimary)
         }
+        .font(AppTypography.detail)
         .accessibilityElement(children: .combine)
     }
 }
 
-/// 一种营养素的进度：名称、「29 / 120 克」、细进度条。数字用正常的文字颜色，颜色只给进度条
+/// 一种营养素的进度：名称、「57 / 120 克」（只有 57 是大一点的字）、细进度条。
+/// 数字用正常的文字颜色，颜色只给进度条
 struct MacroProgress: View {
     let name: String
     let consumed: Double
@@ -167,12 +175,17 @@ struct MacroProgress: View {
             Text(name)
                 .font(AppTypography.caption)
                 .foregroundStyle(AppColors.textSecondary)
-            Text("\(consumed.noDecimal) / \(target.noDecimal) 克")
-                .font(AppTypography.number)
-                .monospacedDigit()
-                .foregroundStyle(AppColors.textPrimary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)  // 三位数的克数在小屏手机上也放得下
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text(consumed.noDecimal)
+                    .font(AppTypography.number)
+                    .foregroundStyle(AppColors.textPrimary)
+                Text("/ \(target.noDecimal) 克")
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.textSecondary)
+            }
+            .monospacedDigit()
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)  // 三位数的克数在小屏手机上也放得下
             SlimProgressBar(fraction: fraction, color: color)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
