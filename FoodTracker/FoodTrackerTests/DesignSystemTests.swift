@@ -221,6 +221,26 @@ struct BowlGeometryTests {
         #expect(BowlGeometry.fillTop(fraction: 0.5) < middle)  // y 越小越高
     }
 
+    @Test("装了的部分用长方形裁剪：满碗露到碗沿下面、超过目标和满碗一样、空碗什么都不露")
+    func fillClipRect() {
+        let box = BowlGeometry.gaugeBox
+        let rect = CGRect(x: 10, y: 20, width: 66, height: 34.4)  // 和 box 同样的比例
+        let toRect = BowlGeometry.transform(from: box, to: rect)
+        let full = BowlGeometry.fillClipRect(fraction: 1, box: box, in: rect)
+        // 满碗：上沿正好在碗沿下边
+        #expect(abs(full.minY - CGPoint(x: 0, y: BowlGeometry.rimBottom).applying(toRect).y) < 0.001)
+        // 吃超了（今天 5,349 / 1,563 这种）和满碗完全一样，不会变成更大的一块
+        #expect(BowlGeometry.fillClipRect(fraction: 3.42, box: box, in: rect) == full)
+        // 空碗：什么都不露
+        #expect(BowlGeometry.fillClipRect(fraction: 0, box: box, in: rect).isEmpty)
+        // 半碗：上沿在碗沿和碗底之间
+        let half = BowlGeometry.fillClipRect(fraction: 0.5, box: box, in: rect)
+        #expect(half.minY > full.minY && half.minY < rect.maxY)
+        // 裁剪框只比碗所在的那块大一点点（抗锯齿的余量），不会像出错时那样宽出一大截
+        #expect(full.minX >= rect.minX - 2 && full.maxX <= rect.maxX + 2)
+        #expect(full.maxY <= rect.maxY + 2)
+    }
+
     @Test("碗身、碗沿、笑脸都画得出来")
     func shapes() {
         #expect(!BowlGeometry.body.isEmpty)
@@ -230,3 +250,43 @@ struct BowlGeometryTests {
         #expect(BowlGeometry.rim.boundingRect.maxX < BowlGeometry.rimRect.maxX)
     }
 }
+
+@MainActor
+@Suite("碗形进度：画出来的样子")
+struct BowlRenderingTests {
+    /// 把「今日」卡片里的碗画成图片，返回每个点的 RGBA（0～255，一行一行从上往下）
+    private func render(fraction: Double, size: CGSize) throws -> (width: Int, height: Int, data: [UInt8]) {
+        let renderer = ImageRenderer(content: BowlGauge(fraction: fraction).frame(width: size.width, height: size.height))
+        renderer.scale = 1
+        let image = try #require(renderer.cgImage)
+        let width = image.width
+        let height = image.height
+        var data = [UInt8](repeating: 0, count: width * height * 4)
+        data.withUnsafeMutableBytes { buffer in
+            guard
+                let context = CGContext(
+                    data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
+                    space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+            else { return }
+            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        }
+        return (width, height, data)
+    }
+
+    @Test("吃到或超过目标也只是满碗：碗外面的两个下角是透明的（iOS 26 上曾经画成一个大方块）", arguments: [0.5, 1.0, 3.42])
+    func fillStaysInsideBowl(fraction: Double) throws {
+        // 宽 132 × 高 68.8：正好是画布 660 × 344 的五分之一
+        let (width, height, data) = try render(fraction: fraction, size: CGSize(width: 132, height: 68.8))
+        func alpha(_ x: Int, _ y: Int) -> UInt8 { data[(y * width + x) * 4 + 3] }
+        // 碗底两边的角落在碗外面：必须什么都没画
+        #expect(alpha(2, height - 3) == 0)
+        #expect(alpha(width - 3, height - 3) == 0)
+        // 碗底正中间在碗里面：画了东西（不透明）
+        #expect(alpha(width / 2, height - 6) > 200)
+        // 碗沿右端被咬掉的那一口：是空的（「咬掉」也是路径运算，确认它在各个系统版本上都对）
+        #expect(alpha(126, 6) == 0)
+        // 碗沿左边没被咬：画了东西
+        #expect(alpha(10, 6) > 200)
+    }
+}
+

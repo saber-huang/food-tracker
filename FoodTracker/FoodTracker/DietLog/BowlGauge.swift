@@ -71,6 +71,17 @@ nonisolated enum BowlGeometry {
         return CGFloat(bottom - (low + high) / 2)
     }
 
+    /// 碗里装了的部分要露出来的那一块：食物上沿以下的长方形（已经换算到页面上的位置）。
+    /// 画法是「整个碗身涂上燕麦色，再用这个长方形裁剪」，不用路径求交：
+    /// iOS 26 上「碗身 ∩ 长方形」在满碗（吃到或超过目标）时会算错，直接画出一个大方块（2026-10-01 用户手机上出现过）
+    static func fillClipRect(fraction: Double, box: CGRect, in rect: CGRect) -> CGRect {
+        guard fraction > 0 else { return .zero }  // 空碗：什么都不露
+        let transform = transform(from: box, to: rect)
+        let top = CGPoint(x: 0, y: fillTop(fraction: fraction)).applying(transform).y
+        // 往下、往两边多留一点，碗底和两边的抗锯齿边缘不会被切掉；碗身之外本来就没有东西可露
+        return CGRect(x: rect.minX - 2, y: top, width: rect.width + 4, height: max(0, rect.maxY + 2 - top))
+    }
+
     /// 把画布上的一块（box）等比例缩放、居中放进 rect
     static func transform(from box: CGRect, to rect: CGRect) -> CGAffineTransform {
         let scale = min(rect.width / box.width, rect.height / box.height)
@@ -90,8 +101,8 @@ private struct BowlPart: Shape {
     }
 }
 
-/// 碗里装的食物：从碗底装到 fraction 那么多。fraction 变化时会有动画
-private struct BowlContents: Shape {
+/// 碗里装了的食物露出来的那一块（食物上沿以下的长方形），用来裁剪碗身。fraction 变化时会有动画
+private struct BowlFillMask: Shape {
     var fraction: Double
     let box: CGRect
 
@@ -101,10 +112,7 @@ private struct BowlContents: Shape {
     }
 
     func path(in rect: CGRect) -> Path {
-        guard fraction > 0 else { return Path() }
-        let top = BowlGeometry.fillTop(fraction: fraction)
-        let band = Path(CGRect(x: 0, y: top, width: 1024, height: 1024 - top))
-        return BowlGeometry.body.intersection(band).applying(BowlGeometry.transform(from: box, to: rect))
+        Path(BowlGeometry.fillClipRect(fraction: fraction, box: box, in: rect))
     }
 }
 
@@ -118,7 +126,9 @@ struct BowlGauge: View {
         let box = BowlGeometry.gaugeBox
         ZStack {
             BowlPart(path: BowlGeometry.body, box: box).fill(AppColors.oatEmpty)
-            BowlContents(fraction: fraction, box: box).fill(AppColors.oatBowl)
+            // 装了的部分：同一个碗身涂上燕麦色，只露出食物上沿以下那一块（裁剪，不用路径求交，见 fillClipRect）
+            BowlPart(path: BowlGeometry.body, box: box).fill(AppColors.oatBowl)
+                .clipShape(BowlFillMask(fraction: fraction, box: box))
             BowlPart(path: BowlGeometry.rim, box: box).fill(AppColors.oatRim)
         }
         .aspectRatio(box.width / box.height, contentMode: .fit)
