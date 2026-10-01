@@ -4,6 +4,10 @@
 2. 把照片发给 Claude，要求它严格按固定的 JSON 格式返回识别结果
 3. 检查 AI 的结果：数值取整、去掉不合理的负数，再计算整餐合计
 
+一餐可以有 1～4 张照片（比如整桌一张、单个菜的特写一张）：几张照片一起发给 Claude，
+要求它把几张照片当成同一餐，同一份食物在不同照片里出现只算一次，最后只返回一份结果。
+只有 1 张照片时，发给 AI 的内容和以前完全一样。
+
 这个文件只管「识别」，网页接口相关的代码在 main.py 里。
 """
 
@@ -45,8 +49,11 @@ EFFORT = os.getenv("FOOD_AI_EFFORT") or "low"
 # 在 Render 上运行时，Render 会自动设置环境变量 RENDER=true
 ON_RENDER = os.getenv("RENDER") == "true"
 
-# App 上传前已经把照片压缩到 1024 像素（约 100～300 KB），5 MB 足够宽松；再大的多半是攻击
+# App 上传前已经把照片压缩到 1024 像素（约 100～300 KB），5 MB 足够宽松；再大的多半是攻击。
+# 一次上传几张照片时，这是所有照片加起来的上限（4 张压缩后的照片一般也不到 1.5 MB）
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+# 一餐最多几张照片：再多 AI 也很难对得上哪些是同一份食物，费用也会成倍增加
+MAX_PHOTOS = 4
 # 照片像素数上限：一张几 MB 的照片解压后可能有上亿个像素，会把只有 512 MB 内存的服务器撑爆。
 # 先读文件头里写的尺寸，超过这个数就不解压。16,000,000 像素还允许 1200 万像素的 iPhone 原图
 MAX_IMAGE_PIXELS = 16_000_000
@@ -160,20 +167,35 @@ def prepare_image(data: bytes) -> bytes:
 LANGUAGE_NAMES = {"zh": "简体中文", "en": "English"}
 
 
-def build_system_prompt(lang: str) -> str:
-    """给 AI 的「工作说明」。想调整识别效果，主要就是改这里的规则。"""
+# 几张照片时加在规则最后的说明。英文那段是产品要求的原话，和中文的做法说明一起发给 AI
+MULTI_PHOTO_RULE = (
+    "Multiple photos may contain the same food from different angles or close-up views. "
+    "Treat all uploaded images as one meal session. "
+    "Merge duplicate food entities across images before estimating quantity, calories, and macros. "
+    "Do not double-count the same item simply because it appears in multiple images."
+)
+
+
+def build_system_prompt(lang: str, photo_count: int = 1) -> str:
+    """给 AI 的「工作说明」。想调整识别效果，主要就是改这里的规则。
+    photo_count 是这一餐有几张照片：超过 1 张时，多加一条「几张照片算同一餐、同一份食物只算一次」的规则。"""
     language = LANGUAGE_NAMES.get(lang, "简体中文")
-    return f"""你是一名经验丰富的营养师，擅长根据照片估算一餐饭的营养成分。
+    prompt = f"""你是一名经验丰富的营养师，擅长根据照片估算一餐饭的营养成分。
 
 请识别照片里的每一种食物，估算它的重量和营养，并遵守以下规则：
 1. 按照片里实际能看到的份量估算。可以参考碗、盘子、筷子、手、包装等物体来判断大小。
 2. 考虑烹饪方式：油炸、爆炒、红烧等做法会用不少油，要把油和酱汁的热量算进去。
 3. 营养数值参考常见的食物成分数据。热量单位是千卡（kcal），重量和三大营养素的单位是克。
 4. 一道菜算一项，不要拆成配料；米饭、面条、饮料等分开列出。
-5. confidence 表示你的把握：看得清、很常见的食物用 high；份量或做法不太确定用 medium；看不清、只能猜测用 low。不要编造照片里没有的食物。
+5. confidence 表示你的把握：看得清、很常见的食物用 high；份量或做法不太确定用 medium；看不清、只能猜测用 low。不要编造照片里没有的食物；看不出是什么的东西不要硬猜成某种食物，不要列进 items，可以在 message 里提醒用户手动补上。
 6. 如果照片里没有可以吃的食物（比如人物、风景、文件、空盘子），is_food 设为 false，items 为空列表，message 用一句话说明原因。
 7. 如果有食物，is_food 设为 true，message 用一句话概括这一餐。
 8. name 和 message 使用{language}。"""
+    if photo_count <= 1:
+        return prompt
+    return prompt + f"""
+9. 这一餐一共有 {photo_count} 张照片（按上传顺序是照片 1 到照片 {photo_count}）。{MULTI_PHOTO_RULE}
+   具体做法：先在所有照片里找出同一份食物（同一碗米饭的全景和特写算同一项），合并之后再估算份量；份量以看得最清楚的那张为准，其他角度用来帮助判断大小。只有明显是不同的食物，或者明显是两份，才分开列出。message 概括整餐，不要按照片分别描述。"""
 
 
 _client: anthropic.Anthropic | None = None
@@ -292,22 +314,41 @@ def call_claude(*, system: str, content: list, output_format: type, max_tokens: 
     return response.parsed_output, response.model
 
 
-def ask_claude(jpeg: bytes, lang: str) -> tuple[AIResult, str]:
-    """把照片发给 Claude，拿回按 AIResult 格式整理好的识别结果，以及实际回答的模型名。"""
+def image_block(jpeg: bytes) -> dict:
+    """一张照片在发给 Claude 的内容里的写法"""
+    return {
+        "type": "image",
+        "source": {
+            "type": "base64",
+            "media_type": "image/jpeg",
+            "data": base64.standard_b64encode(jpeg).decode("ascii"),
+        },
+    }
+
+
+def build_content(jpegs: list[bytes]) -> list:
+    """发给 Claude 的内容：照片放在文字前面（Claude 的效果更好）。
+    只有 1 张照片时和以前完全一样；几张照片时每张前面标上「照片 N」，最后说明这些是同一餐"""
+    if len(jpegs) == 1:
+        return [image_block(jpegs[0]), {"type": "text", "text": "请分析这张照片里的餐食。"}]
+    content: list = []
+    for number, jpeg in enumerate(jpegs, start=1):
+        content.append({"type": "text", "text": f"照片 {number}："})
+        content.append(image_block(jpeg))
+    content.append(
+        {
+            "type": "text",
+            "text": f"这 {len(jpegs)} 张照片是同一餐。请把它们当作一餐来分析：同一份食物在几张照片里出现，只算一次。",
+        }
+    )
+    return content
+
+
+def ask_claude(jpegs: list[bytes], lang: str) -> tuple[AIResult, str]:
+    """把一餐的照片（1～4 张）一起发给 Claude，拿回按 AIResult 格式整理好的识别结果，以及实际回答的模型名。"""
     return call_claude(
-        system=build_system_prompt(lang),
-        content=[
-            # 照片放在文字前面，Claude 的效果更好
-            {
-                "type": "image",
-                "source": {
-                    "type": "base64",
-                    "media_type": "image/jpeg",
-                    "data": base64.standard_b64encode(jpeg).decode("ascii"),
-                },
-            },
-            {"type": "text", "text": "请分析这张照片里的餐食。"},
-        ],
+        system=build_system_prompt(lang, photo_count=len(jpegs)),
+        content=build_content(jpegs),
         output_format=AIResult,
         max_tokens=MAX_TOKENS_ANALYZE,
         feature="analyze",
@@ -356,8 +397,19 @@ def build_result(ai: AIResult, model: str, lang: Lang = "zh") -> AnalyzeResult:
     )
 
 
-def analyze_food_photo(data: bytes, lang: Lang = "zh") -> AnalyzeResult:
-    """完整流程：整理照片 → 问 Claude → 整理结果。lang 是结果（食物名称和总结）用的语言"""
-    jpeg = prepare_image(data)
-    ai, model = ask_claude(jpeg, lang)
+def analyze_food_photos(photos: list[bytes], lang: Lang = "zh") -> AnalyzeResult:
+    """完整流程：整理每一张照片 → 一起问 Claude → 整理成一份结果。
+    photos 是同一餐的 1～4 张照片；lang 是结果（食物名称和总结）用的语言"""
+    if not photos:
+        raise AIError(400, "no_photo", billed=False)
+    if len(photos) > MAX_PHOTOS:
+        raise AIError(400, "too_many_photos", billed=False, max=MAX_PHOTOS)
+    # 一张一张地整理：同一时间只有一张大图在内存里
+    jpegs = [prepare_image(data) for data in photos]
+    ai, model = ask_claude(jpegs, lang)
     return build_result(ai, model, lang)
+
+
+def analyze_food_photo(data: bytes, lang: Lang = "zh") -> AnalyzeResult:
+    """只有一张照片时的写法（和以前一样）"""
+    return analyze_food_photos([data], lang)

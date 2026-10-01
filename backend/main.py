@@ -8,7 +8,7 @@
 接口一览：
     GET  /health    检查后端是否在运行（Render 也用它做健康检查）
     GET  /quota     查询这台设备今天还能识别几次、生成几次食谱
-    POST /analyze   上传餐食照片，识别食物和营养
+    POST /analyze   上传同一餐的 1～4 张照片，识别食物和营养（几张照片合并成一份结果）
     POST /recipes   根据目标和忌口生成一日三餐
 
 防护（后端放到公网后，任何人都能访问这个地址，所以要防止被人刷爆账单）：
@@ -29,7 +29,7 @@ from typing import Annotated, Literal
 
 from fastapi import FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 
-from food_ai import MAX_UPLOAD_BYTES, MODEL, ON_RENDER, AIError, AnalyzeResult, analyze_food_photo
+from food_ai import MAX_PHOTOS, MAX_UPLOAD_BYTES, MODEL, ON_RENDER, AIError, AnalyzeResult, analyze_food_photos
 import messages
 from limits import Busy, Gate, Gatekeeper, Guard, LimitExceeded, ResultCache, Ticket
 from messages import Lang
@@ -95,7 +95,7 @@ app = FastAPI(
 app.add_middleware(
     Gatekeeper,
     secret=APP_SHARED_SECRET,
-    body_limits={"/analyze": MAX_UPLOAD_BYTES + 64 * 1024},  # 照片 + multipart 格式本身的少量开销
+    body_limits={"/analyze": MAX_UPLOAD_BYTES + 64 * 1024},  # 所有照片加起来 + multipart 格式本身的少量开销
     default_body_limit=32 * 1024,  # 其他接口的请求都很小
     open_paths=("/", "/health"),  # 不需要密钥的路径（Render 用 /health 做健康检查）
 )
@@ -226,21 +226,37 @@ def quota(request: Request, device_id: DeviceID = None):
 def analyze(
     request: Request,
     photo: Annotated[UploadFile, File(description="餐食照片（JPG、PNG 或 HEIC）")],
+    more_photos: Annotated[
+        list[UploadFile] | None, File(description=f"同一餐的其他照片（最多 {MAX_PHOTOS - 1} 张，可以不传）")
+    ] = None,
     lang: Annotated[Literal["zh", "en"], Form(description="结果语言：zh 中文，en 英文")] = "zh",
     device_id: DeviceID = None,
 ):
-    """识别照片里的食物，返回每种食物的营养数据和整餐合计。"""
+    """识别一餐的照片（1～4 张）：几张照片当作同一餐，同一份食物只算一次。
+    返回每种食物的营养数据和整餐合计。一次识别不管几张照片，都只算一次。
+    只传 photo 的旧版 App 照常工作。"""
+    photos = [photo, *(more_photos or [])]
+    # 张数不对在扣次数之前就拒绝：不调用 AI，也不占次数
+    if len(photos) > MAX_PHOTOS:
+        raise HTTPException(status_code=400, detail=messages.text("too_many_photos", request_lang(request), max=MAX_PHOTOS))
     ticket = acquire(analyze_guard, request, device_id, "analyze")
 
     def work():
-        # 读照片放在闸门里做：同时最多 2 个请求把照片读进内存
-        # 多读 1 个字节：如果读到的比上限还多，说明照片太大。读不到合格的照片就把次数还回去
-        data = photo.file.read(MAX_UPLOAD_BYTES + 1)
-        if not data:
-            raise AIError(400, "no_photo", billed=False)
-        if len(data) > MAX_UPLOAD_BYTES:
-            raise AIError(413, "photo_too_big", billed=False, mb=MAX_UPLOAD_BYTES // 1024 // 1024)
-        return analyze_food_photo(data, lang)
+        # 读照片放在闸门里做：同时最多 2 个请求把照片读进内存。
+        # 所有照片加起来不能超过 MAX_UPLOAD_BYTES：每张多读 1 个字节，读到的比剩下的额度还多，说明太大了。
+        # 读不到合格的照片就把次数还回去
+        mb = MAX_UPLOAD_BYTES // 1024 // 1024
+        budget = MAX_UPLOAD_BYTES
+        datas: list[bytes] = []
+        for upload in photos:
+            data = upload.file.read(budget + 1)
+            if not data:
+                raise AIError(400, "no_photo", billed=False)
+            if len(data) > budget:
+                raise AIError(413, "photo_too_big" if len(photos) == 1 else "photos_too_big", billed=False, mb=mb)
+            budget -= len(data)
+            datas.append(data)
+        return analyze_food_photos(datas, lang)
 
     return run_ai(analyze_guard, [ticket], work, request_lang(request))
 

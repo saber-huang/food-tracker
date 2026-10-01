@@ -51,9 +51,14 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     # ---------- 照片 ----------
     "no_photo": {"zh": "没有收到照片", "en": "No photo was received."},
+    "too_many_photos": {"zh": "一次最多识别 {max} 张照片", "en": "You can scan up to {max} photos at a time."},
     "photo_too_big": {
         "zh": "照片太大了，请上传 {mb} MB 以内的照片",
         "en": "This photo is too large. Please upload one under {mb} MB.",
+    },
+    "photos_too_big": {
+        "zh": "这几张照片加起来太大了（最多 {mb} MB），请少选几张再试",
+        "en": "These photos are too large together (up to {mb} MB). Please choose fewer and try again.",
     },
     "too_many_pixels": {
         "zh": "这张照片的像素太多了，请换一张，或先压缩后再上传",
