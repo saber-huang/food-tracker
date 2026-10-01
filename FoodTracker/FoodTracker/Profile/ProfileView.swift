@@ -3,6 +3,7 @@
 //  FoodTracker
 //
 //  「我的」页面，从上到下：
+//  0. 页面标题「我的」和一句说明（左对齐，和「食谱」一样）
 //  1. 每日目标（主卡片，见 GoalHeroCard），下面一个小链接「这些目标是如何计算的？」
 //  2. 个人资料（性别、年龄、身高、体重），标题右边是「编辑」
 //  3. 目标与活动（活动量、目标）
@@ -34,6 +35,13 @@ struct ProfileView: View {
 
         NavigationStack {
             List {
+                // 页面标题：左对齐的「我的」+ 一句说明（和「食谱」页一样）
+                Section {
+                    PageHeader(title: String(localized: "我的"), subtitle: String(localized: "管理你的目标与个人信息"))
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                }
+
                 // 1. 每日目标：这一页的主卡片；紧贴在下面的是一个小链接，不是一行列表
                 Section {
                     VStack(alignment: .leading, spacing: AppSpacing.xxs) {
@@ -70,10 +78,13 @@ struct ProfileView: View {
                         }
                     }
 
-                    // 3. 目标与活动
+                    // 3. 目标与活动：两块并排，名称在上、值在下（不是一行一行的设置）
                     Section {
-                        ProfileInfoRow(label: "活动量", value: bodyInfo.activity.title)
-                        ProfileInfoRow(label: "目标", value: bodyInfo.goal.title)
+                        HStack(alignment: .top, spacing: AppSpacing.md) {
+                            ProfileValueTile(label: "活动量", value: bodyInfo.activity.title)
+                            ProfileValueTile(label: "目标", value: bodyInfo.goal.title)
+                        }
+                        .padding(.vertical, AppSpacing.xs)
                     } header: {
                         AppSectionHeader(title: String(localized: "目标与活动"))
                     }
@@ -141,9 +152,12 @@ struct ProfileView: View {
             .listStyle(.insetGrouped)
             .listSectionSpacing(AppSpacing.cardGap)
             .contentMargins(.horizontal, AppSpacing.pageMargin, for: .scrollContent)
+            .contentMargins(.top, 0, for: .scrollContent)
             .environment(\.defaultMinListRowHeight, 56)  // 每一行至少 56pt 高，不像密密的设置列表
             .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
-            .navigationTitle("我的")
+            .appStatusBarCover()  // 没有导航栏：状态栏那一条盖上背景色
+            .navigationTitle("我的")  // 只用在下一页的「返回」上
+            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $showsExplanation) {
                 ExplanationView(bodyInfo: profile.bodyInfo)
             }

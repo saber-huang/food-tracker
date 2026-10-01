@@ -2,11 +2,12 @@
 //  RecipesView.swift
 //  FoodTracker
 //
-//  「食谱」页，从上到下：
-//  1. 每日目标的摘要（食谱就是按它生成的）
-//  2. 今日推荐：早餐、午餐、晚餐各一张卡片（点卡片或「查看做法」看详情，「换一个」单独重新生成这一餐）；
-//     还没有推荐时是一张带「生成一日三餐」的卡片。下面是不太大的「重新生成一日三餐」和剩余次数
-//  3. 饮食偏好的摘要（点了修改）；最下面固定一行 AI 估算的提示
+//  「食谱」页，从上到下（第一眼看到的是「今天推荐吃什么」）：
+//  1. 页面标题「食谱」和一句说明（左对齐，和「我的」一样）
+//  2. 今日推荐：早餐、午餐、晚餐各一张食谱卡片（点卡片或「查看做法」看详情，「换一个」单独重新生成这一餐）；
+//     还没有推荐时是一张带「生成一日三餐」的卡片。下面是「重新生成一日三餐」和一行很小的剩余次数
+//  3. 每日目标：小一号的辅助卡片（食谱就是按它生成的）
+//  4. 饮食偏好的摘要（点了修改）；最下面固定一行 AI 估算的提示
 //  卡片的样子在 RecipeCards.swift。
 //
 
@@ -39,16 +40,27 @@ struct RecipesView: View {
     var body: some View {
         NavigationStack {
             List {
+                // 页面标题：左对齐的「食谱」+ 一句说明（不用系统导航栏的标题，滚动时也不会变成居中的小标题）
                 Section {
-                    RecipeGoalSummary(targets: profile.targets, goalTitle: profile.bodyInfo.goal.title)
-                        .appCardRow()
-                } header: {
-                    Text("按你的每日目标推荐")
-                        .font(AppTypography.detail)
-                        .foregroundStyle(AppColors.textSecondary)
-                        .textCase(nil)
+                    PageHeader(title: String(localized: "食谱"), subtitle: String(localized: "为你规划今天的一日三餐")) {
+                        #if DEBUG && targetEnvironment(simulator)
+                        // 只在模拟器里出现的调试菜单：不花钱就能看食谱卡片的样子
+                        Menu {
+                            Button("用示例食谱") { recipes = SampleData.recipePlan }
+                            Button("清空食谱") { recipes = [] }
+                        } label: {
+                            Text("调试")
+                                .font(.footnote.weight(.medium))
+                                .foregroundStyle(AppColors.textSecondary)
+                                .frame(minWidth: 44, minHeight: 44)
+                        }
+                        #endif
+                    }
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
                 }
 
+                // 今日推荐：这一页最重要的内容
                 if recipes.isEmpty {
                     Section {
                         EmptyRecipesCard(isGenerating: isGeneratingAll) { generateTapped() }
@@ -74,7 +86,16 @@ struct RecipesView: View {
                     }
                 }
 
-                // 饮食偏好：设置条件，放在推荐下面，比推荐安静
+                // 每日目标：辅助信息，小一号的燕麦色卡片
+                Section {
+                    RecipeGoalSummary(targets: profile.targets, goalTitle: profile.bodyInfo.goal.title)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                } header: {
+                    AppSectionHeader(title: String(localized: "每日目标"))
+                }
+
+                // 饮食偏好：设置条件，放在最后，比推荐安静
                 Section {
                     Button {
                         showPreferences = true
@@ -94,22 +115,14 @@ struct RecipesView: View {
             .listStyle(.insetGrouped)
             .listSectionSpacing(AppSpacing.cardGap)
             .contentMargins(.horizontal, AppSpacing.pageMargin, for: .scrollContent)
+            .contentMargins(.top, 0, for: .scrollContent)
             .appListBackground()  // 页面用 App 的暖色背景（和「今日」页一样）
-            .navigationTitle("食谱")
+            .appStatusBarCover()  // 没有导航栏：状态栏那一条盖上背景色，内容滑上去时不和时间叠在一起
+            .navigationTitle("食谱")  // 只用在详情页的「返回」上
+            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(item: $openedRecipe) { recipe in
                 RecipeDetailView(recipe: recipe)
             }
-            #if DEBUG && targetEnvironment(simulator)
-            // 只在模拟器里出现的调试菜单：不花钱就能看食谱卡片的样子
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu("调试") {
-                        Button("用示例食谱") { recipes = SampleData.recipePlan }
-                        Button("清空食谱") { recipes = [] }
-                    }
-                }
-            }
-            #endif
             .sheet(isPresented: $showPreferences) {
                 RecipePreferencesView()
             }
@@ -165,13 +178,14 @@ struct RecipesView: View {
         }
     }
 
-    /// 今天还能生成几次（含「换一个」）：小字，不抢推荐的风头；问不到就不显示
+    /// 今天还能生成几次（含「换一个」）：很小的浅色字，不抢推荐的风头；问不到就不显示
     @ViewBuilder
     private var remainingCaption: some View {
         if let remaining {
             Text("今天还可以生成 \(remaining) 次（含「换一个」）。短时间内用相同的条件重新生成，会直接使用上次的结果，不占次数。")
                 .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.textTertiary)
+                .textCase(nil)
         }
     }
 

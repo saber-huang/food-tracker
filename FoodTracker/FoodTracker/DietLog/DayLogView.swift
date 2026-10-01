@@ -106,7 +106,7 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
         }
     }
 
-    /// 今日饮食：每一餐一张卡片。有记录的卡片：标题（这一餐的合计）+ 每一条记录；没有记录的卡片只有一行和一个 +
+    /// 今日饮食：记过的一餐是一张完整的白卡片（标题、每一条记录、营养素）；还没记的一餐是一条更轻的半透明窄条
     @ViewBuilder
     private var mealsSection: some View {
         let dayTotal = DietLogMath.total(of: entries.map(\.values)).caloriesKcal
@@ -117,14 +117,18 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
                     Button {
                         onAddToMeal(meal)
                     } label: {
-                        EmptyMealCard(meal: meal)
+                        EmptyMealRow(meal: meal)
                     }
                     .buttonStyle(AppPressStyle(scales: false))
-                    .listRowInsets(EdgeInsets(top: 12, leading: AppSpacing.cardPadding, bottom: 12, trailing: AppSpacing.cardPadding))
-                    .appCardRow()
+                    .listRowInsets(EdgeInsets(top: 8, leading: AppSpacing.cardPadding - 4, bottom: 8, trailing: AppSpacing.cardPadding - 4))
+                    // 半透明的卡片底：比记过的一餐轻很多
+                    .listRowBackground(AppColors.surfacePrimary.opacity(0.5))
                 } else {
-                    MealCardHeader(meal: meal, total: DietLogMath.total(of: mealEntries.map(\.values)))
-                        .listRowInsets(EdgeInsets(top: 16, leading: AppSpacing.cardPadding, bottom: 6, trailing: AppSpacing.cardPadding))
+                    let mealTotal = DietLogMath.total(of: mealEntries.map(\.values))
+                    // 三种营养素都是 0（只填了热量）时没有最后那一行营养素，最后一条记录下面多留一点
+                    let showsMacros = mealTotal.proteinG > 0 || mealTotal.carbsG > 0 || mealTotal.fatG > 0
+                    MealCardHeader(meal: meal, kcal: mealTotal.caloriesKcal)
+                        .listRowInsets(EdgeInsets(top: 16, leading: AppSpacing.cardPadding, bottom: 4, trailing: AppSpacing.cardPadding))
                         .listRowSeparator(.hidden)
                         .appCardRow()
 
@@ -136,17 +140,25 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
                             MealRow(entry: entry)
                         }
                         .buttonStyle(AppPressStyle(scales: false))
-                        // 往右缩进，和这一餐的标题文字对齐（图标 36 + 间距 12）；最后一条下面多留一点
+                        // 往右缩进，和这一餐的标题文字对齐（图标 36 + 间距 12）
                         .listRowInsets(
                             EdgeInsets(
-                                top: 2, leading: AppSpacing.cardPadding + 48,
-                                bottom: entry.id == mealEntries.last?.id ? 12 : 2, trailing: AppSpacing.cardPadding))
+                                top: 0, leading: AppSpacing.cardPadding + 48,
+                                bottom: !showsMacros && entry.id == mealEntries.last?.id ? 12 : 0,
+                                trailing: AppSpacing.cardPadding))
                         .listRowSeparator(.hidden)
                         .appCardRow()
                     }
                     // 向左滑动出现「删除」
                     .onDelete { offsets in
                         delete(offsets.map { mealEntries[$0] })
+                    }
+
+                    if showsMacros {
+                        MealMacroFooter(total: mealTotal)
+                            .listRowInsets(EdgeInsets(top: 2, leading: AppSpacing.cardPadding + 48, bottom: 16, trailing: AppSpacing.cardPadding))
+                            .listRowSeparator(.hidden)
+                            .appCardRow()
                     }
                 }
             } header: {

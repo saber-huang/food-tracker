@@ -2,8 +2,9 @@
 //  QuickLogDock.swift
 //  FoodTracker
 //
-//  「今日」页的快速记录：一张卡片，左边是主要动作「拍照」（橄榄绿的大圆 + 文字和一句说明），
-//  右边是两个次要动作「相册」「手动」（燕麦色的小圆）。一眼就能看出拍照是主功能。
+//  「今日」页的快速记录：一张卡片，三个动作并排，图标在同一条线上、文字在同一条基线上。
+//  「拍照」是主要动作：56pt 的橄榄绿圆、实心相机、半粗的字，下面一行很小的「AI 估算热量」；
+//  「相册」「手动」是次要动作：44pt 的燕麦色圆、描边图标、灰色的字。一眼就能看出拍照是主功能。
 //  选了照片以后，卡片上方多出一行：照片缩略图 + 「开始识别」；这时「开始识别」是唯一的主要动作，拍照变回次要样式。
 //  这里只负责样子：拍照、选照片、识别、手动添加都由「今日」页（HomeView）来做。
 //
@@ -28,22 +29,23 @@ struct QuickLogDock: View {
                     photo: photo, isAnalyzing: isAnalyzing, analyzeRemaining: analyzeRemaining, onAnalyze: onAnalyze,
                     onRemove: onRemovePhoto)
             }
-            HStack(alignment: .center, spacing: AppSpacing.xs) {
+            // 三个动作平分一行；每个图标都放在 56pt 高的格子里，圆心在同一条线上，文字在同一条基线上
+            HStack(alignment: .top, spacing: 0) {
                 Button(action: onCamera) {
-                    CameraActionLabel(isPrimary: photo == nil)
+                    QuickLogAction(
+                        title: "拍照", systemImage: photo == nil ? "camera.fill" : "camera", isPrimary: photo == nil,
+                        caption: photo == nil ? "AI 估算热量" : nil)
                 }
                 .buttonStyle(AppPressStyle())
 
-                Spacer(minLength: 0)
-
                 // PhotosPicker 是系统自带的相册选择器，不需要申请相册权限
                 PhotosPicker(selection: $pickerItem, matching: .images) {
-                    SecondaryActionLabel(title: "相册", systemImage: "photo.on.rectangle")
+                    QuickLogAction(title: "相册", systemImage: "photo.on.rectangle", isPrimary: false)
                 }
                 .buttonStyle(AppPressStyle())
 
                 Button(action: onManual) {
-                    SecondaryActionLabel(title: "手动", systemImage: "square.and.pencil")
+                    QuickLogAction(title: "手动", systemImage: "square.and.pencil", isPrimary: false)
                 }
                 .buttonStyle(AppPressStyle())
             }
@@ -51,8 +53,8 @@ struct QuickLogDock: View {
             // 用特大字号的人长按按钮，会弹出放大的图标和文字（这一块的字号有上限，见下面）
             .accessibilityShowsLargeContentViewer()
         }
-        .padding(.horizontal, AppSpacing.cardPadding)
-        .padding(.vertical, AppSpacing.md)
+        .padding(.horizontal, AppSpacing.xs)
+        .padding(.vertical, AppSpacing.md + 2)
         .frame(maxWidth: .infinity)
         .appCard()
         // 字号最多放大到「特特大」：圆形按钮大小固定，字再大就挤不下了（长按按钮可以看放大的文字）
@@ -60,56 +62,50 @@ struct QuickLogDock: View {
     }
 }
 
-/// 主要动作「拍照」：56pt 的橄榄绿圆 + 「拍照」+ 一句说明，横着排，占卡片左边一大块。
-/// 选了照片以后变成次要样式（燕麦色的圆），把主色让给「开始识别」
-private struct CameraActionLabel: View {
+/// 快速记录里的一个动作：图标在上（放在 56pt 高的格子里，三个动作的圆心对齐），文字在下（三个动作基线对齐）。
+/// 主要动作是 56pt 的橄榄绿圆 + 暖白实心图标 + 半粗的正文色文字，下面可以有一行很小的说明；
+/// 次要动作是 44pt 的燕麦色圆 + 棕灰色描边图标 + 灰色文字
+private struct QuickLogAction: View {
+    let title: LocalizedStringKey
+    let systemImage: String
     let isPrimary: Bool
+    var caption: LocalizedStringKey?
 
     @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
-        HStack(spacing: AppSpacing.sm) {
-            AppIconTile(
-                systemImage: "camera", size: 56,
-                tint: isPrimary ? AppColors.brand : AppColors.surfaceSecondary,
-                iconColor: isPrimary ? AppColors.onBrand : AppColors.iconSecondary)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("拍照")
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(AppColors.textPrimary)
-                Text("AI 估算热量")
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
+        VStack(spacing: AppSpacing.xs) {
+            ZStack {
+                Circle()
+                    .fill(isPrimary ? AppColors.brand : AppColors.surfaceSecondary)
+                    .frame(width: isPrimary ? 56 : 44, height: isPrimary ? 56 : 44)
+                Image(systemName: systemImage)
+                    .font(.system(size: isPrimary ? 22 : 18, weight: .medium))
+                    .foregroundStyle(isPrimary ? AppColors.onBrand : AppColors.iconSecondary)
             }
-            .fixedSize(horizontal: false, vertical: true)
+            .frame(height: 56)  // 三个动作的图标格子一样高：圆心对齐，下面的文字也就在同一条基线上
+            .accessibilityHidden(true)
+
+            VStack(spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(isPrimary ? .semibold : .medium))
+                    .foregroundStyle(isPrimary ? AppColors.textPrimary : AppColors.textSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                if let caption {
+                    Text(caption)
+                        .font(.caption2)
+                        .foregroundStyle(AppColors.textTertiary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+            }
         }
-        .frame(minHeight: 56)
-        .contentShape(Rectangle())  // 圆和文字之间的空白也能点
+        .frame(maxWidth: .infinity)  // 三个动作平分一行，整块都能点（远大于 44 × 44）
+        .contentShape(Rectangle())
         .opacity(isEnabled ? 1 : 0.45)
         .animation(.easeOut(duration: 0.2), value: isPrimary)
         .accessibilityElement(children: .combine)
-    }
-}
-
-/// 次要动作：42pt 的燕麦色圆 + 下面一行小字
-private struct SecondaryActionLabel: View {
-    let title: LocalizedStringKey
-    let systemImage: String
-
-    @Environment(\.isEnabled) private var isEnabled
-
-    var body: some View {
-        VStack(spacing: 6) {
-            AppIconTile(systemImage: systemImage, size: 42)
-            Text(title)
-                .font(AppTypography.caption.weight(.medium))
-                .foregroundStyle(AppColors.textSecondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-        }
-        .frame(minWidth: 60, minHeight: 64)  // 能点的范围大于 44 × 44
-        .contentShape(Rectangle())
-        .opacity(isEnabled ? 1 : 0.45)
     }
 }
 

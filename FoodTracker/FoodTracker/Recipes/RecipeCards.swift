@@ -3,7 +3,7 @@
 //  FoodTracker
 //
 //  「食谱」页用到的几种卡片：
-//  - RecipeGoalSummary：每日目标的摘要（食谱就是按它生成的）
+//  - RecipeGoalSummary：每日目标的摘要（辅助信息：小一号的燕麦色卡片，放在推荐下面）
 //  - RecipeCard + RecipeCardFooter：一餐的推荐（餐次标签、菜名、热量、三大营养素、时间；下面一行是「查看做法」「换一个」）
 //  - EmptyRecipesCard：还没有推荐时的样子，里面是「生成一日三餐」
 //  - RegenerateButton：已经有推荐时，下面一个不太大的「重新生成一日三餐」
@@ -13,35 +13,45 @@
 
 import SwiftUI
 
-/// 每日目标的摘要：「每日目标」、大号的千卡、三大营养素，最下面一行是目标和三餐比例
+/// 每日目标的摘要：辅助信息，小一号的燕麦色卡片（圆角 20，不是白卡片）。
+/// 第一行「减脂」和千卡，第二行三种营养素（小圆点 + 克数）
 struct RecipeGoalSummary: View {
     let targets: DailyTargets
     let goalTitle: String
 
-    @ScaledMetric(relativeTo: .title) private var numberSize: CGFloat = 28
-
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.md) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("每日目标")
-                    .font(AppTypography.cardTitle)
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(goalTitle)
+                    .font(AppTypography.detail)
                     .foregroundStyle(AppColors.textSecondary)
+                Spacer(minLength: AppSpacing.xs)
                 HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xxs) {
                     Text(targets.calories.noDecimal)
-                        .font(AppTypography.heroNumber(size: numberSize))
+                        .font(AppTypography.number)
                         .monospacedDigit()
                         .foregroundStyle(AppColors.textPrimary)
                     Text("千卡")
-                        .font(AppTypography.heroCaption)
+                        .font(AppTypography.detail)
                         .foregroundStyle(AppColors.textSecondary)
                 }
             }
-            MacroStatsRow(proteinG: targets.proteinG, carbsG: targets.carbsG, fatG: targets.fatG)
-            Text("目标：\(goalTitle) · 三餐按 30% / 40% / 30% 分配")
-                .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textSecondary)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: AppSpacing.md) { macroItems }
+                VStack(alignment: .leading, spacing: AppSpacing.xxs) { macroItems }
+            }
         }
-        .padding(.vertical, AppSpacing.xs)
+        .padding(AppSpacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppColors.surfaceSecondary, in: RoundedRectangle(cornerRadius: AppRadius.compact, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var macroItems: some View {
+        MacroDot(name: String(localized: "蛋白质"), grams: targets.proteinG, color: AppColors.protein)
+        MacroDot(name: String(localized: "碳水"), grams: targets.carbsG, color: AppColors.carbs)
+        MacroDot(name: String(localized: "脂肪"), grams: targets.fatG, color: AppColors.fat)
     }
 }
 
@@ -71,16 +81,23 @@ struct MealSlotTag: View {
 struct RecipeCard: View {
     let recipe: Recipe
 
-    @ScaledMetric(relativeTo: .title) private var numberSize: CGFloat = 26
+    @ScaledMetric(relativeTo: .title) private var numberSize: CGFloat = 28
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            HStack(alignment: .center) {
-                MealSlotTag(slot: recipe.meal)
-                Spacer(minLength: AppSpacing.xs)
-                Label("约 \(recipe.cookingMinutes) 分钟", systemImage: "clock")
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
+        VStack(alignment: .leading, spacing: AppSpacing.md - 2) {
+            // 餐次标签和时间放一行；字号特别大时，时间放到标签下面（不会把「约 15 分钟」拆成两行）
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                    MealSlotTag(slot: recipe.meal)
+                    cookingTime
+                }
+            } else {
+                HStack(alignment: .center) {
+                    MealSlotTag(slot: recipe.meal)
+                    Spacer(minLength: AppSpacing.xs)
+                    cookingTime
+                }
             }
             Text(recipe.name)
                 .font(AppTypography.recipeName)
@@ -107,6 +124,17 @@ struct RecipeCard: View {
         .contentShape(Rectangle())  // 整张卡片都能点
         .accessibilityElement(children: .combine)
         .accessibilityHint("查看做法")
+    }
+
+    /// 「🕘 约 15 分钟」
+    private var cookingTime: some View {
+        HStack(spacing: AppSpacing.xxs) {
+            Image(systemName: "clock")
+                .accessibilityHidden(true)
+            Text("约 \(recipe.cookingMinutes) 分钟")
+        }
+        .font(AppTypography.caption)
+        .foregroundStyle(AppColors.textSecondary)
     }
 
     @ViewBuilder
@@ -137,7 +165,7 @@ private struct MacroDot: View {
     }
 }
 
-/// 食谱卡片的最后一行：左边「查看做法」，右边「换一个」（换的时候显示「正在换…」）
+/// 食谱卡片的最后一行：左边「查看做法」是主要动作（浅橄榄色的胶囊），右边「换一个」是次要动作（只有图标和灰字）
 struct RecipeCardFooter: View {
     let isSwapping: Bool
     let isBusy: Bool  // 正在生成或换别的：「换一个」不能点
@@ -153,8 +181,11 @@ struct RecipeCardFooter: View {
                         .font(.caption.weight(.semibold))
                 }
                 .font(AppTypography.detail.weight(.semibold))
-                .foregroundStyle(AppColors.brand)
-                .frame(minHeight: 44)
+                .foregroundStyle(AppColors.brandDeep)
+                .padding(.horizontal, AppSpacing.md - 2)
+                .frame(minHeight: 34)
+                .background(AppColors.brandSoft, in: Capsule())
+                .frame(minHeight: 44)  // 能点的范围有 44pt 高
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
@@ -172,9 +203,9 @@ struct RecipeCardFooter: View {
                         Text("换一个")
                     }
                 }
-                .font(AppTypography.detail.weight(.medium))
-                .foregroundStyle(AppColors.iconSecondary)
-                .frame(minHeight: 44)
+                .font(AppTypography.detail)
+                .foregroundStyle(AppColors.textSecondary)
+                .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
@@ -207,8 +238,8 @@ struct EmptyRecipesCard: View {
             }
             Button(action: onGenerate) {
                 GenerateLabel(isGenerating: isGenerating, title: "生成一日三餐")
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(AppColors.brand, in: Capsule())
+                    .frame(maxWidth: .infinity, minHeight: 46)
+                    .background(AppColors.brand, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
             }
             .buttonStyle(AppPressStyle())
             .disabled(isGenerating)
@@ -218,7 +249,7 @@ struct EmptyRecipesCard: View {
     }
 }
 
-/// 已经有推荐时的「重新生成一日三餐」：橄榄绿的胶囊按钮，但不撑满一整行，比推荐卡片安静
+/// 已经有推荐时的「重新生成一日三餐」：橄榄绿、46pt 高、圆角 18 的按钮，放在推荐卡片下面，比推荐内容低一级
 struct RegenerateButton: View {
     let isGenerating: Bool
     let isBusy: Bool
@@ -227,9 +258,8 @@ struct RegenerateButton: View {
     var body: some View {
         Button(action: onGenerate) {
             GenerateLabel(isGenerating: isGenerating, title: "重新生成一日三餐")
-                .padding(.horizontal, AppSpacing.lg + 2)
-                .frame(minHeight: 44)
-                .background(AppColors.brand, in: Capsule())
+                .frame(maxWidth: .infinity, minHeight: 46)
+                .background(AppColors.brand, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
         }
         .buttonStyle(AppPressStyle())
         .disabled(isBusy)

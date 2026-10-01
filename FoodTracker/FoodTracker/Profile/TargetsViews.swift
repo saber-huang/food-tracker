@@ -56,8 +56,8 @@ struct NutrientColumn: View {
     }
 }
 
-/// 一种营养素的目标：上面是小色条 + 名称，下面是克数（左对齐）。
-/// 「食谱」页的每日目标和「我的」页的每日目标都用它，两边看起来一样
+/// 一种营养素的目标：上面是克数，下面是小色条 + 名称（左对齐）。
+/// 「我的」页的每日目标和食谱详情都用它，两边看起来一样
 struct MacroStat: View {
     let name: String
     let grams: Double
@@ -65,6 +65,10 @@ struct MacroStat: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
+            Text("\(grams.noDecimal) 克")
+                .font(AppTypography.number)
+                .monospacedDigit()
+                .foregroundStyle(AppColors.textPrimary)
             HStack(spacing: 6) {
                 Capsule()
                     .fill(color)
@@ -73,10 +77,6 @@ struct MacroStat: View {
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.textSecondary)
             }
-            Text("\(grams.noDecimal) 克")
-                .font(AppTypography.number)
-                .monospacedDigit()
-                .foregroundStyle(AppColors.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         // 旁白读成「蛋白质 120 克」

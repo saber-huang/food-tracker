@@ -17,20 +17,21 @@ warm minimal · calm · organic · premium · iOS-native。每天会打开很多
 
 ## 三个标签页共用的结构
 
-| 标签 | 第一眼（主卡片） | 主要动作 | 内容卡片 |
-|------|------------------|----------|----------|
-| 今日 | 还可以吃多少（42pt 大数字） | 快速记录：拍照 | 今日饮食：早餐 / 午餐 / 晚餐 / 加餐各一张卡片 |
-| 食谱 | 每日目标摘要 → 今日推荐 | 生成 / 重新生成一日三餐 | 早餐 / 午餐 / 晚餐各一张食谱卡片；饮食偏好 |
-| 我的 | 每日目标（42pt 大数字） | 编辑资料 | 个人资料、目标与活动、设置、隐私与数据、关于 |
+| 标签 | 页面顶部 | 第一眼 | 主要动作 | 内容卡片 |
+|------|----------|--------|----------|----------|
+| 今日 | 日期栏（Dashboard，特殊） | 还可以吃多少（42pt 大数字） | 快速记录：拍照 | 今日饮食：记过的一餐是完整的白卡片，没记的一餐是半透明窄条 |
+| 食谱 | 「食谱」+「为你规划今天的一日三餐」 | 今日推荐：早餐 / 午餐 / 晚餐食谱卡片 | 重新生成一日三餐 | 每日目标（小一号的燕麦色卡片）、饮食偏好 |
+| 我的 | 「我的」+「管理你的目标与个人信息」 | 每日目标（42pt 大数字） | 编辑资料 | 个人资料、目标与活动、设置、隐私与数据、关于 |
 
-每一页：大标题 30pt（今日的顶部是日期栏）→ 主卡片 → 块标题 + 卡片。左右留白 20，卡片圆角 26，块与块之间 28。
+「食谱」「我的」的标题用同一个 PageHeader：左对齐 30pt 粗体 + 15pt 说明，不用系统导航栏标题（滚动时不会变成居中的小标题），
+状态栏那一条用 appStatusBarCover 盖上背景色。左右留白 20，卡片圆角 26，块与块之间 28。
 
 ## 颜色（AppColors）
 
 | 名称 | 浅色 | 深色 | 用在哪 |
 |------|------|------|--------|
-| background | `#F7F4EE` | `#12110F` | 页面底色 |
-| backgroundTop | `#FBF9F5` | `#191714` | 页面顶部、日期栏 |
+| background | `#F4F0E8` | `#12110F` | 页面底色（第三轮起暖一点、灰一点，白卡片更分得出来） |
+| backgroundTop | `#F9F6F0` | `#191714` | 页面顶部、日期栏、状态栏那一条 |
 | surfacePrimary | `#FFFDF9` | `#1E1C19` | 卡片 |
 | surfaceSecondary | `#F0E9DE` | `#2A2621` | 图标的圆底（次要按钮、餐次） |
 | surfaceMuted | `#EBE6DE` | `#2C2924` | 进度条底槽 |
@@ -49,14 +50,15 @@ warm minimal · calm · organic · premium · iOS-native。每天会打开很多
 | destructive | `#A54A3F` | `#E08A7E` | 删除所有数据（柔和的砖红） |
 | 蛋白质 / 碳水 / 脂肪 | `#9AC0A0` / `#AF874D` / `#8D585A` | `#94BD9C` / `#A97D3A` / `#86495A` | 只给进度条、小色条、小圆点 |
 
-**和 WCAG 4.5:1 的两处出入（用户指定的颜色）**：次要文字 `#777169` 放在页面底色上是 4.4:1（卡片上 4.75:1）；标签栏没选中 `#8D887F` 是 3.5:1（图标 ≥ 3:1）。测试守住不再更低。
+**和 WCAG 4.5:1 的出入（用户指定的颜色）**：次要文字 `#777169` 放在页面底色 `#F4F0E8` 上是 4.25:1（卡片上 4.75:1）；标签栏没选中 `#8D887F` 是 3.5:1；
+「AI 估算热量」和剩余次数用最浅的 `#AAA39A`（约 2.3:1，设计稿要求的辅助小字）。测试守住前两个不再更低。
 
 **营养素三色**用 dataviz 技能的 `validate_palette.js` 搜出来：饱和度低，色盲模拟下两两 ΔE ≥ 13（浅色）/ 15（深色）。旁边一直有文字名称，不靠颜色区分。
 
 ## 间距、圆角、阴影
 
 - 间距只用 4 / 8 / 12 / 16 / 20 / 24 / 32。页面左右 20；同一块里卡片之间 12；两大块之间 28（块标题上方补足）；卡片内 18；主卡片内 22。
-- 圆角：所有卡片 26（和系统列表卡片一样）；标签栏 32；照片缩略图 14；小标签 8。
+- 圆角：所有卡片 26（和系统列表卡片一样）；辅助小卡片 20（食谱页的每日目标）；整行按钮 18（生成 / 重新生成）；标签栏 32；照片缩略图 14；小标签 8。
 - 阴影：只有主卡片（今日的热量卡片、我的的每日目标）和悬浮标签栏有很轻的暖色阴影（5%，模糊 22，下移 6）。其他卡片没有阴影。
 
 ## 字体（AppTypography）
@@ -77,11 +79,12 @@ warm minimal · calm · organic · premium · iOS-native。每天会打开很多
 | DateStrip | DateBrowsing/DateStrip.swift | 今日顶部的日期栏 |
 | NutritionHeroCard、MacroProgress、SlimProgressBar | DietLog/NutritionHeroCard.swift | 今日的主卡片 |
 | BowlGauge、KindbiteMark | DietLog/BowlGauge.swift | 碗形进度、图标图案 |
-| QuickLogDock | DietLog/QuickLogDock.swift | 快速记录：拍照（56pt 橄榄绿圆 + 文字）是主要动作，相册、手动（42pt 燕麦色圆）是次要动作 |
-| MealCardHeader、MealRow、EmptyMealCard | DietLog/MealCard.swift | 今日饮食：每一餐一张卡片；没记录的一餐点 + 直接给这一餐手动添加 |
-| RecipeGoalSummary、RecipeCard、RecipeCardFooter、EmptyRecipesCard、RegenerateButton、PreferenceSummary、MealSlotTag | Recipes/RecipeCards.swift | 食谱页 |
-| GoalHeroCard、ProfileInfoRow | Profile/GoalHeroCard.swift | 我的：每日目标主卡片、资料行（至少 56pt 高） |
-| MacroStat、MacroStatsRow | Profile/TargetsViews.swift | 三种营养素的目标（食谱和我的共用）；最大字号时改成上下三行 |
+| QuickLogDock | DietLog/QuickLogDock.swift | 快速记录：三个动作平分一行，图标放在同样 56pt 高的格子里（圆心对齐）、文字基线对齐；拍照是 56pt 橄榄绿圆 + 实心相机 + 半粗字 + 11pt 浅色说明，相册、手动是 44pt 燕麦色圆 + 描边图标 + 灰字 |
+| MealCardHeader、MealRow、MealMacroFooter、EmptyMealRow | DietLog/MealCard.swift | 今日饮食：记过的一餐 = 标题和千卡 + 每条记录一行（名称、千卡、箭头）+ 最下面的营养素；没记的一餐 = 半透明窄条「早餐 还没有记录」+「+」 |
+| RecipeGoalSummary、RecipeCard、RecipeCardFooter、EmptyRecipesCard、RegenerateButton、PreferenceSummary、MealSlotTag | Recipes/RecipeCards.swift | 食谱页：食谱卡片（餐次标签用很淡的燕麦 / 鼠尾草 / 灰褐底，菜名 17pt，热量 28pt，「查看做法」是浅橄榄色胶囊、「换一个」是灰字）；每日目标是燕麦色小卡片 |
+| PageHeader、appStatusBarCover | Shared/DesignSystem.swift | 「食谱」「我的」的左对齐页面标题；没有导航栏时盖住状态栏 |
+| GoalHeroCard、ProfileInfoRow、ProfileValueTile | Profile/GoalHeroCard.swift | 我的：每日目标主卡片、资料行（至少 56pt 高）、「目标与活动」里名称在上值在下的两块 |
+| MacroStat、MacroStatsRow | Profile/TargetsViews.swift | 三种营养素的目标：克数在上、名称在下（我的、食谱详情共用）；最大字号时改成上下三行 |
 | FloatingTabBar、AppTab | Shared/FloatingTabBar.swift | 悬浮标签栏；选中的底比格子窄一点、淡一点 |
 
 ## 不要做
@@ -92,19 +95,20 @@ warm minimal · calm · organic · premium · iOS-native。每天会打开很多
 - 营养素颜色不给文字用；数字一律用正文颜色。
 - 不在页面里直接写颜色和数字：新颜色先加到 DesignSystem.swift，再在这份文件里登记。
 
-## 交付前检查（第二轮都做过）
+## 交付前检查（第三轮都做过）
 
 - [x] 尺寸：iPhone SE（375×667）、iPhone 17（402×874）、iPhone 18 Pro Max（440×956）。
 - [x] 字号：默认和辅助功能特大都看过；最大字号时营养素改成上下三行，底部的 AI 提示最多放大到「特特大」。
 - [x] 长中文：36 个字的菜名换两行、很长的偏好文字两行后「…」，都不溢出。
 - [x] 标签栏不挡内容：标签栏放在页面下面，三个标签页滑到底时最后一张卡片都完整露出来。
-- [x] 交互：拍照、相册、手动、点 + 给某一餐添加（默认选中那一餐）、点记录修改、左滑删除、ⓘ、食谱卡片打开详情、换一个、编辑资料、这些目标是如何计算的。
+- [x] 交互：拍照、相册、手动、点 + 给某一餐添加（默认选中那一餐）、点记录修改、左滑删除、ⓘ、食谱卡片和「查看做法」打开详情、编辑资料、这些目标是如何计算的。
+- [x] 生成食谱：暂时撤回 AI 同意后点「重新生成一日三餐」，弹出「使用 AI 功能前」说明（说明按钮接到了生成的入口），点「暂不使用」什么都没发送，再恢复同意。没有真的调用 AI（要花钱），生成的代码没有改。
 - [x] 深色模式、英文界面（启动参数 `-AppleLanguages "(en)" -AppleLocale en_US`）。
 - 模拟器专用：启动参数 `-startTab recipes|profile` 直接打开某个标签；食谱页右上角「调试」→「用示例食谱」不花钱就能看食谱卡片。
 
 ## 这份规范是怎么来的
 
-- 用户的两轮设计稿：第一轮定下暖白燕麦底、橄榄绿、主卡片、快速记录、悬浮标签栏；第二轮精修层级（先数据后品牌、拍照是主功能、今日饮食卡片化、食谱和我的重新组织、三个标签统一）。参考了 Canvas 和不背单词。
+- 用户的三轮设计稿：第一轮定下暖白燕麦底、橄榄绿、主卡片、快速记录、悬浮标签栏；第二轮精修层级（先数据后品牌、拍照是主功能、今日饮食卡片化、食谱和我的重新组织、三个标签统一）；第三轮让食谱页先给推荐、我的页去掉设置感、两页共用左对齐标题、空餐和已记录餐分得开。参考了 Canvas 和不背单词。
 - **frontend-design**：只有一个招牌（碗），其余保持安静；避开 AI 设计常见的「奶油底 + 衬线字 + 陶土色」。
 - **ui-ux-pro-max**：点击范围 ≥ 44pt、对比度、安全区域、按下反馈、减弱动态效果、Dynamic Type。
 - **dataviz**：数字用正文颜色、颜色只给图形；营养素配色用校验脚本算过。

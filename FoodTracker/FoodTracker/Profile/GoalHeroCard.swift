@@ -73,3 +73,24 @@ struct ProfileInfoRow: View {
         .accessibilityElement(children: .combine)  // 行高由列表的最小行高（56pt）决定
     }
 }
+
+/// 「目标与活动」里的一块：上面是名称（小字、灰色），下面是值（正文）
+struct ProfileValueTile: View {
+    let label: LocalizedStringKey
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+            Text(label)
+                .font(AppTypography.detail)
+                .foregroundStyle(AppColors.textSecondary)
+            Text(value)
+                .font(.body.weight(.medium))
+                .foregroundStyle(AppColors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+}
+

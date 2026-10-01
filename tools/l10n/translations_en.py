@@ -144,6 +144,8 @@ LOCALIZABLE = {
     "还可以吃 %@ 千卡": "%@ kcal left",
     # 首页改版（主卡片、快速记录、今日饮食）
     # 第二轮精修：首页、食谱、我的
+    "为你规划今天的一日三餐": "Your meals for today, planned for you",
+    "管理你的目标与个人信息": "Your goals and personal info",
     "/ %@ 克": "/ %@ g",
     "AI 估算热量": "AI calorie estimate",
     "还没有记录": "Nothing logged yet",

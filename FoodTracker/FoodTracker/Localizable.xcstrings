@@ -705,6 +705,22 @@
         }
       }
     },
+    "为你规划今天的一日三餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your meals for today, planned for you"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为你规划今天的一日三餐"
+          }
+        }
+      }
+    },
     "久坐" : {
       "localizations" : {
         "en" : {
@@ -2713,22 +2729,6 @@
         }
       }
     },
-    "按你的每日目标推荐" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Based on Your Daily Targets"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按你的每日目标推荐"
-          }
-        }
-      }
-    },
     "按大多数星期的实际情况选；2～3 周后再根据体重变化调整。" : {
       "localizations" : {
         "en" : {
@@ -3817,22 +3817,6 @@
         }
       }
     },
-    "目标：%@ · 三餐按 30%% / 40%% / 30%% 分配" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Goal: %@ · meals split 30%% / 40%% / 30%%"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "目标：%@ · 三餐按 30%% / 40%% / 30%% 分配"
-          }
-        }
-      }
-    },
     "相册" : {
       "localizations" : {
         "en" : {
@@ -3989,6 +3973,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "等待超时，请检查网络后重试。"
+          }
+        }
+      }
+    },
+    "管理你的目标与个人信息" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your goals and personal info"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理你的目标与个人信息"
           }
         }
       }

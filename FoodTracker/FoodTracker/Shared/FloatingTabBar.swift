@@ -55,10 +55,10 @@ struct FloatingTabBar: View {
                     .frame(maxWidth: .infinity, minHeight: 54)
                     .background {
                         if isSelected {
-                            // 比格子窄 15% 左右、颜色淡一点：选中很明确，但不像一个大按钮
+                            // 比格子窄四分之一左右、颜色很淡：选中很明确，但不像一个大按钮
                             Capsule()
-                                .fill(AppColors.brandSoft.opacity(0.8))
-                                .padding(.horizontal, AppSpacing.xs)
+                                .fill(AppColors.brandSoft.opacity(0.7))
+                                .padding(.horizontal, AppSpacing.md)
                         }
                     }
                     .contentShape(Rectangle())

@@ -3,10 +3,10 @@
 //  FoodTracker
 //
 //  「今日」页的主卡片，也是这一页的视觉中心。看的顺序是：
-//  1. 还可以吃多少（42pt 的大数字）
-//  2. 下面一行小字「千卡可摄入」，再下面是已摄入、目标（很轻）
-//  3. 三大营养素的细进度条
-//  App 图标里的那只碗缩小放在数字右边，是品牌的点缀：先看到数字，之后才注意到碗。
+//  1. 还可以吃多少（42pt 的大数字）和下面一行「千卡可摄入」
+//  2. 隔开一段，是已摄入、目标（一行小字）
+//  3. 再隔开一段，是三大营养素的细进度条
+//  4. App 图标里的那只碗：缩小、变淡，放在数字右边，像水印一样的品牌点缀，不和数字抢
 //  右上角的 ⓘ 打开「每日目标是怎么算的」。
 //  超过目标时只用灰色写出多了多少，不用红色；碗也只是满碗，不会「溢出来」。
 //
@@ -21,7 +21,7 @@ struct NutritionHeroCard: View {
     let onExplain: () -> Void  // 点右上角的 ⓘ
 
     @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = AppTypography.heroNumberSize
-    @ScaledMetric(relativeTo: .body) private var bowlWidth: CGFloat = 64
+    @ScaledMetric(relativeTo: .body) private var bowlWidth: CGFloat = 54
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var isToday: Bool { DayMath.startOfDay(day) == DayMath.startOfDay(today) }
@@ -40,7 +40,7 @@ struct NutritionHeroCard: View {
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: AppSpacing.xxs))
             : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: AppSpacing.lg))
 
-        VStack(alignment: .leading, spacing: AppSpacing.lg) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center) {
                 Text(DayMath.dayTitle(for: day, today: today))
                     .font(AppTypography.cardTitle)
@@ -48,24 +48,24 @@ struct NutritionHeroCard: View {
                 Spacer(minLength: AppSpacing.xs)
                 explainButton
             }
+            .padding(.bottom, AppSpacing.md)
 
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                HStack(alignment: .center, spacing: AppSpacing.md) {
-                    headline
-                    Spacer(minLength: 0)
-                    if !large { bowl }
-                }
-                if large { bowl }
-
-                // 已摄入、目标：一行小字，不和大数字抢
-                statsLayout {
-                    StatInline(label: String(localized: "已摄入"), value: progress.consumedKcal.noDecimal)
-                    // 往日也按现在的目标比较，所以写明「当前目标」
-                    StatInline(
-                        label: isToday ? String(localized: "目标") : String(localized: "当前目标"),
-                        value: progress.targetKcal.noDecimal)
-                }
+            HStack(alignment: .center, spacing: AppSpacing.md) {
+                headline
+                Spacer(minLength: 0)
+                if !large { bowl }
             }
+            if large { bowl.padding(.top, AppSpacing.sm) }
+
+            // 已摄入、目标：和大数字隔开一段，一行小字，不和大数字抢
+            statsLayout {
+                StatInline(label: String(localized: "已摄入"), value: progress.consumedKcal.noDecimal)
+                // 往日也按现在的目标比较，所以写明「当前目标」
+                StatInline(
+                    label: isToday ? String(localized: "目标") : String(localized: "当前目标"),
+                    value: progress.targetKcal.noDecimal)
+            }
+            .padding(.top, AppSpacing.lg)
 
             macroLayout {
                 MacroProgress(
@@ -78,17 +78,19 @@ struct NutritionHeroCard: View {
                     name: String(localized: "脂肪"), consumed: consumed.fatG, target: targets.fatG,
                     fraction: progress.fatFraction, color: AppColors.fat)
             }
+            .padding(.top, AppSpacing.xl)
         }
-        .padding(AppSpacing.heroPadding)
+        .padding(.horizontal, AppSpacing.heroPadding)
+        .padding(.vertical, AppSpacing.heroPadding + 2)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appCard(elevated: true)
     }
 
-    /// 碗：品牌的点缀，比数字小、稍微淡一点
+    /// 碗：品牌的点缀，比数字小得多、淡一些，像水印
     private var bowl: some View {
         BowlGauge(fraction: progress.kcalFraction)
-            .frame(width: min(bowlWidth, 96))
-            .opacity(0.9)
+            .frame(width: min(bowlWidth, 80))
+            .opacity(0.72)
     }
 
     /// 大数字 + 下面一行说明：还可以吃 / 比目标少（往日）/ 比目标多 / 刚好达到目标

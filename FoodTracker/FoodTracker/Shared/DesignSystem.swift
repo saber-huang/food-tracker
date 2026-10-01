@@ -23,15 +23,15 @@ enum AppColors {
     /// 所有颜色的数值（浅色 / 深色）
     nonisolated enum Pair {
         // 页面和卡片：暖白、燕麦色，不用大面积纯白
-        static let background = ColorPair(light: 0xF7F4EE, dark: 0x12110F)  // 页面底色
-        static let backgroundTop = ColorPair(light: 0xFBF9F5, dark: 0x191714)  // 页面顶部，比底色略亮
+        static let background = ColorPair(light: 0xF4F0E8, dark: 0x12110F)  // 页面底色：暖一点、灰一点，卡片更分得出来
+        static let backgroundTop = ColorPair(light: 0xF9F6F0, dark: 0x191714)  // 页面顶部，比底色略亮
         static let surfacePrimary = ColorPair(light: 0xFFFDF9, dark: 0x1E1C19)  // 卡片
         static let surfaceSecondary = ColorPair(light: 0xF0E9DE, dark: 0x2A2621)  // 次要按钮的圆底
         static let surfaceMuted = ColorPair(light: 0xEBE6DE, dark: 0x2C2924)  // 进度条的底槽
         static let divider = ColorPair(light: 0xE6E0D7, dark: 0x2E2A25)
 
-        // 文字：不用纯黑。次要文字按设计稿用 #777169：在卡片上 4.75:1，在页面底色上 4.4:1（略低于小字的 4.5:1，
-        // 设计稿指定的颜色，2026-10-01 用户再次确认）
+        // 文字：不用纯黑。次要文字按设计稿用 #777169：在卡片上 4.75:1，直接放在页面底色上 4.25:1
+        // （略低于小字的 4.5:1；设计稿指定的颜色和底色，用户确认过）
         static let textPrimary = ColorPair(light: 0x262522, dark: 0xF2EEE7)
         static let textSecondary = ColorPair(light: 0x777169, dark: 0xA8A196)
         static let textTertiary = ColorPair(light: 0xAAA39A, dark: 0x6F6961)  // 对比度低，只给不能点的未来日期这类地方
@@ -130,6 +130,8 @@ enum AppSpacing {
 /// 卡片的层级靠大小、字号和阴影区分，不靠圆角
 enum AppRadius {
     static let card: CGFloat = 26  // 所有卡片：主卡片、快速记录、列表卡片
+    static let compact: CGFloat = 20  // 小一号的辅助卡片（食谱页的每日目标摘要）
+    static let button: CGFloat = 18  // 整行宽的按钮（重新生成一日三餐）
     static let tabBar: CGFloat = 32  // 底部悬浮的标签栏
     static let thumbnail: CGFloat = 14  // 照片缩略图
     static let tag: CGFloat = 8  // 小标签（早餐、午餐…）
@@ -139,14 +141,15 @@ enum AppRadius {
 
 /// 文字用系统字体；数字用系统的圆体（和「健康」App 一样），一眼就能看出哪些是数字
 enum AppTypography {
-    static let pageTitleSize: CGFloat = 30  // 「食谱」「我的」的大标题（在 FoodTrackerApp 里设置）
+    static let pageTitleSize: CGFloat = 30  // 「食谱」「我的」的页面大标题（见 PageHeader）
+    static let pageSubtitle = Font.subheadline  // 大标题下面的一句说明
     static let heroNumberSize: CGFloat = 42  // 页面上最大的数字（用 @ScaledMetric 跟着系统字号变大）
     static func heroNumber(size: CGFloat) -> Font { .system(size: size, weight: .semibold, design: .rounded) }
     static let heroCaption = Font.subheadline  // 大数字下面的说明
     static let sectionTitle = Font.headline  // 「快速记录」「今日饮食」
     static let cardTitle = Font.subheadline.weight(.semibold)  // 卡片左上角的小标题（今天、每日目标…）
     static let mealTitle = Font.headline  // 早餐、午餐…（一餐的卡片标题）
-    static let recipeName = Font.title3.weight(.semibold)  // 食谱卡片上的菜名
+    static let recipeName = Font.headline  // 食谱卡片上的菜名（17pt 半粗）
     static let itemName = Font.callout.weight(.medium)  // 食物名称
     static let detail = Font.footnote  // 说明文字
     static let caption = Font.caption  // 最小的说明
@@ -192,6 +195,44 @@ struct AppBackground: View {
         .ignoresSafeArea()
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+}
+
+/// 「食谱」「我的」的页面标题：左对齐的大标题 + 下面一句说明，右边可以放一个小按钮。
+/// 这两页都不用系统的导航栏标题（滚动时会变成居中的小标题），三个标签页的标题位置一致
+struct PageHeader<Trailing: View>: View {
+    let title: String
+    let subtitle: String
+    @ViewBuilder var trailing: () -> Trailing
+
+    @ScaledMetric(relativeTo: .largeTitle) private var titleSize: CGFloat = AppTypography.pageTitleSize
+
+    var body: some View {
+        HStack(alignment: .top, spacing: AppSpacing.sm) {
+            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                Text(title)
+                    .font(.system(size: titleSize, weight: .bold))
+                    .foregroundStyle(AppColors.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
+                Text(subtitle)
+                    .font(AppTypography.pageSubtitle)
+                    .foregroundStyle(AppColors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+            trailing()
+        }
+        .padding(.top, AppSpacing.md)
+        .padding(.bottom, AppSpacing.xxs)
+        // 左边留一点点：有的汉字（比如「为」的那一点）会比文字起点稍微往左伸，贴着边会被列表裁掉
+        .padding(.leading, AppSpacing.xxs)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+extension PageHeader where Trailing == EmptyView {
+    init(title: String, subtitle: String) {
+        self.init(title: title, subtitle: subtitle) { EmptyView() }
     }
 }
 
@@ -320,6 +361,28 @@ extension View {
                 ], startPoint: .top, endPoint: .bottom
             )
             .padding(.top, -AppSpacing.md)  // 淡出的那一段往上多伸出一点
+        }
+    }
+
+    /// 没有导航栏的页面（「食谱」「我的」）：状态栏那一条盖上页面顶部的颜色，下边缘淡出。
+    /// 内容往上滑时从这里柔和地消失，不会和时间、电量叠在一起
+    func appStatusBarCover() -> some View {
+        safeAreaInset(edge: .top, spacing: 0) {
+            Color.clear
+                .frame(height: 0)
+                .background {
+                    // 这个视图本身高度是 0；它的背景伸进状态栏，正好盖住状态栏那一条
+                    AppColors.backgroundTop
+                        .ignoresSafeArea(edges: .top)
+                }
+                .overlay(alignment: .top) {
+                    LinearGradient(
+                        colors: [AppColors.backgroundTop, AppColors.backgroundTop.opacity(0)], startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: AppSpacing.md)
+                    .allowsHitTesting(false)
+                }
         }
     }
 
