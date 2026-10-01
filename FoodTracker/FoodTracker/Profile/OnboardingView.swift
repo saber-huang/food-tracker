@@ -124,10 +124,11 @@ private struct WelcomeStep: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Image(systemName: "fork.knife.circle.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(.tint)
+                // App 图标里的那只碗（代码画的，深色模式自动换颜色）
+                KindbiteMark()
+                    .frame(width: 112)
                     .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
 
                 Text("先花 1 分钟填写基本资料，App 会算出适合你的每日热量和三大营养素目标。")
                     .font(.title3)

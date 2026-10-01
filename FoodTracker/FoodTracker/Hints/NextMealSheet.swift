@@ -26,6 +26,7 @@ struct NextMealSheet: View {
     @State private var remaining: Int?  // 今天还能生成几次；问不到就不显示
     @State private var errorMessage: String?  // 有值时弹出出错提示
     @State private var pendingAIAction: PendingAIAction?  // 还没同意使用 AI 时，先记下要做的生成，同意后再做
+    @State private var detent: PresentationDetent = .medium  // 先开半屏；生成好以后拉到全屏
 
     private var mealName: String { budget.meal.title }
 
@@ -113,6 +114,10 @@ struct NextMealSheet: View {
                     remaining = quota.recipesRemaining
                 }
             }
+        }
+        .presentationDetents([.medium, .large], selection: $detent)
+        .onChange(of: recipe == nil) { _, isEmpty in
+            if !isEmpty { withAnimation { detent = .large } }
         }
     }
 

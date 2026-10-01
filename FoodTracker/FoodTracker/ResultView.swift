@@ -2,8 +2,8 @@
 //  ResultView.swift
 //  FoodTracker
 //
-//  结果页：列出识别到的每种食物，点一项可以修改，向左滑可以删掉，也能补一项；
-//  选好记到哪一餐，点「保存到今日」就存进饮食记录。底部是「热量为 AI 估算」的提示。
+//  结果页：从上到下是照片和 AI 的一句话总结、识别到的每种食物（点一项可以修改，向左滑可以删掉，也能补一项）、
+//  整餐合计、记到哪一天哪一餐；最下面固定着「保存到今日」按钮和「热量为 AI 估算」的提示。
 //  照片不保存，只保存食物和营养数据。
 //
 
@@ -45,39 +45,23 @@ struct ResultView: View {
 
     var body: some View {
         List {
-            // 照片和 AI 的一句话总结
+            // 照片（小图）和 AI 的一句话总结并排：下面的食物列表不用往下翻就看得到
             Section {
-                if let photo {
-                    Image(uiImage: photo)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxHeight: 220)
-                        .frame(maxWidth: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                HStack(alignment: .top, spacing: 12) {
+                    if let photo {
+                        Image(uiImage: photo)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 76, height: 76)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .accessibilityHidden(true)  // 就是刚才选的那张照片
+                    }
+                    Text(result.message)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                Text(result.message)
             }
 
             if showsList {
-                // 记到哪一天：打开这页时就定好了，这里只显示
-                Section {
-                    LabeledContent("记录日期", value: DayMath.dayTitle(for: day, today: today))
-                }
-
-                // 下面这句说明只说餐次，所以这一组里只放餐次
-                Section {
-                    Picker("记到哪一餐", selection: $meal) {
-                        ForEach(MealType.allCases) { meal in
-                            Text(meal.title).tag(meal)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                } header: {
-                    Text("记到哪一餐")
-                } footer: {
-                    Text("按现在的时间默认推荐，可以改。")
-                }
-
                 Section("识别到的食物（点一项可修改）") {
                     // 每一项有自己的 id，删掉一项时列表能正确地动画，弹出的表单也知道改的是哪一项
                     ForEach(items) { item in
@@ -102,6 +86,19 @@ struct ResultView: View {
                 Section("整餐合计") {
                     TotalView(items: items)
                 }
+
+                // 记到哪一天（打开这页时就定好了，这里只显示）、哪一餐；紧挨着下面的保存按钮，保存前最后看一眼
+                Section {
+                    LabeledContent("记录日期", value: DayMath.dayTitle(for: day, today: today))
+                    Picker("记到哪一餐", selection: $meal) {
+                        ForEach(MealType.allCases) { meal in
+                            Text(meal.title).tag(meal)
+                        }
+                    }
+                    .pickerStyle(.segmented)  // 四个餐次一看就懂，不另写标题；旁白会读出「记到哪一餐」
+                } footer: {
+                    Text("按现在的时间默认推荐，可以改。")
+                }
             } else {
                 Section {
                     ContentUnavailableView(
@@ -116,22 +113,29 @@ struct ResultView: View {
         }
         .navigationTitle("识别结果")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                if showsList {
-                    Button(DayMath.saveButtonTitle(day: day, today: today)) { save() }
-                        .disabled(items.isEmpty || isSaving)
-                }
-            }
-        }
-        // 固定在页面最底部的提示
+        // 固定在页面最底部：保存按钮（和引导页「下一步」、食谱页「生成」是同一种大按钮）+ AI 估算的提示
         .safeAreaInset(edge: .bottom) {
-            Text("热量为 AI 估算，仅供参考；保存前可以修改。")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(.bar)
+            VStack(spacing: 8) {
+                if showsList {
+                    Button {
+                        save()
+                    } label: {
+                        Text(DayMath.saveButtonTitle(day: day, today: today))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(items.isEmpty || isSaving)
+                }
+                Text("热量为 AI 估算，仅供参考；保存前可以修改。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal)
+            .padding(.vertical, 10)
+            .background(.bar)
         }
         // 修改一项：保存后替换掉列表里 id 相同的那一项；表单里也能删掉这一项
         .sheet(item: $editingItem) { item in
@@ -200,15 +204,15 @@ private struct FoodRow: View {
     }
 }
 
-/// 可信度小标签：高是绿色，中是橙色，低是红色；用户改过或自己添加的显示灰色的「已修改」
+/// 可信度小标签：高是绿色，中是琥珀色，低是砖红色；用户改过或自己添加的显示灰色的「已修改」
 private struct ConfidenceBadge: View {
     let confidence: Confidence?
 
     private var color: Color {
         switch confidence {
-        case .high: .green
-        case .medium: .orange
-        case .low: .red
+        case .high: Theme.confidenceHigh
+        case .medium: Theme.confidenceMedium
+        case .low: Theme.confidenceLow
         case nil: .secondary
         }
     }
@@ -219,7 +223,7 @@ private struct ConfidenceBadge: View {
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
             .foregroundStyle(color)
-            .background(color.opacity(0.15), in: Capsule())
+            .background(color.opacity(Theme.badgeOpacity), in: Capsule())
     }
 }
 
@@ -246,31 +250,12 @@ private struct TotalView: View {
                 }
             }
             HStack {
-                MacroView(name: String(localized: "蛋白质"), grams: total.proteinG, color: .blue)
-                MacroView(name: String(localized: "碳水"), grams: total.carbsG, color: .orange)
-                MacroView(name: String(localized: "脂肪"), grams: total.fatG, color: .pink)
+                NutrientColumn(name: String(localized: "蛋白质"), value: total.proteinG.oneDecimal, color: Theme.protein)
+                NutrientColumn(name: String(localized: "碳水"), value: total.carbsG.oneDecimal, color: Theme.carbs)
+                NutrientColumn(name: String(localized: "脂肪"), value: total.fatG.oneDecimal, color: Theme.fat)
             }
         }
         .padding(.vertical, 4)
-    }
-}
-
-/// 一种营养素：数值 + 名称
-private struct MacroView: View {
-    let name: String
-    let grams: Double
-    let color: Color
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Text("\(grams.oneDecimal) 克")
-                .font(.headline)
-                .foregroundStyle(color)
-            Text(name)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
     }
 }
 

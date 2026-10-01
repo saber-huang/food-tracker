@@ -35,7 +35,10 @@ nonisolated enum PrivacyPolicy {
 }
 
 struct PrivacyPolicyView: View {
-    private let blocks = PrivacyPolicy.blocks()
+    /// 正文的第一块是大标题「隐私政策」，和顶栏重复，App 里不显示（网页版仍然有）
+    private let blocks = PrivacyPolicy.blocks().filter {
+        if case .title = $0 { false } else { true }
+    }
 
     var body: some View {
         ScrollView {
