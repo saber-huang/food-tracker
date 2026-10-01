@@ -3,7 +3,7 @@
 //  FoodTracker
 //
 //  「今日」页顶部的周横条：一页是一周（周一到周日），左右滑动翻周，点一天就看那一天的记录。
-//  每一天下面有一个灰色小圆环，表示那天吃了目标的几成；未来的日期是灰的，不能点。
+//  每一天的日期数字外面围着一圈燕麦色的细圆环，表示那天吃了目标的几成；未来的日期是灰的，不能点。
 //  最多往前翻 520 周（10 年）。页码是「离本周几周」：0 = 本周，-1 = 上周 …（见 DayMath）
 //
 
@@ -94,7 +94,7 @@ struct WeekPageView: View {
     }
 }
 
-/// 一天的格子：星期、日期数字、圆环
+/// 一天的格子：星期，下面是日期数字（外面围着圆环）
 private struct DayCell: View {
     let day: Date
     let today: Date
@@ -106,16 +106,16 @@ private struct DayCell: View {
 
     // 跟着系统字体大小一起变
     @ScaledMetric(relativeTo: .body) private var circleSize: CGFloat = 34
-    @ScaledMetric(relativeTo: .body) private var ringSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .body) private var ringGap: CGFloat = 4  // 圆环和日期数字之间留的空
 
     private var isSelectable: Bool { DayMath.isSelectable(day, today: today) }
     private var isToday: Bool { day == today }
 
-    /// 日期数字的颜色：选中 = 白字（蓝底），今天 = 蓝字，过去 = 正常，未来 = 灰
-    private var numberColor: Color {
-        if isSelected { return .white }
-        if isToday { return .accentColor }
-        return isSelectable ? .primary : Color(.tertiaryLabel)
+    /// 日期数字的颜色：选中 = 白字（主色底），今天 = 主色的字，过去 = 正常，未来 = 灰
+    private var numberStyle: AnyShapeStyle {
+        if isSelected { return AnyShapeStyle(.white) }
+        if isToday { return AnyShapeStyle(.tint) }
+        return AnyShapeStyle(isSelectable ? Color.primary : Color(.tertiaryLabel))
     }
 
     var body: some View {
@@ -126,17 +126,20 @@ private struct DayCell: View {
                     .foregroundStyle(.secondary)
                 Text(DayMath.dayNumber(day))
                     .font(.body.weight(isSelected || isToday ? .semibold : .regular))
-                    .foregroundStyle(numberColor)
+                    .foregroundStyle(numberStyle)
                     .frame(width: circleSize, height: circleSize)
                     .background {
                         if isSelected {
-                            Circle().fill(Color.accentColor)
+                            Circle().fill(.tint)
                         }
                     }
-                // 未来的日期不画圆环，但位置留着，让每一列一样高
-                IntakeRing(fraction: DayMath.ringFraction(kcal: kcal, target: kcalTarget))
-                    .frame(width: ringSize, height: ringSize)
-                    .opacity(isSelectable ? 1 : 0)
+                    .padding(ringGap)
+                    // 圆环围在数字外面；未来的日期不画
+                    .overlay {
+                        if isSelectable {
+                            IntakeRing(fraction: DayMath.ringFraction(kcal: kcal, target: kcalTarget))
+                        }
+                    }
             }
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
@@ -156,17 +159,18 @@ private struct DayCell: View {
     }
 }
 
-/// 灰色小圆环：吃了目标的几成。没记录只有浅色底圈；到了目标是一整圈；超过也还是一整圈、同样的灰色，不用红色
+/// 小圆环：吃了目标的几成（燕麦色，和「今日」卡片里的碗一样）。没记录只有浅色底圈；
+/// 到了目标是一整圈；超过也还是一整圈、同样的颜色，不用红色
 struct IntakeRing: View {
     let fraction: Double  // 0～1
 
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color(.systemGray5), lineWidth: 3)
+                .stroke(Color(.systemGray5), lineWidth: 2.5)
             Circle()
                 .trim(from: 0, to: fraction)
-                .stroke(Color(.systemGray), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .stroke(Theme.Oat.ring, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                 .rotationEffect(.degrees(-90))  // 从 12 点方向开始画
         }
         .animation(.default, value: fraction)

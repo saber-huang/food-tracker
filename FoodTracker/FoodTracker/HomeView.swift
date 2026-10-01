@@ -102,6 +102,7 @@ struct HomeView: View {
                                 }
                                 .foregroundStyle(.primary)
                             }
+                            .tint(.primary)  // 这是标题，不用主色（App 的主色会把顶栏按钮染成绿色）
                             .accessibilityHint("打开月历，选择日期")
                         }
                     }
@@ -267,44 +268,58 @@ struct HomeView: View {
             }
             pickButtons
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.vertical, 10)
         .background(.bar)
         // 字号最多放大到「特特大」：再大这一栏会占掉小半个屏幕（和系统的标签栏一样；长按按钮可以看放大的文字）
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
-    /// 拍照 / 从相册选择 / 手动添加 三个按钮（图标在上、文字在下，小屏幕的手机也放得下）
+    /// 拍照 / 从相册选择 / 手动添加 三个按钮（图标在上、文字在下，小屏幕的手机也放得下）。
+    /// 还没选照片时「拍照」是主按钮（实心的主色）；其余是灰底黑字的次要按钮。
+    /// 选了照片以后主按钮换成「开始识别」，这三个都变成次要按钮
     private var pickButtons: some View {
-        HStack(spacing: 12) {
-            Button {
-                // 有些设备（比如旧版模拟器）没有相机，先检查一下
-                if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                    showCamera = true
-                } else {
-                    showNoCamera = true
-                }
-            } label: {
-                Label("拍照", systemImage: "camera")
-            }
+        HStack(spacing: 10) {
+            cameraButton
 
             // PhotosPicker 是系统自带的相册选择器，不需要申请相册权限
             PhotosPicker(selection: $pickerItem, matching: .images) {
                 Label("从相册选择", systemImage: "photo.on.rectangle")
             }
+            .modifier(SecondaryActionStyle())
 
             Button {
                 openManualEntry()
             } label: {
                 Label("手动添加", systemImage: "square.and.pencil")
             }
+            .modifier(SecondaryActionStyle())
         }
         .labelStyle(IconAboveTitleLabelStyle())
-        .buttonStyle(.bordered)
         // 用特大字号的人长按按钮，会弹出放大的图标和文字（这一栏的字号有上限，见 actionBar）
         .accessibilityShowsLargeContentViewer()
         // 这一行的高度 = 最高的那个按钮：字号变大、「从相册选择」换行时，三个按钮还是一样高
         .fixedSize(horizontal: false, vertical: true)
         .disabled(isAnalyzing)
+    }
+
+    @ViewBuilder
+    private var cameraButton: some View {
+        let button = Button {
+            // 有些设备（比如旧版模拟器）没有相机，先检查一下
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                showCamera = true
+            } else {
+                showNoCamera = true
+            }
+        } label: {
+            Label("拍照", systemImage: "camera")
+        }
+        if photo == nil {
+            button.buttonStyle(.borderedProminent)
+        } else {
+            button.modifier(SecondaryActionStyle())
+        }
     }
 
     /// 开始识别按钮：识别中不能重复点
@@ -426,17 +441,28 @@ private struct ResultRoute: Hashable {
     let dayKey: Int
 }
 
+/// 次要按钮：灰底黑字（深色模式白字）。主色只留给一个主按钮；
+/// 主色的浅底上放主色的小字对比度不够（量出来不到 4.5:1），灰底黑字看得最清楚
+private struct SecondaryActionStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .buttonStyle(.bordered)
+            .tint(Color(.systemGray))
+            .foregroundStyle(Color.primary)
+    }
+}
+
 /// 按钮上图标在上、文字在下（系统没有现成的这种样式，自己定义一个）
 private struct IconAboveTitleLabelStyle: LabelStyle {
     func makeBody(configuration: Configuration) -> some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 3) {
             configuration.icon
-                .font(.title3)
+                .font(.body)
             configuration.title
                 .font(.caption)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)  // 撑满这一行的宽和高（高度由上面的 fixedSize 定）
-        .padding(.vertical, 4)
+        .padding(.vertical, 1)
     }
 }
 

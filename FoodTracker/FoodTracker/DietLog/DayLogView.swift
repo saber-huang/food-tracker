@@ -2,7 +2,8 @@
 //  DayLogView.swift
 //  FoodTracker
 //
-//  一天的饮食记录：顶部是和目标比较的卡片，下面按早餐、午餐、晚餐、加餐分组列出每一条记录。
+//  一天的饮食记录：顶部是和目标比较的卡片（右上角的 ⓘ 打开「每日目标是怎么算的」），
+//  下面按早餐、午餐、晚餐、加餐分组列出每一条记录。
 //  点一条记录可以修改（包括改到别的餐、别的日期）或删除；向左滑也能删除。
 //  「今日」页用它显示今天；翻看往日也用它。
 //
@@ -19,6 +20,7 @@ struct DayLogView<BelowCard: View>: View {
     @Query private var entries: [FoodEntry]
     @Environment(\.modelContext) private var modelContext
     @State private var editingEntry: FoodEntry?  // 正在修改的记录，有值时弹出表单
+    @State private var showsExplanation = false  // 是否打开「每日目标是怎么算的」
 
     init(day: Date, today: Date, bodyInfo: BodyInfo, @ViewBuilder belowCard: () -> BelowCard) {
         self.day = day
@@ -41,9 +43,10 @@ struct DayLogView<BelowCard: View>: View {
             // 往日没有记录时不显示卡片，只显示「这一天没有记录」
             if isToday || !entries.isEmpty {
                 Section {
-                    DayProgressCard(consumed: DietLogMath.total(of: entries.map(\.values)), bodyInfo: bodyInfo, isToday: isToday)
-                    NavigationLink("每日目标是怎么算的？") {
-                        ExplanationView(bodyInfo: bodyInfo)
+                    DayProgressCard(
+                        consumed: DietLogMath.total(of: entries.map(\.values)), bodyInfo: bodyInfo, isToday: isToday
+                    ) {
+                        showsExplanation = true
                     }
                 }
             }
@@ -86,6 +89,9 @@ struct DayLogView<BelowCard: View>: View {
                     )
                 }
             }
+        }
+        .navigationDestination(isPresented: $showsExplanation) {
+            ExplanationView(bodyInfo: bodyInfo)
         }
         // 整个列表只挂一个修改表单，点哪条就改哪条（每行各挂一个会开出很多份，还会互相干扰）
         .sheet(item: $editingEntry) { entry in
