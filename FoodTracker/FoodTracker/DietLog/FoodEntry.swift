@@ -133,3 +133,50 @@ extension EditableItem {
         )
     }
 }
+
+/// 删除一条记录前先拍一张「快照」：点「撤销」时按它原样放回去（包括添加的时间，所以顺序也不变）
+struct FoodEntrySnapshot {
+    let dayKey: Int
+    let meal: MealType
+    let name: String
+    let weightG: Double?
+    let values: NutrientValues
+    let source: EntrySource
+    let createdAt: Date
+
+    init(_ entry: FoodEntry) {
+        dayKey = entry.dayKey
+        meal = entry.meal
+        name = entry.name
+        weightG = entry.weightG
+        values = entry.values
+        source = entry.source
+        createdAt = entry.createdAt
+    }
+
+    /// 放回数据库（调用的地方再 save）
+    func restore(into context: ModelContext) {
+        context.insert(
+            FoodEntry(
+                dayKey: dayKey, meal: meal, name: name, weightG: weightG, values: values, source: source, createdAt: createdAt))
+    }
+}
+
+extension FoodEntry {
+    /// 合并显示时比较用的样子：名字、份量、热量
+    var groupingItem: GroupingItem {
+        GroupingItem(name: name, weightG: weightG, caloriesKcal: caloriesKcal)
+    }
+
+    /// 「最近使用」里的样子：名字和这一次的份量、营养
+    var recentFood: RecentFood {
+        RecentFood(name: name, weightG: weightG, values: values)
+    }
+
+    /// 最近的记录（从新到旧），用来做「最近使用」。只取最近的几百条，够挑出常吃的食物，也不会慢
+    static var recentDescriptor: FetchDescriptor<FoodEntry> {
+        var descriptor = FetchDescriptor<FoodEntry>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
+        descriptor.fetchLimit = 300
+        return descriptor
+    }
+}

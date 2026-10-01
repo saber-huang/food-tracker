@@ -5,6 +5,7 @@
 //  一行数字输入：标题、输入框、单位；填错时在下面显示红色提示。资料页和饮食记录的表单共用。
 //
 //  - 正在输入时不显示错误（比如年龄刚输入「1」时还不算错），离开这个输入框后才提示
+//  - 离开输入框时把数字整理成标准写法（「0450」→「450」「12.50」→「12.5」）；单位固定写在右边，不用输入
 //  - 点这一行的任何地方（包括标题）都能开始输入
 //  - 旁白（VoiceOver）把标题和单位一起读成「热量（千卡）」，出现红色提示时会念出来
 //
@@ -57,6 +58,12 @@ struct NumberRow<Field: Hashable>: View {
                 Text(shownError)
                     .font(.caption)
                     .foregroundStyle(.red)
+            }
+        }
+        // 离开这个输入框时，把数字整理成标准的写法（「0450」→「450」）；单位不用用户输入，写在右边
+        .onChange(of: isEditing) { wasEditing, editing in
+            if wasEditing && !editing, let tidy = NumberText.normalized(text) {
+                text = tidy
             }
         }
         // 红色提示出现时，让旁白念出来（看不见屏幕的用户也知道哪里填错了）

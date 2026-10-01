@@ -6,7 +6,7 @@
 //  - RecipeGoalSummary：每日目标的摘要（辅助信息：小一号的燕麦色卡片，放在推荐下面）
 //  - RecipeCard + RecipeCardFooter：一餐的推荐（餐次标签、菜名、热量、三大营养素、时间）。
 //    整张卡片点了就打开做法（右边的小箭头表示能点）；下面一行只有一个次要的「换一个」
-//  - EmptyRecipesCard：还没有推荐时的样子，里面是「生成一日三餐」
+//  - EmptyRecipesCard：还没有推荐时的样子（空的碗 + 「生成一日三餐」）；生成中换成碗的加载动画和阶段说明
 //  - RegenerateButton：已经有推荐时，下面一个不太大的「重新生成一日三餐」
 //  - PreferenceSummary：饮食偏好的摘要（是设置条件，比推荐安静）
 //  这里只负责样子；生成、换一个、打开详情都由 RecipesView 来做。
@@ -56,17 +56,9 @@ struct RecipeGoalSummary: View {
     }
 }
 
-/// 餐次的小标签：图标 + 早餐 / 午餐 / 晚餐，底色是很淡的燕麦、鼠尾草、灰褐
+/// 餐次的小标签：图标 + 早餐 / 午餐 / 晚餐，底色是这一餐很淡的分类色（奶油黄、鼠尾草、灰褐），扫一眼就分得开
 struct MealSlotTag: View {
     let slot: MealSlot
-
-    private var tint: Color {
-        switch slot {
-        case .breakfast: AppColors.tintBreakfast
-        case .lunch: AppColors.tintLunch
-        case .dinner: AppColors.tintDinner
-        }
-    }
 
     var body: some View {
         Label(slot.title, systemImage: slot.systemImage)
@@ -74,7 +66,7 @@ struct MealSlotTag: View {
             .foregroundStyle(AppColors.textPrimary)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(tint, in: RoundedRectangle(cornerRadius: AppRadius.tag, style: .continuous))
+            .background(slot.tint, in: RoundedRectangle(cornerRadius: AppRadius.tag, style: .continuous))
     }
 }
 
@@ -101,10 +93,12 @@ struct RecipeCard: View {
                 }
             }
             HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
+                // 卡片上最多两行，太长的菜名末尾省略（详情页里完整显示）
                 Text(recipe.name)
                     .font(AppTypography.recipeName)
                     .foregroundStyle(AppColors.textPrimary)
-                    .lineLimit(3)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: AppSpacing.xs)
                 AppChevron()  // 整张卡片都能点，打开做法
@@ -182,8 +176,7 @@ struct RecipeCardFooter: View {
             Button(action: onSwap) {
                 HStack(spacing: 6) {
                     if isSwapping {
-                        ProgressView()
-                            .controlSize(.small)
+                        AppLoadingIndicator()
                         Text("正在换…")
                     } else {
                         Image(systemName: "arrow.triangle.2.circlepath")
@@ -204,37 +197,37 @@ struct RecipeCardFooter: View {
     }
 }
 
-/// 还没有推荐：碗的图案 + 一句说明 + 「生成一日三餐」（这时它是这一页唯一的主按钮）
+/// 还没有推荐：空的碗 + 一句说明 + 「生成一日三餐」（这时它是这一页唯一的主按钮）。
+/// 生成中换成碗的加载动画和阶段说明（不显示假的百分比）
 struct EmptyRecipesCard: View {
     let isGenerating: Bool
     let onGenerate: () -> Void
 
     var body: some View {
-        VStack(spacing: AppSpacing.md) {
-            KindbiteMark()
-                .frame(width: 64)
-                .opacity(0.9)
-                .padding(.top, AppSpacing.xs)
-            VStack(spacing: 6) {
-                Text("还没有今日推荐")
-                    .font(AppTypography.mealTitle)
-                    .foregroundStyle(AppColors.textPrimary)
-                Text("按你的每日目标和饮食偏好，生成早餐、午餐和晚餐。")
-                    .font(AppTypography.detail)
-                    .foregroundStyle(AppColors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+        Group {
+            if isGenerating {
+                LoadingStateView(
+                    title: String(localized: "正在生成今天的食谱"),
+                    stages: [String(localized: "按你的目标搭配三餐…"), String(localized: "计算每一餐的热量和营养…")],
+                    footnote: String(localized: "通常需要 10～20 秒"))
+            } else {
+                EmptyStateView(
+                    icon: .bowl, title: String(localized: "还没有今日推荐"),
+                    message: String(localized: "按你的每日目标和饮食偏好，生成早餐、午餐和晚餐。")
+                ) {
+                    Button(action: onGenerate) {
+                        GenerateLabel(isGenerating: false, title: "生成一日三餐")
+                            .frame(maxWidth: .infinity, minHeight: 46)
+                            .background(AppColors.brand, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
+                    }
+                    .buttonStyle(AppPressStyle())
+                    .padding(.top, AppSpacing.xxs)
+                }
             }
-            Button(action: onGenerate) {
-                GenerateLabel(isGenerating: isGenerating, title: "生成一日三餐")
-                    .frame(maxWidth: .infinity, minHeight: 46)
-                    .background(AppColors.brand, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
-            }
-            .buttonStyle(AppPressStyle())
-            .disabled(isGenerating)
         }
-        .padding(.vertical, AppSpacing.sm)
+        .padding(.vertical, AppSpacing.xxs)
         .frame(maxWidth: .infinity)
+        .animation(.easeOut(duration: 0.2), value: isGenerating)
     }
 }
 
@@ -264,8 +257,7 @@ private struct GenerateLabel: View {
     var body: some View {
         HStack(spacing: AppSpacing.xs) {
             if isGenerating {
-                ProgressView()
-                    .tint(AppColors.onBrand)
+                AppLoadingIndicator(onBrand: true)
                 Text("正在生成，通常需要 10～20 秒…")
             } else {
                 Image(systemName: "sparkles")

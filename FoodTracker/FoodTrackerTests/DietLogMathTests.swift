@@ -262,7 +262,7 @@ struct EntryValidatorTests {
 
     @Test("热量（必须填）")
     func calories() {
-        #expect(EntryValidator.caloriesError(text: "") == "请输入热量（千卡）")
+        #expect(EntryValidator.caloriesError(text: "") == "请输入热量")
         for text in ["174", "0", "5000"] {
             #expect(EntryValidator.caloriesError(text: text) == nil, "\(text) 应该可以")
         }

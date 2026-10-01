@@ -6,7 +6,7 @@
 //  下面依次是主卡片（还可以吃多少）、快速记录（拍照、相册、手动）、热量提示、今日饮食。
 //  新记录（拍照识别或手动添加）都记到正在看的那一天，所以忘了记的往日也能补。
 //  拍完照（或从相册选好照片）先到「确认照片」页：可以再拍几张同一餐的照片（最多 4 张），点「开始识别」后，
-//  几张照片合并成一份结果，自动跳到结果页。手动添加不需要联网，识别次数用完了也能记。
+//  几张照片合并成一份结果，自动跳到结果页（从结果页返回会回到「确认照片」页）。手动添加不需要联网，识别次数用完了也能记。
 //
 
 import PhotosUI
@@ -29,7 +29,9 @@ struct HomeView: View {
     @State private var pickerItems: [PhotosPickerItem] = []  // 相册里选中的项目（一次最多 4 张）
     @State private var showCamera = false  // 是否打开相机
     @State private var showsPhotoReview = false  // 是否打开「确认照片」页
-    @State private var resultRoute: ResultRoute?  // 识别结果 + 记到哪一天，有值时自动跳到结果页
+    #if DEBUG && targetEnvironment(simulator)
+    @State private var debugResultRoute: ResultRoute?  // 调试菜单的示例结果：有值时直接打开结果页
+    #endif
     @State private var loadFailed = false  // 从相册读照片失败
     @State private var showNoCamera = false  // 是否提示「没有相机」
     @State private var manualEntry: ManualEntryRequest?  // 有值时打开「手动添加」：默认记到哪一餐、哪一天
@@ -67,21 +69,21 @@ struct HomeView: View {
                 .safeAreaInset(edge: .top, spacing: 0) {
                     dateHeader
                 }
-                // 拍完照或选好照片：先到「确认照片」页，可以再加几张，再一起识别
+                // 拍完照或选好照片：先到「确认照片」页，可以再加几张，再一起识别；结果页由它打开（叠在它上面）
                 .navigationDestination(isPresented: $showsPhotoReview) {
-                    PhotoReviewView(photos: $photos, dayKey: currentDayKey) { result, dayKey, analyzedPhotos in
-                        resultRoute = ResultRoute(result: result, dayKey: dayKey, photos: analyzedPhotos)
-                    }
-                }
-                // resultRoute 有值时跳到结果页（叠在「确认照片」页上面）；用户按「返回」时它会自动变回 nil
-                .navigationDestination(item: $resultRoute) { route in
-                    // 照片跟着 route 一起传过来：这里直接读 photos 的话，读到的可能是这一页上次刷新时的旧值（空的）
-                    ResultView(result: route.result, photos: route.photos, dayKey: route.dayKey, today: today) {
-                        // 保存成功：关掉结果页和「确认照片」页、清掉照片，同一餐不会不小心识别两次
-                        resultRoute = nil
+                    PhotoReviewView(photos: $photos, dayKey: currentDayKey) {
+                        // 保存成功：关掉「确认照片」页（叠在上面的结果页一起关掉）、清掉照片，同一餐不会不小心识别两次
                         showsPhotoReview = false
                     }
                 }
+                #if DEBUG && targetEnvironment(simulator)
+                // 调试菜单的示例结果：不经过「确认照片」页，直接打开结果页
+                .navigationDestination(item: $debugResultRoute) { route in
+                    ResultView(result: route.result, photos: route.photos, dayKey: route.dayKey, today: route.today) {
+                        debugResultRoute = nil
+                    }
+                }
+                #endif
                 // 离开「确认照片」页（返回、或者保存完）：照片不再需要了
                 .onChange(of: showsPhotoReview) { _, isShowing in
                     if !isShowing { photos = [] }
@@ -314,16 +316,9 @@ struct HomeView: View {
     /// 调试菜单：不识别，直接用示例结果打开结果页（记到正在看的那天）
     private func showSampleResult(_ result: AnalyzeResult) {
         refreshToday(appBecameActive: false)
-        resultRoute = ResultRoute(result: result, dayKey: DayMath.dayKey(for: selectedDay), photos: [])
+        debugResultRoute = ResultRoute(result: result, dayKey: DayMath.dayKey(for: selectedDay), photos: [], today: today)
     }
     #endif
-}
-
-/// 跳到结果页需要的东西：识别结果、这餐要记到哪一天（20260929 这样的数字），以及识别的是哪几张照片
-private struct ResultRoute: Hashable {
-    let result: AnalyzeResult
-    let dayKey: Int
-    let photos: [UIImage]
 }
 
 #Preview {

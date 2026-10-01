@@ -266,6 +266,20 @@ nonisolated enum DayMath {
         }
     }
 
+    /// 记好一条以后的轻提示：今天写「已记录到午餐」；往日写上是哪天，「已记录到 9月28日 午餐」
+    static func loggedMessage(
+        meal: MealType, dayKey: Int, today: Date, calendar: Calendar = DayMath.calendar, language: AppLanguage = .current
+    ) -> String {
+        let day = date(fromDayKey: dayKey, calendar: calendar)
+        let isToday = startOfDay(day, calendar: calendar) == startOfDay(today, calendar: calendar)
+        switch language {
+        case .zh:
+            return isToday ? "已记录到" + meal.title : "已记录到 " + shortDate(day, today: today, calendar: calendar, language: .zh) + " " + meal.title
+        case .en:
+            return isToday ? "Logged to " + meal.title : "Logged to " + meal.title + " · " + shortDate(day, today: today, calendar: calendar, language: .en)
+        }
+    }
+
     /// 查看往日时，底部提示新记录会存到哪一天：「记录到 9月28日 周一」「Logging to Mon, Sep 28」；今天不需要提示（nil）
     static func recordCaption(
         day: Date, today: Date, calendar: Calendar = DayMath.calendar, language: AppLanguage = .current

@@ -6,8 +6,11 @@
 //  1. 主卡片：还可以吃多少、碗形进度、已摄入和目标、三大营养素（右上角的 ⓘ 打开「每日目标是怎么算的」）
 //  2. 快速记录：拍照、相册、手动（由「今日」页传进来）
 //  3. 热量提示（只在看今天时有，由「今日」页传进来）
-//  4. 今日饮食：早餐、午餐、晚餐、加餐各一张卡片（见 MealCard.swift）；还没有记录的一餐点 + 直接手动添加
-//  点一条记录可以修改（包括改到别的餐、别的日期）或删除；向左滑也能删除。
+//  4. 今日饮食：早餐、午餐、晚餐、加餐各一张卡片（见 MealCard.swift）；还没有记录的一餐点 + 直接手动添加。
+//     同一餐里重复记的同一种食物合并成一行「米饭 ×2」（只是显示，数据还是一条一条的），点开能分别修改。
+//     一整天都没有记录时，不放四条空的餐，只放一个安静的空状态（快速记录就在上面）
+//  点一条记录可以修改（包括改到别的餐、别的日期）或删除；向左滑也能删除。删除后下方出现「已删除「米饭」 撤销」，
+//  几秒内点「撤销」就原样放回去（不弹「确定删除吗」）。
 //  「今日」页用它显示今天；翻看往日也用它。
 //
 
@@ -24,7 +27,9 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
 
     @Query private var entries: [FoodEntry]
     @Environment(\.modelContext) private var modelContext
+    @Environment(ToastCenter.self) private var toasts: ToastCenter?
     @State private var editingEntry: FoodEntry?  // 正在修改的记录，有值时弹出表单
+    @State private var expandedGroups: Set<PersistentIdentifier> = []  // 展开了的合并行（用这一组第一条记录的编号记）
     @State private var showsExplanation = false  // 是否打开「每日目标是怎么算的」
 
     init(
@@ -104,77 +109,190 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
         }
     }
 
-    /// 今日饮食：记过的一餐是一张完整的白卡片（标题、每一条记录、营养素）；还没记的一餐是一条更轻的半透明窄条
+    /// 今日饮食：记过的一餐是一张完整的卡片（标题、每一条记录、营养素）；还没记的一餐是最轻的一条。
+    /// 一整天都没有记录时，只放一个空状态
     @ViewBuilder
     private var mealsSection: some View {
-        let dayTotal = DietLogMath.total(of: entries.map(\.values)).caloriesKcal
-        ForEach(Array(MealType.allCases.enumerated()), id: \.element) { index, meal in
-            let mealEntries = entries(for: meal)
+        let title = isToday ? String(localized: "今日饮食") : String(localized: "这一天的饮食")
+        if entries.isEmpty {
             Section {
-                if mealEntries.isEmpty {
-                    Button {
-                        onAddToMeal(meal)
-                    } label: {
-                        EmptyMealRow(meal: meal)
-                    }
-                    .buttonStyle(AppPressStyle(scales: false))
-                    .listRowInsets(EdgeInsets(top: 8, leading: AppSpacing.cardPadding - 4, bottom: 8, trailing: AppSpacing.cardPadding - 4))
-                    // 半透明的卡片底：比记过的一餐轻很多
-                    .listRowBackground(AppColors.surfacePrimary.opacity(0.5))
-                } else {
-                    let mealTotal = DietLogMath.total(of: mealEntries.map(\.values))
-                    // 三种营养素都是 0（只填了热量）时没有最后那一行营养素，最后一条记录下面多留一点
-                    let showsMacros = mealTotal.proteinG > 0 || mealTotal.carbsG > 0 || mealTotal.fatG > 0
-                    MealCardHeader(meal: meal, kcal: mealTotal.caloriesKcal)
-                        .listRowInsets(EdgeInsets(top: 16, leading: AppSpacing.cardPadding, bottom: 4, trailing: AppSpacing.cardPadding))
-                        .listRowSeparator(.hidden)
-                        .appCardRow()
-
-                    ForEach(mealEntries) { entry in
-                        // 点一下打开修改表单
-                        Button {
-                            editingEntry = entry
-                        } label: {
-                            MealRow(entry: entry)
-                        }
-                        .buttonStyle(AppPressStyle(scales: false))
-                        // 往右缩进，和这一餐的标题文字对齐（图标 36 + 间距 12）
-                        .listRowInsets(
-                            EdgeInsets(
-                                top: 0, leading: AppSpacing.cardPadding + 48,
-                                bottom: !showsMacros && entry.id == mealEntries.last?.id ? 12 : 0,
-                                trailing: AppSpacing.cardPadding))
-                        .listRowSeparator(.hidden)
-                        .appCardRow()
-                    }
-                    // 向左滑动出现「删除」
-                    .onDelete { offsets in
-                        delete(offsets.map { mealEntries[$0] })
-                    }
-
-                    if showsMacros {
-                        MealMacroFooter(total: mealTotal)
-                            .listRowInsets(EdgeInsets(top: 2, leading: AppSpacing.cardPadding + 48, bottom: 16, trailing: AppSpacing.cardPadding))
-                            .listRowSeparator(.hidden)
-                            .appCardRow()
-                    }
-                }
+                // 快速记录就在上面，这里不再放按钮
+                EmptyStateView(
+                    icon: .bowl,
+                    title: isToday ? String(localized: "今天还没有记录") : String(localized: "这一天没有记录"),
+                    message: isToday
+                        ? String(localized: "拍一张照片，或手动添加第一餐。") : String(localized: "可以用上面的「快速记录」补记。"))
+                    .listRowBackground(Color.clear)
             } header: {
-                // 只有第一张卡片上面有块标题「今日饮食」
-                if index == 0 {
-                    AppSectionHeader(
-                        title: isToday ? String(localized: "今日饮食") : String(localized: "这一天的饮食"),
-                        trailing: entries.isEmpty ? nil : String(localized: "\(dayTotal.noDecimal) 千卡"))
+                AppSectionHeader(title: title)
+            }
+        } else {
+            let dayTotal = DietLogMath.total(of: entries.map(\.values)).caloriesKcal
+            ForEach(Array(MealType.allCases.enumerated()), id: \.element) { index, meal in
+                Section {
+                    mealCard(meal)
+                } header: {
+                    // 只有第一张卡片上面有块标题「今日饮食」
+                    if index == 0 {
+                        AppSectionHeader(title: title, trailing: String(localized: "\(dayTotal.noDecimal) 千卡"))
+                    }
                 }
             }
         }
     }
 
+    /// 一餐：没记的是最轻的一条；记过的是标题、每一行、营养素
+    @ViewBuilder
+    private func mealCard(_ meal: MealType) -> some View {
+        let mealEntries = entries(for: meal)
+        if mealEntries.isEmpty {
+            Button {
+                onAddToMeal(meal)
+            } label: {
+                EmptyMealRow(meal: meal)
+            }
+            .buttonStyle(AppPressStyle(scales: false))
+            .listRowInsets(EdgeInsets(top: 6, leading: AppSpacing.cardPadding - 4, bottom: 6, trailing: AppSpacing.cardPadding - 4))
+            // 最轻：没有底色，只有一圈很淡的边
+            .listRowBackground(
+                RoundedRectangle(cornerRadius: AppRadius.card, style: .continuous)
+                    .strokeBorder(AppColors.divider, lineWidth: 1))
+        } else {
+            let mealTotal = DietLogMath.total(of: mealEntries.map(\.values))
+            // 三种营养素都是 0（只填了热量）时没有最后那一行营养素，最后一行下面多留一点
+            let showsMacros = mealTotal.proteinG > 0 || mealTotal.carbsG > 0 || mealTotal.fatG > 0
+            let rows = rows(for: mealEntries)
+            MealCardHeader(meal: meal, kcal: mealTotal.caloriesKcal)
+                .listRowInsets(EdgeInsets(top: 16, leading: AppSpacing.cardPadding, bottom: 4, trailing: AppSpacing.cardPadding))
+                .listRowSeparator(.hidden)
+                .listRowBackground(AppColors.surfaceMeal)
+
+            ForEach(rows) { row in
+                rowView(row)
+                    // 往右缩进，和这一餐的标题文字对齐（图标 36 + 间距 12）；展开后的每一条再缩进一点
+                    .listRowInsets(
+                        EdgeInsets(
+                            top: 0, leading: AppSpacing.cardPadding + (row.isMember ? 60 : 48),
+                            bottom: !showsMacros && row.id == rows.last?.id ? 12 : 0,
+                            trailing: AppSpacing.cardPadding))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(AppColors.surfaceMeal)
+            }
+            // 向左滑动出现「删除」（合并的一行会删掉这一组的每一条，可以撤销）
+            .onDelete { offsets in
+                delete(offsets.flatMap { rows[$0].entries })
+            }
+
+            if showsMacros {
+                MealMacroFooter(total: mealTotal)
+                    .listRowInsets(EdgeInsets(top: 2, leading: AppSpacing.cardPadding + 48, bottom: 16, trailing: AppSpacing.cardPadding))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(AppColors.surfaceMeal)
+            }
+        }
+    }
+
+    /// 一餐里的每一行：同一种食物合并成一组；展开了的组下面跟着组里的每一条
+    private func rows(for mealEntries: [FoodEntry]) -> [MealListRow] {
+        var rows: [MealListRow] = []
+        for indices in FoodGrouping.groups(mealEntries.map(\.groupingItem)) {
+            let members = indices.map { mealEntries[$0] }
+            if members.count == 1 {
+                rows.append(.single(members[0]))
+            } else {
+                rows.append(.group(members))
+                if expandedGroups.contains(members[0].persistentModelID) {
+                    rows += members.map { .member($0) }
+                }
+            }
+        }
+        return rows
+    }
+
+    @ViewBuilder
+    private func rowView(_ row: MealListRow) -> some View {
+        switch row {
+        case .single(let entry):
+            // 点一下打开修改表单
+            Button {
+                editingEntry = entry
+            } label: {
+                MealRow(entry: entry)
+            }
+            .buttonStyle(AppPressStyle(scales: false))
+        case .group(let members):
+            // 点一下展开 / 收起
+            let id = members[0].persistentModelID
+            Button {
+                withAnimation(.easeOut(duration: 0.16)) {
+                    if expandedGroups.contains(id) { expandedGroups.remove(id) } else { expandedGroups.insert(id) }
+                }
+            } label: {
+                AggregatedFoodRow(
+                    name: members[0].name, count: members.count,
+                    totalKcal: DietLogMath.total(of: members.map(\.values)).caloriesKcal,
+                    isExpanded: expandedGroups.contains(id))
+            }
+            .buttonStyle(AppPressStyle(scales: false))
+        case .member(let entry):
+            Button {
+                editingEntry = entry
+            } label: {
+                MealMemberRow(entry: entry)
+            }
+            .buttonStyle(AppPressStyle(scales: false))
+        }
+    }
+
+    /// 删除：马上删掉，下方出现「已删除「米饭」 撤销」，几秒内点「撤销」就原样放回去
     private func delete(_ list: [FoodEntry]) {
+        guard let first = list.first else { return }
+        let snapshots = list.map { FoodEntrySnapshot($0) }
+        let message =
+            list.count == 1 ? String(localized: "已删除「\(first.name)」") : String(localized: "已删除 \(list.count) 项「\(first.name)」")
         for entry in list {
             modelContext.delete(entry)
         }
         try? modelContext.save()
+        toasts?.deleted(message) { [modelContext] in
+            for snapshot in snapshots {
+                snapshot.restore(into: modelContext)
+            }
+            try? modelContext.save()
+        }
+    }
+}
+
+/// 「今日饮食」一餐里的一行
+private enum MealListRow: Identifiable {
+    case single(FoodEntry)  // 只记了一次的食物
+    case group([FoodEntry])  // 合并的一行「米饭 ×2」
+    case member(FoodEntry)  // 合并的一行展开后的每一条
+
+    enum ID: Hashable {
+        case single(PersistentIdentifier)
+        case group(PersistentIdentifier)
+        case member(PersistentIdentifier)
+    }
+
+    var id: ID {
+        switch self {
+        case .single(let entry): .single(entry.persistentModelID)
+        case .group(let members): .group(members[0].persistentModelID)
+        case .member(let entry): .member(entry.persistentModelID)
+        }
+    }
+
+    /// 左滑删除这一行时要删的记录
+    var entries: [FoodEntry] {
+        switch self {
+        case .single(let entry), .member(let entry): [entry]
+        case .group(let members): members
+        }
+    }
+
+    var isMember: Bool {
+        if case .member = self { true } else { false }
     }
 }
 

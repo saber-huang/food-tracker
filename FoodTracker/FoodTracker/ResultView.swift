@@ -5,7 +5,9 @@
 //  识别结果（保存前的确认页）：从上到下是这一餐的照片（1～4 张）和 AI 的一句话总结、识别到的每种食物
 //  （点一项可以修改份量和数字，向左滑可以删掉，也能补一项 AI 没认出来的）、整餐合计（旁边是「AI 估算 ⓘ」）、
 //  记到哪一天哪一餐；最下面固定着「保存这餐」。识别后不会自动保存，一定要用户点了才存。
-//  AI 没把握的份量写「份量不确定」，不假装很准。照片不保存，只保存食物和营养数据。
+//  不显示 AI 内部的把握程度；只有份量需要确认的那一项写「份量不确定 · 调整份量」，点一下就能改。
+//  没认出食物时不给出任何热量：写「没有识别到足够清晰的食物」和几条拍照建议，可以「重新拍摄」或「手动添加」。
+//  保存后回到「今日」，下方轻提示「已记录 3 项食物」。照片不保存，只保存食物和营养数据。
 //
 
 import SwiftData
@@ -23,6 +25,10 @@ struct ResultView: View {
     private var day: Date { DayMath.date(fromDayKey: dayKey) }
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+    @Environment(ToastCenter.self) private var toasts: ToastCenter?
+    // 最近的记录：「添加一项」时给「最近使用」用
+    @Query(FoodEntry.recentDescriptor) private var recentEntries: [FoodEntry]
     @State private var items: [EditableItem]  // 识别到的食物，用户可以改、删、加
     @State private var meal: MealType  // 记到哪一餐
     @State private var editingItem: EditableItem?  // 正在修改的一项，有值时弹出表单
@@ -48,7 +54,8 @@ struct ResultView: View {
         List {
             Group {
                 // 照片（小图）和 AI 的一句话总结：下面的食物列表不用往下翻就看得到。
-                // 一张照片时并排；几张照片时先一排缩略图，下面是总结
+                // 一张照片时并排；几张照片时先一排缩略图，下面是总结。没认出食物时这句话放进下面的说明里
+                if showsList {
                 Section {
                     if photos.count > 1 {
                         VStack(alignment: .leading, spacing: AppSpacing.sm) {
@@ -68,6 +75,7 @@ struct ResultView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
+                }
                 }
 
                 if showsList {
@@ -117,16 +125,11 @@ struct ResultView: View {
                             }
                         }
                         .pickerStyle(.segmented)  // 四个餐次一看就懂，不另写标题；旁白会读出「记到哪一餐」
+                        .sensoryFeedback(.selection, trigger: meal)
                     }
                 } else {
                     Section {
-                        ContentUnavailableView(
-                            "没有识别到食物",
-                            systemImage: "questionmark.circle",
-                            description: Text("可以返回换一张照片，也可以手动添加。")
-                        )
-                        // 手动加的一项会进入上面的列表，之后就和识别到食物一样：可以再改、再加，最后一起保存
-                        Button("改为手动添加") { isAddingItem = true }
+                        notFoodState
                     }
                 }
             }
@@ -169,12 +172,68 @@ struct ResultView: View {
                     items.removeAll { $0.id == item.id }
                 })
         }
-        // 补一项 AI 没认出来的食物
+        // 补一项 AI 没认出来的食物（「最近使用」里点一下就能填好）
         .sheet(isPresented: $isAddingItem) {
-            EntryEditView(draft: EntryDraft(meal: meal, dayKey: dayKey), title: String(localized: "添加食物")) { item in
+            EntryEditView(
+                draft: EntryDraft(meal: meal, dayKey: dayKey), title: String(localized: "添加食物"),
+                suggestions: RecentFoods.from(recentEntries.map(\.recentFood))
+            ) { item in
                 items.append(item)
             }
         }
+    }
+
+    /// 没认出食物：不给出任何热量。写清楚怎么拍更容易认出来，可以回去重新拍，也可以手动添加
+    private var notFoodState: some View {
+        VStack(spacing: AppSpacing.md) {
+            EmptyStateView(
+                icon: .symbol("camera.viewfinder"), title: String(localized: "没有识别到足够清晰的食物"),
+                message: result.message.isEmpty ? nil : result.message)
+            VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                ForEach(
+                    [String(localized: "换个角度再拍一张"), String(localized: "靠近食物一些"), String(localized: "确保主要食物没有被遮挡")],
+                    id: \.self
+                ) { tip in
+                    HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
+                        Circle()
+                            .fill(AppColors.oatRim)
+                            .frame(width: 5, height: 5)
+                            .alignmentGuide(.firstTextBaseline) { d in d[.bottom] + 4 }
+                            .accessibilityHidden(true)
+                        Text(tip)
+                            .font(AppTypography.detail)
+                            .foregroundStyle(AppColors.textSecondary)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, AppSpacing.md)
+            HStack(spacing: AppSpacing.sm) {
+                // 回到「确认照片」页：照片都还在，可以重拍、补拍
+                Button {
+                    dismiss()
+                } label: {
+                    Label("重新拍摄", systemImage: "camera")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(AppColors.onBrand)
+                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .background(AppColors.brand, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
+                }
+                .buttonStyle(AppPressStyle())
+                // 手动加的一项会进入列表，之后就和识别到食物一样：可以再改、再加，最后一起保存
+                Button {
+                    isAddingItem = true
+                } label: {
+                    Text("手动添加")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(AppColors.brand)
+                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .background(AppColors.brandSoft, in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
+                }
+                .buttonStyle(AppPressStyle())
+            }
+        }
+        .padding(.vertical, AppSpacing.xs)
     }
 
     /// 照片缩略图（就是刚才拍的或选的照片，旁白不用读）
@@ -194,11 +253,14 @@ struct ResultView: View {
         // 每一项自己记的餐次和日期在这页用不上：以这页选的餐次、打开时定好的日期为准
         FoodEntry.insert(items, meal: meal, dayKey: dayKey, source: .photo, into: modelContext)
         try? modelContext.save()
+        // 回到「今日」页，下方轻提示一下，同时轻轻震一下（不弹「保存成功」的大框）
+        toasts?.success(String(localized: "已记录 \(items.count) 项食物"))
         onSaved()
     }
 }
 
-/// 一种食物占一行：名称、可信度、热量、份量、三大营养素；右边的小箭头表示点了可以修改
+/// 一种食物占一行：名称、热量、份量、三大营养素；右边的小箭头表示点了可以修改。
+/// 不显示 AI 的把握程度；只有份量需要确认时写「份量不确定 · 调整份量」
 private struct FoodRow: View {
     let item: EditableItem
 
@@ -212,19 +274,19 @@ private struct FoodRow: View {
 
     private var details: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack {
+            HStack(alignment: .firstTextBaseline) {
                 Text(item.name)
                     .font(.headline)
-                ConfidenceBadge(confidence: item.confidence)
-                Spacer()
+                    .lineLimit(2)
+                Spacer(minLength: AppSpacing.xs)
                 Text("\(item.values.caloriesKcal.noDecimal) 千卡")
                     .font(.headline)
+                    .monospacedDigit()
+                    .fixedSize()
             }
-            // AI 没把握（可信度低）时不假装准确：写「份量不确定」，点这一行就能调整
+            // AI 没把握的份量不假装准确：写「份量不确定」，点这一行就能调整
             if item.confidence == .low {
-                Text("份量不确定 · 点按调整")
-                    .font(.subheadline)
-                    .foregroundStyle(AppColors.confidenceLow)
+                LowConfidenceBadge()
             } else if let weight = item.weightG {
                 // 不知道重量的一项不显示这一行
                 Text("约 \(weight.oneDecimal) 克")
@@ -246,26 +308,21 @@ private struct FoodRow: View {
     }
 }
 
-/// 可信度小标签：高是绿色，中是琥珀色，低是砖红色；用户改过或自己添加的显示灰色的「已修改」
-private struct ConfidenceBadge: View {
-    let confidence: Confidence?
-
-    private var color: Color {
-        switch confidence {
-        case .high: AppColors.confidenceHigh
-        case .medium: AppColors.confidenceMedium
-        case .low: AppColors.confidenceLow
-        case nil: .secondary
-        }
-    }
-
+/// 份量需要确认的那一项：「⚠︎ 份量不确定 · 调整份量」（整行都能点，点了打开修改）
+private struct LowConfidenceBadge: View {
     var body: some View {
-        Text(confidence?.label ?? String(localized: "已修改"))
-            .font(.caption2.bold())
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .foregroundStyle(color)
-            .background(color.opacity(AppColors.badgeOpacity), in: Capsule())
+        HStack(spacing: AppSpacing.xxs) {
+            Image(systemName: "exclamationmark.circle")
+                .accessibilityHidden(true)
+            Text("份量不确定")
+            Text(verbatim: "·")
+                .accessibilityHidden(true)
+            Text("调整份量")
+                .fontWeight(.semibold)
+        }
+        .font(.subheadline)
+        .foregroundStyle(AppColors.confidenceLow)
+        .accessibilityElement(children: .combine)
     }
 }
 

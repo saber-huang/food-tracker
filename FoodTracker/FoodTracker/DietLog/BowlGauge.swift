@@ -127,6 +127,37 @@ struct BowlGauge: View {
     }
 }
 
+/// 加载中的碗：碗里的东西慢慢装上去、再落下来（一个来回 2.4 秒），代替系统的转圈。
+/// 整个 App 的加载（识别照片、生成食谱、换一个）都用它，见 StateViews.swift。
+/// 系统设置了「减弱动态效果」时不动，停在半碗。颜色可以换：放在橄榄绿按钮上时用暖白
+struct BowlLoadingMark: View {
+    var emptyColor = AppColors.oatEmpty
+    var fillColor = AppColors.oatBowl
+    var rimColor = AppColors.oatRim
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        TimelineView(.animation(paused: reduceMotion)) { context in
+            let box = BowlGeometry.gaugeBox
+            ZStack {
+                BowlPart(path: BowlGeometry.body, box: box).fill(emptyColor)
+                BowlContents(fraction: reduceMotion ? 0.5 : Self.fraction(at: context.date), box: box).fill(fillColor)
+                BowlPart(path: BowlGeometry.rim, box: box).fill(rimColor)
+            }
+            .aspectRatio(box.width / box.height, contentMode: .fit)
+        }
+        .accessibilityHidden(true)
+    }
+
+    /// 某一时刻碗里装了几成：在 0.12 和 0.88 之间平滑地来回（不是假的进度，只是表示「正在做」）
+    static func fraction(at date: Date) -> Double {
+        let period = 2.4
+        let phase = date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: period) / period
+        return 0.5 - 0.38 * cos(phase * 2 * .pi)
+    }
+}
+
 /// 完整的图标图案：笑脸 + 满满一碗（和 App 图标一样，没有背景）
 struct KindbiteMark: View {
     var body: some View {
@@ -147,6 +178,7 @@ struct KindbiteMark: View {
             BowlGauge(fraction: fraction).frame(width: 120)
         }
         KindbiteMark().frame(width: 120)
+        BowlLoadingMark().frame(width: 120)
     }
     .padding()
 }

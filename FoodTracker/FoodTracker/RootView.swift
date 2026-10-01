@@ -70,6 +70,7 @@ struct MainTabView: View {
         return .today
     }()
     @State private var tabBar = TabBarVisibility()
+    @State private var toasts = ToastCenter()  // 轻提示（「已记录到午餐」「已删除 撤销」），所有页面共用一个
 
     var body: some View {
         VStack(spacing: 0) {
@@ -87,12 +88,15 @@ struct MainTabView: View {
                     .toolbar(.hidden, for: .tabBar)
             }
             .environment(tabBar)
+            // 轻提示显示在页面内容的最下面：标签栏在时就在它上面一点，不会被挡住
+            .toastHost(toasts)
             if !tabBar.isHidden {
                 FloatingTabBar(selection: $selection)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .animation(.easeOut(duration: 0.2), value: tabBar.isHidden)
+        .environment(toasts)
         .background { AppBackground(glow: false) }
         // 一进主界面就悄悄叫醒云端服务器（免费服务器闲置会休眠），用户点识别时就不用等
         .task { await APIClient.warmUp() }

@@ -39,17 +39,9 @@ nonisolated struct MealTotal: Codable, Hashable {
 }
 
 /// 识别可信度：后端只会返回 high、medium、low 三种
+/// AI 对一项的把握程度。界面上不直接显示（不展示内部的把握程度），只在 low 时提示「份量不确定」
 nonisolated enum Confidence: String, Codable, Hashable {
     case high, medium, low
-
-    /// 显示在界面上的文字
-    var label: String {
-        switch self {
-        case .high: String(localized: "把握高")
-        case .medium: String(localized: "把握中")
-        case .low: String(localized: "请核对")
-        }
-    }
 }
 
 extension Double {

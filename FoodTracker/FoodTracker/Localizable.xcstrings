@@ -177,6 +177,50 @@
         }
       }
     },
+    "%@，%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@，%@"
+          }
+        }
+      }
+    },
+    "%@，%lld 份，共 %@ 千卡" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@, %2$lld serving, %3$@ kcal total"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@, %2$lld servings, %3$@ kcal total"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@，%lld 份，共 %@ 千卡"
+          }
+        }
+      }
+    },
     "%@，还没有记录" : {
       "localizations" : {
         "en" : {
@@ -317,6 +361,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "/ %@ 克"
+          }
+        }
+      }
+    },
+    "1 份" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 serving"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 份"
           }
         }
       }
@@ -777,6 +837,22 @@
         }
       }
     },
+    "今天还没有记录" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing logged today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还没有记录"
+          }
+        }
+      }
+    },
     "今日" : {
       "localizations" : {
         "en" : {
@@ -857,18 +933,18 @@
         }
       }
     },
-    "份量不确定 · 点按调整" : {
+    "份量不确定" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Portion uncertain · Tap to adjust"
+            "value" : "Portion uncertain"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "份量不确定 · 点按调整"
+            "value" : "份量不确定"
           }
         }
       }
@@ -901,6 +977,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "份量需要在 0～5000 克之间"
+          }
+        }
+      }
+    },
+    "份量（生重）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount (raw)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "份量（生重）"
           }
         }
       }
@@ -1305,6 +1397,22 @@
         }
       }
     },
+    "修改这一条" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edits this entry"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改这一条"
+          }
+        }
+      }
+    },
     "修改食物" : {
       "localizations" : {
         "en" : {
@@ -1573,6 +1681,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "关于 AI 数据处理"
+          }
+        }
+      }
+    },
+    "关闭" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
           }
         }
       }
@@ -2057,6 +2181,22 @@
         }
       }
     },
+    "可以用上面的「快速记录」补记。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Quick Log above to add it."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可以用上面的「快速记录」补记。"
+          }
+        }
+      }
+    },
     "可以补拍不同角度，或同一餐中的其他食物。" : {
       "localizations" : {
         "en" : {
@@ -2069,22 +2209,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "可以补拍不同角度，或同一餐中的其他食物。"
-          }
-        }
-      }
-    },
-    "可以返回换一张照片，也可以手动添加。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Go back to try another photo, or add it manually."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "可以返回换一张照片，也可以手动添加。"
           }
         }
       }
@@ -2133,22 +2257,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "名称最多 %lld 个字"
-          }
-        }
-      }
-    },
-    "后端返回的数据格式不对，请稍后再试。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The server sent an unexpected response. Please try again later."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "后端返回的数据格式不对，请稍后再试。"
           }
         }
       }
@@ -2245,6 +2353,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "基础代谢是身体一整天躺着不动，维持心跳、呼吸和体温也要消耗的热量。我们用营养学界常用的 Mifflin-St Jeor 公式估算："
+          }
+        }
+      }
+    },
+    "填入名称和上次的 %@ 千卡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fills in the name and last time's %@ kcal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "填入名称和上次的 %@ 千卡"
           }
         }
       }
@@ -2425,6 +2549,22 @@
         }
       }
     },
+    "展开查看每一条" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows each entry"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展开查看每一条"
+          }
+        }
+      }
+    },
     "岁" : {
       "localizations" : {
         "en" : {
@@ -2441,18 +2581,46 @@
         }
       }
     },
-    "已修改" : {
+    "已删除 %lld 项「%@」" : {
       "localizations" : {
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edited"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Deleted %1$lld entry of “%2$@”"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Deleted %1$lld entries of “%2$@”"
+                }
+              }
+            }
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已修改"
+            "value" : "已删除 %lld 项「%@」"
+          }
+        }
+      }
+    },
+    "已删除「%@」" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted “%@”"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已删除「%@」"
           }
         }
       }
@@ -2485,6 +2653,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已摄入"
+          }
+        }
+      }
+    },
+    "已记录" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logged"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已记录"
+          }
+        }
+      }
+    },
+    "已记录 %lld 项食物" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Logged %lld item"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Logged %lld items"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已记录 %lld 项食物"
           }
         }
       }
@@ -2809,18 +3021,18 @@
         }
       }
     },
-    "手机没有联网，请检查网络设置。" : {
+    "手机没有联网。检查网络后再试一次。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your phone is offline. Please check your network settings."
+            "value" : "You're offline. Check your connection and try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "手机没有联网，请检查网络设置。"
+            "value" : "手机没有联网。检查网络后再试一次。"
           }
         }
       }
@@ -2841,34 +3053,18 @@
         }
       }
     },
-    "把握中" : {
+    "拍一张照片，或手动添加第一餐。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Likely"
+            "value" : "Snap a photo, or add your first meal manually."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "把握中"
-          }
-        }
-      }
-    },
-    "把握高" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confident"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "把握高"
+            "value" : "拍一张照片，或手动添加第一餐。"
           }
         }
       }
@@ -2969,6 +3165,22 @@
         }
       }
     },
+    "按你的目标搭配三餐…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planning three meals for your goal…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按你的目标搭配三餐…"
+          }
+        }
+      }
+    },
     "按大多数星期的实际情况选；2～3 周后再根据体重变化调整。" : {
       "localizations" : {
         "en" : {
@@ -2985,22 +3197,6 @@
         }
       }
     },
-    "按生重" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Raw weight"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按生重"
-          }
-        }
-      }
-    },
     "换一个" : {
       "localizations" : {
         "en" : {
@@ -3013,6 +3209,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "换一个"
+          }
+        }
+      }
+    },
+    "换个角度再拍一张" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try another angle"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "换个角度再拍一张"
+          }
+        }
+      }
+    },
+    "撤销" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "撤销"
+          }
+        }
+      }
+    },
+    "收起" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hides the entries"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收起"
           }
         }
       }
@@ -3049,22 +3293,6 @@
         }
       }
     },
-    "改为手动添加" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Manually Instead"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "改为手动添加"
-          }
-        }
-      }
-    },
     "整餐合计" : {
       "localizations" : {
         "en" : {
@@ -3093,6 +3321,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无"
+          }
+        }
+      }
+    },
+    "无法完成识别" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Analyze"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法完成识别"
           }
         }
       }
@@ -3177,18 +3421,18 @@
         }
       }
     },
-    "更多营养信息" : {
+    "更多营养信息（可选）" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "More Nutrition Details"
+            "value" : "More Nutrition (Optional)"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更多营养信息"
+            "value" : "更多营养信息（可选）"
           }
         }
       }
@@ -3205,6 +3449,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最近两周每天插入示例记录"
+          }
+        }
+      }
+    },
+    "最近使用" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近使用"
+          }
+        }
+      }
+    },
+    "有照片处理不了，请换一张试试。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One of the photos couldn't be processed. Try a different one."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有照片处理不了，请换一张试试。"
           }
         }
       }
@@ -3257,50 +3533,50 @@
         }
       }
     },
-    "服务器出错（错误码 %lld），请稍后再试。" : {
+    "服务器出了点问题，请稍后再试。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Server error (%lld). Please try again later."
+            "value" : "Something went wrong on the server. Please try again later."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "服务器出错（错误码 %lld），请稍后再试。"
+            "value" : "服务器出了点问题，请稍后再试。"
           }
         }
       }
     },
-    "服务器正在启动，请稍等 1 分钟再试。" : {
+    "服务器暂时没有响应，可能正在唤醒。稍等一分钟再试一次。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The server is starting up. Please try again in a minute."
+            "value" : "The server isn't responding yet and may be waking up. Wait a minute and try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "服务器正在启动，请稍等 1 分钟再试。"
+            "value" : "服务器暂时没有响应，可能正在唤醒。稍等一分钟再试一次。"
           }
         }
       }
     },
-    "服务器没有及时响应。免费服务器闲置后会休眠，唤醒大约需要 1 分钟，请稍等一下再试。" : {
+    "服务器正在启动。稍等一分钟再试一次。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The server didn't respond in time. It sleeps when idle and takes about a minute to wake up, so please try again shortly."
+            "value" : "The server is starting up. Wait a minute and try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "服务器没有及时响应。免费服务器闲置后会休眠，唤醒大约需要 1 分钟，请稍等一下再试。"
+            "value" : "服务器正在启动。稍等一分钟再试一次。"
           }
         }
       }
@@ -3465,6 +3741,66 @@
         }
       }
     },
+    "正在估算份量和营养…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimating portions and nutrition…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在估算份量和营养…"
+          }
+        }
+      }
+    },
+    "正在分析 %lld 张照片" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Analyzing %lld photo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Analyzing %lld photos"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在分析 %lld 张照片"
+          }
+        }
+      }
+    },
+    "正在分析这顿饭…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyzing your meal…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在分析这顿饭…"
+          }
+        }
+      }
+    },
     "正在删除…" : {
       "localizations" : {
         "en" : {
@@ -3477,6 +3813,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在删除…"
+          }
+        }
+      }
+    },
+    "正在合并不同角度…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combining the different angles…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在合并不同角度…"
           }
         }
       }
@@ -3497,6 +3849,22 @@
         }
       }
     },
+    "正在生成今天的食谱" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creating today's recipes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在生成今天的食谱"
+          }
+        }
+      }
+    },
     "正在生成，通常需要 10～20 秒…" : {
       "localizations" : {
         "en" : {
@@ -3513,18 +3881,18 @@
         }
       }
     },
-    "正在识别…" : {
+    "正在识别食物…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Analyzing…"
+            "value" : "Identifying foods…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在识别…"
+            "value" : "正在识别食物…"
           }
         }
       }
@@ -3721,18 +4089,50 @@
         }
       }
     },
-    "没有识别到食物" : {
+    "没有换成功" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No Food Found"
+            "value" : "Couldn't Swap"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "没有识别到食物"
+            "value" : "没有换成功"
+          }
+        }
+      }
+    },
+    "没有生成成功" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Create Recipes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有生成成功"
+          }
+        }
+      }
+    },
+    "没有识别到足够清晰的食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Clear Food Found"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有识别到足够清晰的食物"
           }
         }
       }
@@ -3881,22 +4281,6 @@
         }
       }
     },
-    "照片处理失败，请换一张试试。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't process this photo. Please try another one."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "照片处理失败，请换一张试试。"
-          }
-        }
-      }
-    },
     "版本" : {
       "localizations" : {
         "en" : {
@@ -3941,22 +4325,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "生成一日三餐"
-          }
-        }
-      }
-    },
-    "生成失败" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't Generate"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "生成失败"
           }
         }
       }
@@ -4117,6 +4485,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "知道了"
+          }
+        }
+      }
+    },
+    "确保主要食物没有被遮挡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make sure the main foods aren't covered"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确保主要食物没有被遮挡"
           }
         }
       }
@@ -4313,18 +4697,18 @@
         }
       }
     },
-    "等待超时，请检查网络后重试。" : {
+    "等待超时。检查网络后再试一次。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The request timed out. Please check your network and try again."
+            "value" : "The request timed out. Check your connection and try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "等待超时，请检查网络后重试。"
+            "value" : "等待超时。检查网络后再试一次。"
           }
         }
       }
@@ -4729,6 +5113,22 @@
         }
       }
     },
+    "计算每一餐的热量和营养…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Working out calories and nutrition for each meal…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "计算每一餐的热量和营养…"
+          }
+        }
+      }
+    },
     "记到哪一餐" : {
       "localizations" : {
         "en" : {
@@ -4869,22 +5269,6 @@
         }
       }
     },
-    "识别失败" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't Analyze Photo"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "识别失败"
-          }
-        }
-      }
-    },
     "识别结果" : {
       "localizations" : {
         "en" : {
@@ -4913,22 +5297,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请先了解"
-          }
-        }
-      }
-    },
-    "请核对" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please Check"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请核对"
           }
         }
       }
@@ -5061,22 +5429,6 @@
         }
       }
     },
-    "请输入名称" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a name"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请输入名称"
-          }
-        }
-      }
-    },
     "请输入年龄（整数）" : {
       "localizations" : {
         "en" : {
@@ -5109,18 +5461,18 @@
         }
       }
     },
-    "请输入热量（千卡）" : {
+    "请输入热量" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter calories (kcal)"
+            "value" : "Enter the calories"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请输入热量（千卡）"
+            "value" : "请输入热量"
           }
         }
       }
@@ -5157,6 +5509,22 @@
         }
       }
     },
+    "请输入食物名称" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a food name"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入食物名称"
+          }
+        }
+      }
+    },
     "读取照片失败" : {
       "localizations" : {
         "en" : {
@@ -5185,6 +5553,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "读取照片失败，请换一张试试。"
+          }
+        }
+      }
+    },
+    "调整份量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust portion"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调整份量"
           }
         }
       }
@@ -5445,6 +5829,22 @@
         }
       }
     },
+    "还有必填项没有填" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some required fields are empty"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还有必填项没有填"
+          }
+        }
+      }
+    },
     "还没有今日推荐" : {
       "localizations" : {
         "en" : {
@@ -5473,6 +5873,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "还没有记录"
+          }
+        }
+      }
+    },
+    "这一天没有记录" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing logged this day"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这一天没有记录"
           }
         }
       }
@@ -5589,34 +6005,50 @@
         }
       }
     },
-    "连不上后端服务（错误码 %lld）。请确认电脑上的后端正在运行。" : {
+    "这次没有拿到有效的结果，请再试一次。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Couldn't reach the backend (error %lld). Make sure the backend is running on your computer."
+            "value" : "Didn't get a valid result this time. Please try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "连不上后端服务（错误码 %lld）。请确认电脑上的后端正在运行。"
+            "value" : "这次没有拿到有效的结果，请再试一次。"
           }
         }
       }
     },
-    "连不上服务器（错误码 %lld）。请检查手机网络，或稍等 1 分钟再试。" : {
+    "连不上服务器。检查网络，或稍等一分钟再试一次。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Couldn't reach the server (error %lld). Check your connection or try again in a minute."
+            "value" : "Can't reach the server. Check your connection, or wait a minute and try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "连不上服务器（错误码 %lld）。请检查手机网络，或稍等 1 分钟再试。"
+            "value" : "连不上服务器。检查网络，或稍等一分钟再试一次。"
+          }
+        }
+      }
+    },
+    "连不上电脑上的后端，请确认它正在运行。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Can't reach the backend on your computer. Make sure it's running."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连不上电脑上的后端，请确认它正在运行。"
           }
         }
       }
@@ -5749,6 +6181,22 @@
         }
       }
     },
+    "重新拍摄" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retake Photos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新拍摄"
+          }
+        }
+      }
+    },
     "重新推荐这一餐" : {
       "localizations" : {
         "en" : {
@@ -5873,6 +6321,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "非常高"
+          }
+        }
+      }
+    },
+    "靠近食物一些" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move a little closer"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "靠近食物一些"
           }
         }
       }

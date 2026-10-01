@@ -3,12 +3,13 @@
 //  FoodTracker
 //
 //  「今日饮食」里的每一餐（早餐、午餐、晚餐、加餐）：
-//  - 记过的一餐是一张完整的白卡片：
-//    MealCardHeader（餐次图标、早餐 / 午餐…、这一餐的千卡）
+//  - 记过的一餐是一张完整的卡片（底色比「快速记录」轻一档）：
+//    MealCardHeader（餐次图标，图标底色是这一餐很淡的分类色；早餐 / 午餐…；这一餐的千卡）
 //    MealRow（一条记录一行：名称，右边是千卡和小箭头；点一下修改，左滑删除）
+//    AggregatedFoodRow（同一种食物记了几次时合并成一行「米饭 ×2」，点一下展开）+ MealMemberRow（展开后的每一条）
 //    MealMacroFooter（最下面一行：这一餐的蛋白质、碳水、脂肪）
-//  - 还没记的一餐是一条更轻的半透明窄条 EmptyMealRow：「早餐 还没有记录」，右边一个 +，点了直接给这一餐手动添加
-//  扫一眼就能看出哪一餐还需要记。层级靠字号、颜色和缩进，不靠很多分隔线。
+//  - 还没记的一餐最轻：没有底色、只有一圈很淡的边，EmptyMealRow「早餐 还没有记录」，右边一个 +，点了直接给这一餐手动添加
+//  不读字也能一眼看出哪一餐吃了、哪一餐还没吃。层级靠底色、字号、颜色和缩进，不靠阴影和分隔线。
 //
 
 import SwiftUI
@@ -20,7 +21,7 @@ struct MealCardHeader: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: AppSpacing.sm) {
-            AppIconTile(systemImage: meal.systemImage)
+            AppIconTile(systemImage: meal.systemImage, tint: meal.tint)
             Text(meal.title)
                 .font(AppTypography.mealTitle)
                 .foregroundStyle(AppColors.textPrimary)
@@ -70,6 +71,76 @@ struct MealRow: View {
     }
 }
 
+/// 同一种食物记了几次（名字一样、份量和热量差不多）：合并成一行「米饭 ×2」，右边是合计的千卡。
+/// 点一下展开，下面列出每一条（可以分别修改、删除）；再点一下收起
+struct AggregatedFoodRow: View {
+    let name: String
+    let count: Int
+    let totalKcal: Double
+    let isExpanded: Bool
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
+            HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xxs) {
+                Text(name)
+                    .font(AppTypography.itemName)
+                    .foregroundStyle(AppColors.textPrimary)
+                    .lineLimit(2)
+                Text(verbatim: "×\(count)")
+                    .font(AppTypography.numberSmall)
+                    .foregroundStyle(AppColors.textSecondary)
+            }
+            Spacer(minLength: AppSpacing.xs)
+            Text("\(totalKcal.noDecimal) 千卡")
+                .font(AppTypography.numberSmall)
+                .foregroundStyle(AppColors.textSecondary)
+                .fixedSize()
+            Image(systemName: "chevron.down")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(AppColors.textTertiary)
+                .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                .accessibilityHidden(true)
+        }
+        .frame(minHeight: 44)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(String(localized: "\(name)，\(count) 份，共 \(totalKcal.noDecimal) 千卡"))
+        .accessibilityHint(isExpanded ? String(localized: "收起") : String(localized: "展开查看每一条"))
+    }
+}
+
+/// 合并的那一行展开后的每一条：份量和千卡（名字和上面一样，不重复写），点一下修改
+struct MealMemberRow: View {
+    let entry: FoodEntry
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
+            Text(detail)
+                .font(AppTypography.detail)
+                .foregroundStyle(AppColors.textSecondary)
+            Spacer(minLength: AppSpacing.xs)
+            Text("\(entry.caloriesKcal.noDecimal) 千卡")
+                .font(AppTypography.numberSmall)
+                .foregroundStyle(AppColors.textSecondary)
+                .fixedSize()
+            AppChevron()
+        }
+        .frame(minHeight: 44)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(String(localized: "\(entry.name)，\(detail)"))
+        .accessibilityHint("修改这一条")
+    }
+
+    /// 「约 150 克 · 来自食谱」；什么都没有时写「1 份」
+    private var detail: String {
+        var parts: [String] = []
+        if let weight = entry.weightG { parts.append(String(localized: "约 \(weight.oneDecimal) 克")) }
+        if entry.source == .recipe { parts.append(String(localized: "来自食谱")) }
+        return parts.isEmpty ? String(localized: "1 份") : parts.joined(separator: " · ")
+    }
+}
+
 /// 记过的一餐的最后一行：这一餐的三大营养素（三种都是 0，也就是只填了热量时，DayLogView 不放这一行）
 struct MealMacroFooter: View {
     let total: NutrientValues
@@ -83,7 +154,7 @@ struct MealMacroFooter: View {
     }
 }
 
-/// 还没记的一餐：一条窄窄的半透明条，「早餐  还没有记录」，右边一个 +（点整条都可以）
+/// 还没记的一餐：最轻的一条（没有底色，只有一圈很淡的边，见 DayLogView），「早餐  还没有记录」，右边一个 +（点整条都可以）
 struct EmptyMealRow: View {
     let meal: MealType
 
@@ -91,19 +162,24 @@ struct EmptyMealRow: View {
         HStack(alignment: .center, spacing: AppSpacing.sm) {
             Image(systemName: meal.systemImage)
                 .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(AppColors.iconSecondary)
+                .foregroundStyle(AppColors.textTertiary)
                 .frame(width: 28, height: 28)
                 .accessibilityHidden(true)
             HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
                 Text(meal.title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(AppColors.textPrimary)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(AppColors.textSecondary)
                 Text("还没有记录")
                     .font(AppTypography.detail)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.textTertiary)
             }
             Spacer(minLength: AppSpacing.xs)
-            AppIconTile(systemImage: "plus", size: 30, tint: AppColors.brandSoft, iconColor: AppColors.brand)
+            Image(systemName: "plus")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(AppColors.brand)
+                .frame(width: 30, height: 30)
+                .overlay(Circle().strokeBorder(AppColors.brand.opacity(0.35), lineWidth: 1))
+                .accessibilityHidden(true)
         }
         .frame(minHeight: 44)
         .contentShape(Rectangle())

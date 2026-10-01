@@ -6,8 +6,13 @@
 //
 
 import Foundation
+import OSLog
 
-/// 调用后端时可能出现的错误。errorDescription 是显示给用户的说明。
+/// 网络请求的日志：错误码、HTTP 状态这类技术细节只写在这里（Xcode 的控制台能看到），不显示给用户
+private let networkLog = Logger(subsystem: "com.huangshengkai.FoodTracker", category: "network")
+
+/// 调用后端时可能出现的错误。errorDescription 是显示给用户的一句话：说清楚发生了什么、下一步怎么做，
+/// 不出现错误码、HTTP、JSON 这类词
 enum APIError: LocalizedError {
     case offline  // 手机没联网
     case timeout  // 等太久没有回应
@@ -18,19 +23,19 @@ enum APIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .offline:
-            String(localized: "手机没有联网，请检查网络设置。")
+            String(localized: "手机没有联网。检查网络后再试一次。")
         case .timeout:
             AppConfig.isCloud
-                ? String(localized: "服务器没有及时响应。免费服务器闲置后会休眠，唤醒大约需要 1 分钟，请稍等一下再试。")
-                : String(localized: "等待超时，请检查网络后重试。")
-        case .cannotConnect(let code):
+                ? String(localized: "服务器暂时没有响应，可能正在唤醒。稍等一分钟再试一次。")
+                : String(localized: "等待超时。检查网络后再试一次。")
+        case .cannotConnect:
             AppConfig.isCloud
-                ? String(localized: "连不上服务器（错误码 \(code)）。请检查手机网络，或稍等 1 分钟再试。")
-                : String(localized: "连不上后端服务（错误码 \(code)）。请确认电脑上的后端正在运行。")
+                ? String(localized: "连不上服务器。检查网络，或稍等一分钟再试一次。")
+                : String(localized: "连不上电脑上的后端，请确认它正在运行。")
         case .server(let message):
             message
         case .badResponse:
-            String(localized: "后端返回的数据格式不对，请稍后再试。")
+            String(localized: "这次没有拿到有效的结果，请再试一次。")
         }
     }
 }
@@ -99,20 +104,23 @@ enum APIClient {
         do {
             (data, response) = try await URLSession.shared.data(for: request)
         } catch let error as URLError {
+            networkLog.error("\(request.url?.path() ?? "", privacy: .public) 网络错误 \(error.code.rawValue)")
             throw apiError(from: error)
         }
 
         // 2. 检查状态码：200 表示成功，其他情况后端会返回 {"detail": "错误说明"}
         guard let http = response as? HTTPURLResponse else { throw APIError.badResponse }
         guard http.statusCode == 200 else {
+            networkLog.error("\(request.url?.path() ?? "", privacy: .public) HTTP \(http.statusCode)")
+            // 后端的出错说明本来就是写给用户看的（比如「今天的识别次数用完了」），直接显示
             if let body = try? JSONDecoder().decode(ErrorBody.self, from: data) {
                 throw APIError.server(body.detail)
             }
             // 云端服务器唤醒过程中，Render 可能先返回一个不含 JSON 的页面
             if AppConfig.isCloud && (500...599).contains(http.statusCode) {
-                throw APIError.server(String(localized: "服务器正在启动，请稍等 1 分钟再试。"))
+                throw APIError.server(String(localized: "服务器正在启动。稍等一分钟再试一次。"))
             }
-            throw APIError.server(String(localized: "服务器出错（错误码 \(http.statusCode)），请稍后再试。"))
+            throw APIError.server(String(localized: "服务器出了点问题，请稍后再试。"))
         }
 
         // 3. 把 JSON 转成需要的类型
@@ -121,6 +129,7 @@ enum APIClient {
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
+            networkLog.error("\(request.url?.path() ?? "", privacy: .public) 返回的数据看不懂：\(String(describing: error), privacy: .public)")
             throw APIError.badResponse
         }
     }

@@ -44,12 +44,18 @@ private typealias P = AppColors.Pair
 struct DesignSystemColorTests {
     @Test("正文：在页面底色和卡片上都至少 4.5:1；次要文字在卡片上至少 4.5:1（浅色、深色模式）")
     func textContrast() {
-        for surface in [P.background, P.backgroundTop, P.surfacePrimary] {
+        for surface in [P.background, P.backgroundTop, P.surfacePrimary, P.surfaceMeal] {
             #expect(contrast(P.textPrimary.light, surface.light) >= 4.5)
             #expect(contrast(P.textPrimary.dark, surface.dark) >= 4.5)
             #expect(contrast(P.textSecondary.dark, surface.dark) >= 4.5)
         }
         #expect(contrast(P.textSecondary.light, P.surfacePrimary.light) >= 4.5)
+        #expect(contrast(P.textSecondary.light, P.surfaceMeal.light) >= 4.5)
+        // 轻提示：深色胶囊上的浅色字和「撤销」
+        #expect(contrast(P.toastText.light, P.toastBackground.light) >= 4.5)
+        #expect(contrast(P.toastText.dark, P.toastBackground.dark) >= 4.5)
+        #expect(contrast(P.toastAction.light, P.toastBackground.light) >= 4.5)
+        #expect(contrast(P.toastAction.dark, P.toastBackground.dark) >= 4.5)
         // 设计稿指定的 #777169 直接放在设计稿指定的页面底色 #F4F0E8 上是 4.25:1（块标题右边的小字），
         // 略低于 4.5:1，用户确认过；这里守住不再更低
         #expect(contrast(P.textSecondary.light, P.background.light) >= 4.2)
@@ -62,7 +68,7 @@ struct DesignSystemColorTests {
     func tabsTagsAndDestructive() {
         #expect(contrast(P.tabInactive.light, P.surfacePrimary.light) >= 3)
         #expect(contrast(P.tabInactive.dark, P.surfacePrimary.dark) >= 3)
-        for tint in [P.tintBreakfast, P.tintLunch, P.tintDinner] {
+        for tint in [P.tintBreakfast, P.tintLunch, P.tintDinner, P.tintSnack] {
             #expect(contrast(P.textPrimary.light, tint.light) >= 4.5)
             #expect(contrast(P.textPrimary.dark, tint.dark) >= 4.5)
         }

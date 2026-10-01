@@ -20,6 +20,14 @@ nonisolated enum NumberText {
         return value
     }
 
+    /// 离开输入框时整理一下数字的写法：「0450」→「450」、「12.50」→「12.5」、「1,5」→「1.5」、「45.」→「45」、「 60 」→「60」。
+    /// 不用改（已经是整理好的样子）、空的、不是数字时返回 nil，输入框保持原样（填错的由检查提示）
+    static func normalized(_ text: String) -> String? {
+        guard !isBlank(text), let value = number(from: text) else { return nil }
+        let tidy = self.text(from: value)
+        return tidy == text ? nil : tidy
+    }
+
     /// 数字转文字：175.0 → "175"，62.5 → "62.5"。
     /// 特别大的数（绝对值 ≥ 10¹⁵）直接用科学计数法：转成整数会超出范围，App 会闪退
     static func text(from value: Double) -> String {

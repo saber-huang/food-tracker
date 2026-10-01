@@ -194,7 +194,7 @@ nonisolated enum EntryValidator {
 
     static func nameError(_ name: String) -> String? {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty { return String(localized: "请输入名称") }
+        if trimmed.isEmpty { return String(localized: "请输入食物名称") }
         if trimmed.count > nameMaxLength { return String(localized: "名称最多 \(nameMaxLength) 个字") }
         return nil
     }
@@ -208,7 +208,7 @@ nonisolated enum EntryValidator {
 
     /// 热量必须填
     static func caloriesError(text: String) -> String? {
-        if NumberText.isBlank(text) { return String(localized: "请输入热量（千卡）") }
+        if NumberText.isBlank(text) { return String(localized: "请输入热量") }
         guard let kcal = NumberText.number(from: text) else { return String(localized: "请输入数字") }
         return caloriesRange.contains(kcal) ? nil : String(localized: "热量需要在 0～5000 千卡之间")
     }

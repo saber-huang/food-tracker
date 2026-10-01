@@ -26,6 +26,7 @@ enum AppColors {
         static let background = ColorPair(light: 0xF4F0E8, dark: 0x12110F)  // 页面底色：暖一点、灰一点，卡片更分得出来
         static let backgroundTop = ColorPair(light: 0xF9F6F0, dark: 0x191714)  // 页面顶部，比底色略亮
         static let surfacePrimary = ColorPair(light: 0xFFFDF9, dark: 0x1E1C19)  // 卡片
+        static let surfaceMeal = ColorPair(light: 0xFCF9F3, dark: 0x1B1916)  // 「今日饮食」里记过的一餐：比快速记录轻一档
         static let surfaceSecondary = ColorPair(light: 0xF0E9DE, dark: 0x2A2621)  // 次要按钮的圆底
         static let surfaceMuted = ColorPair(light: 0xEBE6DE, dark: 0x2C2924)  // 进度条的底槽
         static let divider = ColorPair(light: 0xE6E0D7, dark: 0x2E2A25)
@@ -61,10 +62,17 @@ enum AppColors {
         static let confidenceMedium = ColorPair(light: 0x7E5A22, dark: 0xD3AC6A)
         static let confidenceLow = ColorPair(light: 0x8D4A45, dark: 0xDD958C)
 
-        // 三餐的小标签底色：很淡的燕麦、鼠尾草、灰褐，只用来区分是哪一餐
-        static let tintBreakfast = ColorPair(light: 0xF4ECDF, dark: 0x2F2A23)
+        // 四餐的分类色：很淡的奶油黄、鼠尾草、灰褐、杏仁色。只给餐次小标签和小图标的底色用，
+        // 扫一眼就知道是哪一餐；不给整张卡片上色
+        static let tintBreakfast = ColorPair(light: 0xF5EDD9, dark: 0x2F2B21)
         static let tintLunch = ColorPair(light: 0xE9EEE4, dark: 0x262C24)
         static let tintDinner = ColorPair(light: 0xECE7E3, dark: 0x2B2725)
+        static let tintSnack = ColorPair(light: 0xF4E8DF, dark: 0x2E2724)
+
+        // 轻提示（「已记录到午餐」「已删除 撤销」）：深色的小胶囊，浅色字；深色模式反过来
+        static let toastBackground = ColorPair(light: 0x2C2B27, dark: 0xEDE8DF)
+        static let toastText = ColorPair(light: 0xFAF7F1, dark: 0x262522)
+        static let toastAction = ColorPair(light: 0xC3D3B9, dark: 0x4F624D)  // 「撤销」
 
         static let destructive = ColorPair(light: 0xA54A3F, dark: 0xE08A7E)  // 删除：柔和的砖红，不用系统的大红
 
@@ -74,6 +82,7 @@ enum AppColors {
     static let background = Color(Pair.background)
     static let backgroundTop = Color(Pair.backgroundTop)
     static let surfacePrimary = Color(Pair.surfacePrimary)
+    static let surfaceMeal = Color(Pair.surfaceMeal)
     static let surfaceSecondary = Color(Pair.surfaceSecondary)
     static let surfaceMuted = Color(Pair.surfaceMuted)
     static let divider = Color(Pair.divider)
@@ -100,6 +109,10 @@ enum AppColors {
     static let tintBreakfast = Color(Pair.tintBreakfast)
     static let tintLunch = Color(Pair.tintLunch)
     static let tintDinner = Color(Pair.tintDinner)
+    static let tintSnack = Color(Pair.tintSnack)
+    static let toastBackground = Color(Pair.toastBackground)
+    static let toastText = Color(Pair.toastText)
+    static let toastAction = Color(Pair.toastAction)
     static let destructive = Color(Pair.destructive)
     static let shadow = Color(Pair.shadow)
 
@@ -139,12 +152,12 @@ enum AppRadius {
 
 // MARK: - 字体
 
-/// 文字用系统字体；数字用系统的圆体（和「健康」App 一样），一眼就能看出哪些是数字
+/// 文字用系统字体；数字用系统的圆体（和「健康」App 一样）、等宽数字，一眼就能看出哪些是数字
 enum AppTypography {
     static let pageTitleSize: CGFloat = 30  // 「食谱」「我的」的页面大标题（见 PageHeader）
     static let pageSubtitle = Font.subheadline  // 大标题下面的一句说明
     static let heroNumberSize: CGFloat = 42  // 页面上最大的数字（用 @ScaledMetric 跟着系统字号变大）
-    static func heroNumber(size: CGFloat) -> Font { .system(size: size, weight: .semibold, design: .rounded) }
+    static func heroNumber(size: CGFloat) -> Font { .system(size: size, weight: .semibold, design: .rounded).monospacedDigit() }
     static let heroCaption = Font.subheadline  // 大数字下面的说明
     static let sectionTitle = Font.headline  // 「快速记录」「今日饮食」
     static let cardTitle = Font.subheadline.weight(.semibold)  // 卡片左上角的小标题（今天、每日目标…）
@@ -153,8 +166,9 @@ enum AppTypography {
     static let itemName = Font.callout.weight(.medium)  // 食物名称
     static let detail = Font.footnote  // 说明文字
     static let caption = Font.caption  // 最小的说明
-    static let number = Font.system(.subheadline, design: .rounded, weight: .semibold)  // 卡片里的数字
-    static let numberSmall = Font.system(.footnote, design: .rounded, weight: .medium)
+    // 数字一律是等宽数字（monospacedDigit）：数字变化时不会左右跳；单位用更小、更浅的字，数字是重点
+    static let number = Font.system(.subheadline, design: .rounded, weight: .semibold).monospacedDigit()  // 卡片里的数字
+    static let numberSmall = Font.system(.footnote, design: .rounded, weight: .medium).monospacedDigit()
     static let actionLabel = Font.subheadline.weight(.medium)  // 快速记录的按钮文字
     static let tabLabel = Font.caption2.weight(.medium)  // 标签栏
 }
@@ -411,4 +425,23 @@ extension UIColor {
             red: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
             blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
     }
+}
+
+// MARK: - 餐次的分类色
+
+extension MealType {
+    /// 这一餐的分类色：很淡，只给小标签、小图标的底色用
+    var tint: Color {
+        switch self {
+        case .breakfast: AppColors.tintBreakfast
+        case .lunch: AppColors.tintLunch
+        case .dinner: AppColors.tintDinner
+        case .snack: AppColors.tintSnack
+        }
+    }
+}
+
+extension MealSlot {
+    /// 食谱的三餐用和记录一样的分类色
+    var tint: Color { MealType(slot: self).tint }
 }

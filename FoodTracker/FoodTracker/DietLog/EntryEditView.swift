@@ -7,7 +7,13 @@
 //
 //  默认只显示最常用的几项，十秒钟就能记完一条：
 //  食物名称 →（记录到哪一餐、哪一天）→ 热量、份量 → 保存。
-//  蛋白质、碳水、脂肪收在「更多营养信息」里，点开才显示；已经有数字（比如修改识别结果）时一打开就是展开的。
+//  - 新的一项打开时，光标直接在「食物名称」里；下面是「最近使用」：点一下就填好名字和上次的份量、营养，
+//    常吃的东西两下就能记完（没有记录过时不显示这一块）
+//  - 数字框用数字键盘，单位（千卡、克）固定写在右边，离开输入框时数字自动整理（见 NumberRow）
+//  - 还差必填项时「保存」是浅色的，但仍然可以点：点了在最近的那一项下面提示「请输入食物名称」或「请输入热量」，
+//    光标跳过去，轻轻震一下。一次只提示一项，不弹警告框
+//  - 蛋白质、碳水、脂肪收在「更多营养信息（可选）」里，点开才显示；收起来不会清空已经填的数字
+//    （右边写一行摘要）；已经有数字（比如修改识别结果）时一打开就是展开的
 //  不长期显示解释文字：千焦换算、按比例换算的说明放在「热量和份量」旁边的 ⓘ 里。
 //  手动填写的数字不是 AI 的数据，这里不出现「AI 估算」。
 //
@@ -20,6 +26,7 @@ struct EntryEditView: View {
     let showsMealPicker: Bool  // 是否显示「记到哪一餐」
     let showsDate: Bool  // 是否显示「日期」（点开可以改到别的一天；手动添加、修改已保存的记录时显示）
     let note: String?  // 份量下面的一行灰字（比如从食谱记的一餐：「份量按食材生重合计。」）
+    let suggestions: [RecentFood]  // 「最近使用」：最近吃过的食物（从新到旧）；空的就不显示这一块
     let onSave: (EditableItem) -> Void
     let onDelete: (() -> Void)?  // 有值时多一个「删除这一项」按钮
 
@@ -28,12 +35,15 @@ struct EntryEditView: View {
     @State private var didSave = false  // 防止快速连点两次「保存」存成两条
     @State private var showsNutrition: Bool  // 「更多营养信息」是不是展开的
     @State private var showsDatePicker = false
+    @State private var saveAttempted = false  // 点过「保存」但还差必填项：在那一项下面提示
+    @State private var missingTick = 0  // 每次没保存成功加 1：用来轻轻震一下
     @FocusState private var focusedField: Field?
     private enum Field { case name, weight, calories, protein, carbs, fat }
+    private let startsBlank: Bool  // 新的一项（名字是空的）：打开时光标直接放进名称
 
     init(
         draft: EntryDraft, title: String, showsMealPicker: Bool = false, showsDate: Bool = false, note: String? = nil,
-        onSave: @escaping (EditableItem) -> Void, onDelete: (() -> Void)? = nil
+        suggestions: [RecentFood] = [], onSave: @escaping (EditableItem) -> Void, onDelete: (() -> Void)? = nil
     ) {
         _draft = State(initialValue: draft)
         _showsNutrition = State(initialValue: Self.startsWithNutritionShown(draft))
@@ -41,8 +51,24 @@ struct EntryEditView: View {
         self.showsMealPicker = showsMealPicker
         self.showsDate = showsDate
         self.note = note
+        self.suggestions = suggestions
         self.onSave = onSave
         self.onDelete = onDelete
+        startsBlank = draft.name.isEmpty
+    }
+
+    /// 点了「保存」还差的第一项（一次只提示一项）：先是名称，再是热量
+    private var firstMissing: Field? {
+        guard saveAttempted else { return nil }
+        if draft.nameError != nil && draft.name.trimmingCharacters(in: .whitespaces).isEmpty { return .name }
+        if NumberText.isBlank(draft.caloriesText) { return .calories }
+        return nil
+    }
+
+    /// 名称下面要显示的「最近使用」：正在输入名称时才出现，按已经打的字筛选
+    private var shownSuggestions: [RecentFood] {
+        guard focusedField == .name else { return [] }
+        return RecentFoods.matching(suggestions, query: draft.name)
     }
 
     /// 打开时「更多营养信息」要不要展开：三种营养素有任何一个已经填了，就展开（不然看不到已有的数字）
@@ -96,6 +122,14 @@ struct EntryEditView: View {
             .sheet(isPresented: $showsDatePicker) {
                 datePickerSheet
             }
+            // 新的一项：表单弹出来以后，光标放进名称（等弹出的动画走完，不然键盘不出来）
+            .task {
+                guard startsBlank else { return }
+                try? await Task.sleep(for: .milliseconds(450))
+                if focusedField == nil { focusedField = .name }
+            }
+            .sensoryFeedback(.warning, trigger: missingTick)
+            .sensoryFeedback(.selection, trigger: draft.meal)
         }
     }
 
@@ -108,10 +142,18 @@ struct EntryEditView: View {
                 .submitLabel(.next)
                 .onSubmit { focusedField = .calories }
                 .accessibilityLabel("食物名称")
-            if let error = draft.nameError, !draft.name.isEmpty, focusedField != .name {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(AppColors.destructive)
+            if firstMissing == .name {
+                fieldHint(String(localized: "请输入食物名称"))
+            } else if let error = draft.nameError, !draft.name.isEmpty, focusedField != .name {
+                fieldHint(error)
+            }
+            let shown = shownSuggestions
+            if !shown.isEmpty {
+                RecentFoodSuggestions(foods: shown) { food in
+                    draft.prefill(from: food)
+                    // 填好了：收起键盘，填上的数字和「保存」都看得见
+                    focusedField = nil
+                }
             }
         } header: {
             sectionHeader("食物名称")
@@ -156,8 +198,11 @@ struct EntryEditView: View {
     private var caloriesSection: some View {
         Section {
             NumberRow(
-                title: String(localized: "热量"), unit: String(localized: "千卡"), text: $draft.caloriesText, keyboard: .decimalPad,
+                title: String(localized: "热量"), unit: String(localized: "千卡"), text: $draft.caloriesText, keyboard: .numberPad,
                 error: draft.caloriesError, focus: $focusedField, field: .calories, prompt: String(localized: "必填"))
+            if firstMissing == .calories {
+                fieldHint(String(localized: "请输入热量"))
+            }
             NumberRow(
                 title: String(localized: "份量"), unit: String(localized: "克"), text: $draft.weightText, keyboard: .decimalPad,
                 error: draft.weightError, focus: $focusedField, field: .weight, prompt: String(localized: "选填"))
@@ -190,16 +235,18 @@ struct EntryEditView: View {
                 withAnimation(.easeOut(duration: 0.15)) { showsNutrition.toggle() }
             } label: {
                 HStack(spacing: AppSpacing.xs) {
-                    Text(showsNutrition ? "收起营养信息" : "更多营养信息")
-                        .foregroundStyle(AppColors.brand)
-                    Spacer(minLength: AppSpacing.xs)
-                    // 收起来的时候，如果已经填了，就在右边写一行摘要，免得以为没填
-                    if !showsNutrition, let summary = macroSummary {
-                        Text(summary)
-                            .font(.caption)
-                            .foregroundStyle(AppColors.textSecondary)
-                            .lineLimit(1)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(showsNutrition ? "收起营养信息" : "更多营养信息（可选）")
+                            .foregroundStyle(AppColors.brand)
+                        // 收起来的时候，如果已经填了，就在下面写一行摘要，免得以为没填（收起不会清空）
+                        if !showsNutrition, let summary = macroSummary {
+                            Text(summary)
+                                .font(.caption)
+                                .foregroundStyle(AppColors.textSecondary)
+                                .lineLimit(1)
+                        }
                     }
+                    Spacer(minLength: AppSpacing.xs)
                     Image(systemName: "chevron.down")
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(AppColors.textTertiary)
@@ -239,26 +286,35 @@ struct EntryEditView: View {
             .textCase(nil)
     }
 
+    /// 就近的一行提示（缺了必填项、填错了）：小字、柔和的砖红
+    private func fieldHint(_ text: String) -> some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(AppColors.destructive)
+            .transition(.opacity)
+    }
+
     private func warningRow(_ text: String) -> some View {
         Label(text, systemImage: "info.circle")
             .font(.caption)
             .foregroundStyle(AppColors.textSecondary)
     }
 
-    /// 最下面的「保存」：填对了才能点
+    /// 最下面的「保存」：还差必填项时是浅色的，但仍然可以点（点了提示缺什么，不会什么反应都没有）
     private var saveButton: some View {
-        let canSave = draft.output != nil && !didSave
+        let isComplete = draft.output != nil
         return Button(action: save) {
             Text("保存")
                 .font(.body.weight(.semibold))
                 .foregroundStyle(AppColors.onBrand)
                 .frame(maxWidth: .infinity, minHeight: 50)
                 .background(
-                    AppColors.brand.opacity(canSave ? 1 : 0.4),
+                    AppColors.brand.opacity(isComplete ? 1 : 0.45),
                     in: RoundedRectangle(cornerRadius: AppRadius.button, style: .continuous))
         }
         .buttonStyle(AppPressStyle())
-        .disabled(!canSave)
+        .disabled(didSave)
+        .accessibilityHint(isComplete ? "" : String(localized: "还有必填项没有填"))
         .padding(.horizontal, AppSpacing.pageMargin)
         .padding(.vertical, AppSpacing.xs)
         .appBottomBar()
@@ -288,10 +344,61 @@ struct EntryEditView: View {
 
     private func save() {
         // 按钮变灰要等下一次刷新界面，所以这里再检查一次，连点两下也只存一条
-        guard !didSave, let item = draft.output else { return }
+        guard !didSave else { return }
+        guard let item = draft.output else {
+            // 还差东西：在最近的那一项下面提示，光标跳过去，轻轻震一下
+            withAnimation(.easeOut(duration: 0.15)) { saveAttempted = true }
+            missingTick += 1
+            if draft.nameError != nil {
+                focusedField = .name
+            } else if NumberText.isBlank(draft.caloriesText) {
+                focusedField = .calories
+            } else {
+                // 其他数字填错了：收起键盘，填错的那一项下面会出现红色提示
+                focusedField = nil
+            }
+            return
+        }
         didSave = true
         onSave(item)
         dismiss()
+    }
+}
+
+/// 名称下面的「最近使用」：最近吃过的食物，一排可以左右滑的小胶囊，点一下填好名字和上次的份量、营养
+private struct RecentFoodSuggestions: View {
+    let foods: [RecentFood]
+    let onPick: (RecentFood) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+            Text("最近使用")
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColors.textTertiary)
+            ScrollView(.horizontal) {
+                HStack(spacing: AppSpacing.xs) {
+                    ForEach(foods) { food in
+                        Button {
+                            onPick(food)
+                        } label: {
+                            Text(food.name)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.textPrimary)
+                                .lineLimit(1)
+                                .padding(.horizontal, AppSpacing.sm)
+                                .frame(minHeight: 34)
+                                .background(AppColors.surfaceSecondary, in: Capsule())
+                                .frame(minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(AppPressStyle())
+                        .accessibilityHint(String(localized: "填入名称和上次的 \(food.values.caloriesKcal.noDecimal) 千卡"))
+                    }
+                }
+            }
+            .scrollIndicators(.hidden)
+        }
+        .padding(.vertical, AppSpacing.xxs)
     }
 }
 
@@ -307,17 +414,21 @@ struct ManualEntrySheet: View {
     let request: ManualEntryRequest
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(ToastCenter.self) private var toasts: ToastCenter?
+    // 最近的几百条记录（从新到旧），挑出「最近使用」的食物
+    @Query(FoodEntry.recentDescriptor) private var recentEntries: [FoodEntry]
 
     var body: some View {
         EntryEditView(
             draft: EntryDraft(meal: request.meal, dayKey: request.dayKey), title: String(localized: "手动添加"),
-            showsMealPicker: true, showsDate: true
+            showsMealPicker: true, showsDate: true, suggestions: RecentFoods.from(recentEntries.map(\.recentFood))
         ) { item in
             modelContext.insert(
                 FoodEntry(
                     dayKey: item.dayKey, meal: item.meal, name: item.name, weightG: item.weightG, values: item.values,
                     source: .manual))
             try? modelContext.save()
+            toasts?.success(DayMath.loggedMessage(meal: item.meal, dayKey: item.dayKey, today: .now))
         }
     }
 }

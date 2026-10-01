@@ -32,8 +32,7 @@ struct RecipesView: View {
     @State private var pendingAIAction: PendingAIAction?  // 还没同意使用 AI 时，先记下要做的生成，同意后再做
     @State private var showPreferences = false
     @State private var openedRecipe: Recipe?  // 有值时打开这道菜的详情
-    @State private var showError = false
-    @State private var errorMessage = ""
+    @State private var failure: RecipeFailure?  // 生成或「换一个」没成功：推荐上面出现一张出错卡片（可以重试）
 
     private var isBusy: Bool { isGeneratingAll || swappingMeal != nil }
 
@@ -58,6 +57,17 @@ struct RecipesView: View {
                     }
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
+                }
+
+                // 没生成成功：一张小卡片，说清楚怎么办，可以重试（不弹警告框，已有的推荐照常显示）
+                if let failure {
+                    Section {
+                        ErrorStateView(
+                            title: failure.title, message: failure.message, onRetry: { retry(failure) },
+                            onDismiss: { withAnimation(.easeOut(duration: 0.15)) { self.failure = nil } })
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                    }
                 }
 
                 // 今日推荐：这一页最重要的内容
@@ -132,11 +142,6 @@ struct RecipesView: View {
             }
             // 第一次生成前：说明会发送什么、发给谁，同意后才发送（见 AIConsent.swift）
             .aiConsentSheet(pending: $pendingAIAction)
-            .alert("生成失败", isPresented: $showError) {
-                Button("好", role: .cancel) {}
-            } message: {
-                Text(errorMessage)
-            }
             .task {
                 loadLastPlan()
                 await refreshQuota()
@@ -203,6 +208,7 @@ struct RecipesView: View {
     /// 生成整套三餐
     private func generateAll() async {
         isGeneratingAll = true
+        failure = nil
         defer { isGeneratingAll = false }
         do {
             let result = try await APIClient.recipes(makeRequest(meals: MealSlot.allCases, excludeNames: []))
@@ -210,13 +216,14 @@ struct RecipesView: View {
             remaining = result.remainingToday
             saveLastPlan()
         } catch {
-            showError(error.localizedDescription)
+            failure = RecipeFailure(retry: .all, message: error.localizedDescription)
         }
     }
 
     /// 只换某一餐：把现在的菜名都告诉后端，让它避开
     private func swap(_ meal: MealSlot) async {
         swappingMeal = meal
+        failure = nil
         defer { swappingMeal = nil }
         do {
             let result = try await APIClient.recipes(makeRequest(meals: [meal], excludeNames: recipes.map(\.name)))
@@ -228,7 +235,15 @@ struct RecipesView: View {
             remaining = result.remainingToday
             saveLastPlan()
         } catch {
-            showError(error.localizedDescription)
+            failure = RecipeFailure(retry: .swap(meal), message: error.localizedDescription)
+        }
+    }
+
+    /// 出错卡片上的「重试」：上次做的是什么就再做一次
+    private func retry(_ failure: RecipeFailure) {
+        switch failure.retry {
+        case .all: generateTapped()
+        case .swap(let meal): AIConsent.perform(pending: $pendingAIAction) { Task { await swap(meal) } }
         }
     }
 
@@ -237,11 +252,6 @@ struct RecipesView: View {
         if let quota = try? await APIClient.quota() {
             remaining = quota.recipesRemaining
         }
-    }
-
-    private func showError(_ message: String) {
-        errorMessage = message
-        showError = true
     }
 
     // 上次的食谱存成 JSON 放在本地，下次打开直接显示
@@ -254,6 +264,24 @@ struct RecipesView: View {
             let saved = try? JSONDecoder().decode([Recipe].self, from: lastPlanData)
         else { return }
         recipes = saved
+    }
+}
+
+/// 生成或「换一个」没成功：说明 + 上次做的是什么（「重试」时再做一次）
+private struct RecipeFailure: Equatable {
+    enum Retry: Equatable {
+        case all
+        case swap(MealSlot)
+    }
+
+    let retry: Retry
+    let message: String
+
+    var title: String {
+        switch retry {
+        case .all: String(localized: "没有生成成功")
+        case .swap: String(localized: "没有换成功")
+        }
     }
 }
 

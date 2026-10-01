@@ -144,6 +144,27 @@ final class EntryDraft {
         NumberText.isBlank(text) ? 0 : NumberText.number(from: text)
     }
 
+    // MARK: - 从「最近使用」预填
+
+    /// 从「最近使用」里点了一种食物：填上名字；空着的框填上上次的份量和营养（已经填了的不动），用户可以再改。
+    /// 和打开已有的一项一样记下「每 100 克含量」，之后改份量会按比例换算
+    func prefill(from food: RecentFood) {
+        name = food.name
+        if NumberText.isBlank(weightText), let grams = food.weightG { weightText = NumberText.text(from: grams) }
+        if NumberText.isBlank(caloriesText) { caloriesText = NumberText.text(from: food.values.caloriesKcal) }
+        // 上次只填了热量（三种营养素都是 0）：营养素的框继续空着，不填一排 0
+        if food.values.proteinG > 0 || food.values.carbsG > 0 || food.values.fatG > 0 {
+            if NumberText.isBlank(proteinText) { proteinText = NumberText.text(from: food.values.proteinG) }
+            if NumberText.isBlank(carbsText) { carbsText = NumberText.text(from: food.values.carbsG) }
+            if NumberText.isBlank(fatText) { fatText = NumberText.text(from: food.values.fatG) }
+        }
+        per100 = DietLogMath.per100(currentValues, weightG: weightG)
+        baseWeightG = weightG
+        if macrosExceedWeightWarning != nil { per100 = nil }
+        // 这次是 App 自己填的，不算用户改的：下一次 textsChanged() 不会拿它去换算
+        lastTexts = allTexts
+    }
+
     // MARK: - 检查结果（nil 表示没问题）
 
     var nameError: String? { EntryValidator.nameError(name) }

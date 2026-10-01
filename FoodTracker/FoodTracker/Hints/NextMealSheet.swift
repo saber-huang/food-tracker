@@ -24,7 +24,7 @@ struct NextMealSheet: View {
     @State private var recipe: Recipe?  // 生成的这一餐
     @State private var isGenerating = false
     @State private var remaining: Int?  // 今天还能生成几次；问不到就不显示
-    @State private var errorMessage: String?  // 有值时弹出出错提示
+    @State private var errorMessage: String?  // 有值时显示出错卡片（可以重试）
     @State private var pendingAIAction: PendingAIAction?  // 还没同意使用 AI 时，先记下要做的生成，同意后再做
     @State private var detent: PresentationDetent = .medium  // 先开半屏；生成好以后拉到全屏
 
@@ -52,7 +52,7 @@ struct NextMealSheet: View {
                     } label: {
                         HStack {
                             if isGenerating {
-                                ProgressView()
+                                AppLoadingIndicator(onBrand: true)
                                 Text(HintCopy.generatingNextMeal)
                             } else {
                                 Label(HintCopy.generateNextMeal(mealName: mealName), systemImage: "sparkles")
@@ -68,6 +68,18 @@ struct NextMealSheet: View {
                 } footer: {
                     if let remaining {
                         Text(remaining == 0 ? HintCopy.quotaUsedUp : HintCopy.quotaRemaining(remaining))
+                    }
+                }
+
+                // 没生成成功：一张小卡片说明怎么办，可以重试（不弹警告框）
+                if let errorMessage {
+                    Section {
+                        ErrorStateView(
+                            title: HintCopy.generateFailedTitle, message: errorMessage,
+                            onRetry: { AIConsent.perform(pending: $pendingAIAction) { Task { await generate() } } },
+                            onDismiss: { self.errorMessage = nil })
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
                     }
                 }
 
@@ -96,11 +108,6 @@ struct NextMealSheet: View {
                     Button(HintCopy.done) { dismiss() }
                 }
             }
-            .alert(HintCopy.generateFailedTitle, isPresented: isShowingError) {
-                Button(HintCopy.ok, role: .cancel) {}
-            } message: {
-                Text(errorMessage ?? "")
-            }
             // 第一次生成前：说明会发送什么、发给谁，同意后才发送（见 AIConsent.swift）
             .aiConsentSheet(pending: $pendingAIAction)
             // 打开时问一下今天还能生成几次（不花钱、不占次数）；问不到就不显示
@@ -125,14 +132,11 @@ struct NextMealSheet: View {
             : HintCopy.nextMealIntro(mealKcal: HintEngine.roundToTen(budget.mealKcal), mealName: mealName)
     }
 
-    private var isShowingError: Binding<Bool> {
-        Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
-    }
-
     /// 只生成这一餐：把缩小后的「每日目标」发给后端，后端按比例拆出来正好是这一餐的量
     private func generate() async {
         guard !isGenerating else { return }
         isGenerating = true
+        errorMessage = nil
         defer { isGenerating = false }
         let request = RecipeRequest.make(
             goal: profile.bodyInfo.goal, targets: budget.requestTargets, preferencesText: preferencesText,
