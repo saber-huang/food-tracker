@@ -10,9 +10,34 @@
 //    MealMacroFooter（最下面一行：这一餐的蛋白质、碳水、脂肪）
 //  - 还没记的一餐最轻：没有底色、只有一圈很淡的边，EmptyMealRow「早餐 还没有记录」，右边一个 +，点了直接给这一餐手动添加
 //  不读字也能一眼看出哪一餐吃了、哪一餐还没吃。层级靠底色、字号、颜色和缩进，不靠阴影和分隔线。
+//  字号特别大（辅助功能字号）时，千卡放到名称下面一行：并排放的话名称会被挤成一个字一行。
 //
 
 import SwiftUI
+
+/// 名称和千卡：平时并排（千卡靠右），字号特别大时上下两行（千卡在名称下面）
+private struct NameAndKcalLayout<Name: View, Kcal: View>: View {
+    @ViewBuilder let name: Name
+    @ViewBuilder let kcal: Kcal
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 2) {
+                name
+                kcal
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
+                name
+                Spacer(minLength: AppSpacing.xs)
+                kcal
+            }
+        }
+    }
+}
 
 /// 记过的一餐的第一行：图标、早餐 / 午餐…，右边是这一餐合计的千卡
 struct MealCardHeader: View {
@@ -22,15 +47,16 @@ struct MealCardHeader: View {
     var body: some View {
         HStack(alignment: .center, spacing: AppSpacing.sm) {
             AppIconTile(systemImage: meal.systemImage, tint: meal.tint)
-            Text(meal.title)
-                .font(AppTypography.mealTitle)
-                .foregroundStyle(AppColors.textPrimary)
-            Spacer(minLength: AppSpacing.xs)
-            Text("\(kcal.noDecimal) 千卡")
-                .font(AppTypography.number)
-                .monospacedDigit()
-                .foregroundStyle(AppColors.textPrimary)
-                .fixedSize()
+            NameAndKcalLayout {
+                Text(meal.title)
+                    .font(AppTypography.mealTitle)
+                    .foregroundStyle(AppColors.textPrimary)
+            } kcal: {
+                Text("\(kcal.noDecimal) 千卡")
+                    .font(AppTypography.number)
+                    .foregroundStyle(AppColors.textPrimary)
+                    .fixedSize()
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
@@ -42,17 +68,18 @@ struct MealRow: View {
     let entry: FoodEntry
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
-            Text(entry.name)
-                .font(AppTypography.itemName)
-                .foregroundStyle(AppColors.textPrimary)
-                .lineLimit(2)  // 名字很长时最多两行
-            Spacer(minLength: AppSpacing.xs)
-            Text("\(entry.caloriesKcal.noDecimal) 千卡")
-                .font(AppTypography.numberSmall)
-                .monospacedDigit()
-                .foregroundStyle(AppColors.textSecondary)
-                .fixedSize()  // 千卡数永远完整显示，名字太长时让名字换行
+        HStack(alignment: .center, spacing: AppSpacing.xs) {
+            NameAndKcalLayout {
+                Text(entry.name)
+                    .font(AppTypography.itemName)
+                    .foregroundStyle(AppColors.textPrimary)
+                    .lineLimit(2)  // 名字很长时最多两行
+            } kcal: {
+                Text("\(entry.caloriesKcal.noDecimal) 千卡")
+                    .font(AppTypography.numberSmall)
+                    .foregroundStyle(AppColors.textSecondary)
+                    .fixedSize()  // 千卡数永远完整显示，名字太长时让名字换行
+            }
             AppChevron()
         }
         .frame(minHeight: 44)
@@ -80,21 +107,19 @@ struct AggregatedFoodRow: View {
     let isExpanded: Bool
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
-            HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xxs) {
-                Text(name)
+        HStack(alignment: .center, spacing: AppSpacing.xs) {
+            NameAndKcalLayout {
+                // 「×2」紧跟在名字后面、跟着一起换行，不会被挤到单独一行
+                (Text(name).foregroundStyle(AppColors.textPrimary)
+                    + Text(verbatim: " ×\(count)").font(AppTypography.numberSmall).foregroundStyle(AppColors.textSecondary))
                     .font(AppTypography.itemName)
-                    .foregroundStyle(AppColors.textPrimary)
                     .lineLimit(2)
-                Text(verbatim: "×\(count)")
+            } kcal: {
+                Text("\(totalKcal.noDecimal) 千卡")
                     .font(AppTypography.numberSmall)
                     .foregroundStyle(AppColors.textSecondary)
+                    .fixedSize()
             }
-            Spacer(minLength: AppSpacing.xs)
-            Text("\(totalKcal.noDecimal) 千卡")
-                .font(AppTypography.numberSmall)
-                .foregroundStyle(AppColors.textSecondary)
-                .fixedSize()
             Image(systemName: "chevron.down")
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(AppColors.textTertiary)
@@ -114,15 +139,17 @@ struct MealMemberRow: View {
     let entry: FoodEntry
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
-            Text(detail)
-                .font(AppTypography.detail)
-                .foregroundStyle(AppColors.textSecondary)
-            Spacer(minLength: AppSpacing.xs)
-            Text("\(entry.caloriesKcal.noDecimal) 千卡")
-                .font(AppTypography.numberSmall)
-                .foregroundStyle(AppColors.textSecondary)
-                .fixedSize()
+        HStack(alignment: .center, spacing: AppSpacing.xs) {
+            NameAndKcalLayout {
+                Text(detail)
+                    .font(AppTypography.detail)
+                    .foregroundStyle(AppColors.textSecondary)
+            } kcal: {
+                Text("\(entry.caloriesKcal.noDecimal) 千卡")
+                    .font(AppTypography.numberSmall)
+                    .foregroundStyle(AppColors.textSecondary)
+                    .fixedSize()
+            }
             AppChevron()
         }
         .frame(minHeight: 44)
