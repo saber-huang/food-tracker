@@ -222,6 +222,20 @@ export const BOWL_COLORS = {
   latte: { title: "Latte brown", bg: "#FFFFFF", bowl: "#A6754C", rim: "#875C3A", smile: "#A6754C", shadow: "#F1EBE5", dark: { bowl: "#C08E62", rim: "#A6754C", smile: "#C08E62" } },
 };
 
+/** 低饱和度的一组：灰一点、柔和一点，适合「温和」的定位 */
+export const BOWL_COLORS_MUTED = {
+  dustyTeal: { title: "Dusty teal", bg: "#FFFFFF", bowl: "#6FA8A3", rim: "#588E89", smile: "#6FA8A3", shadow: "#ECF1F0", dark: { bowl: "#86BDB8", rim: "#6FA8A3", smile: "#86BDB8" } },
+  eucalyptus: { title: "Grey green", bg: "#FFFFFF", bowl: "#8CAE98", rim: "#72957E", smile: "#8CAE98", shadow: "#ECF1EE", dark: { bowl: "#A3C3AE", rim: "#8CAE98", smile: "#A3C3AE" } },
+  slate: { title: "Grey blue", bg: "#FFFFFF", bowl: "#7A8FA6", rim: "#62778E", smile: "#7A8FA6", shadow: "#ECEFF2", dark: { bowl: "#95A9BF", rim: "#7A8FA6", smile: "#95A9BF" } },
+  dustyRose: { title: "Dusty rose", bg: "#FFFFFF", bowl: "#C78F8D", rim: "#AD7775", smile: "#C78F8D", shadow: "#F3ECEC", dark: { bowl: "#D8A5A3", rim: "#C78F8D", smile: "#D8A5A3" } },
+  clay: { title: "Clay", bg: "#FFFFFF", bowl: "#C0876B", rim: "#A46F55", smile: "#C0876B", shadow: "#F3EDE9", dark: { bowl: "#D29E83", rim: "#C0876B", smile: "#D29E83" } },
+  mushroom: { title: "Mushroom", bg: "#FFFFFF", bowl: "#A79A8D", rim: "#8C8073", smile: "#A79A8D", shadow: "#EFEDEA", dark: { bowl: "#BDB1A5", rim: "#A79A8D", smile: "#BDB1A5" } },
+  olive: { title: "Olive", bg: "#FFFFFF", bowl: "#98A06E", rim: "#7E8658", smile: "#98A06E", shadow: "#EFF0EA", dark: { bowl: "#AEB586", rim: "#98A06E", smile: "#AEB586" } },
+  sand: { title: "Sand", bg: "#FFFFFF", bowl: "#CBB07E", rim: "#B19664", smile: "#CBB07E", shadow: "#F3F0E9", dark: { bowl: "#DCC496", rim: "#CBB07E", smile: "#DCC496" } },
+  lavender: { title: "Grey lavender", bg: "#FFFFFF", bowl: "#9C93B0", rim: "#847A99", smile: "#9C93B0", shadow: "#EFEEF2", dark: { bowl: "#B3ABC4", rim: "#9C93B0", smile: "#B3ABC4" } },
+  stone: { title: "Warm grey", bg: "#FFFFFF", bowl: "#8E8984", rim: "#746F6A", smile: "#8E8984", shadow: "#ECEBEA", dark: { bowl: "#A8A39E", rim: "#8E8984", smile: "#A8A39E" } },
+};
+
 /** 碗的画法（bowlFlat 和换颜色的对比图共用）。background 可以覆盖颜色表里的背景，用来比较纯白和米白 */
 export function bowlFlatSvg(v, c, background = c.bg) {
   const bowl = pick(v, c.bowl, c.dark.bowl, "#FFFFFF");
