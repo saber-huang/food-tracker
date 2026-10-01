@@ -236,6 +236,19 @@ export const BOWL_COLORS_MUTED = {
   stone: { title: "Warm grey", bg: "#FFFFFF", bowl: "#8E8984", rim: "#746F6A", smile: "#8E8984", shadow: "#ECEBEA", dark: { bowl: "#A8A39E", rim: "#8E8984", smile: "#A8A39E" } },
 };
 
+/** 浅米色的一组（用户喜欢炭黑方案在深色外观下那只米白色的碗），从极浅到中等深浅排列。
+ *  浅色碗放在浅色底上对比度低，所以碗沿都比碗身深一档，影子也稍微深一点，帮它「立」在底上 */
+export const BOWL_COLORS_LIGHT = {
+  ivory: { title: "Ivory (same as the dark-mode bowl)", bg: "#FFFFFF", bowl: "#F2EFEA", rim: "#D9D4CC", smile: "#F2EFEA", shadow: "#E6E1DA", dark: { bowl: "#F2EFEA", rim: "#D9D4CC", smile: "#F2EFEA" } },
+  bone: { title: "Bone", bg: "#FFFFFF", bowl: "#ECE6DA", rim: "#CFC6B6", smile: "#ECE6DA", shadow: "#E3DDD3", dark: { bowl: "#F0EAE0", rim: "#D6CEC0", smile: "#F0EAE0" } },
+  linen: { title: "Linen", bg: "#FFFFFF", bowl: "#E5DCCF", rim: "#C6BAA7", smile: "#E5DCCF", shadow: "#E0D9CF", dark: { bowl: "#ECE4D9", rim: "#CFC3B2", smile: "#ECE4D9" } },
+  oat: { title: "Oat", bg: "#FFFFFF", bowl: "#DED2BF", rim: "#BDAD95", smile: "#DED2BF", shadow: "#E2DBD0", dark: { bowl: "#E7DDCC", rim: "#C8B9A2", smile: "#E7DDCC" } },
+  greige: { title: "Greige", bg: "#FFFFFF", bowl: "#D6CEC3", rim: "#B3A89A", smile: "#D6CEC3", shadow: "#E3DFD9", dark: { bowl: "#E0D9CF", rim: "#BDB2A5", smile: "#E0D9CF" } },
+  taupe: { title: "Pale taupe", bg: "#FFFFFF", bowl: "#CBBFB1", rim: "#A79989", smile: "#CBBFB1", shadow: "#E6E1DB", dark: { bowl: "#D8CDBF", rim: "#B4A696", smile: "#D8CDBF" } },
+  almond: { title: "Almond", bg: "#FFFFFF", bowl: "#D9C7B2", rim: "#B89F84", smile: "#D9C7B2", shadow: "#E6DFD6", dark: { bowl: "#E2D2BF", rim: "#C2AB92", smile: "#E2D2BF" } },
+  pebble: { title: "Light warm grey", bg: "#FFFFFF", bowl: "#CFCBC5", rim: "#A9A49C", smile: "#CFCBC5", shadow: "#E4E2DE", dark: { bowl: "#DAD6D0", rim: "#B4AFA7", smile: "#DAD6D0" } },
+};
+
 /** 碗的画法（bowlFlat 和换颜色的对比图共用）。background 可以覆盖颜色表里的背景，用来比较纯白和米白 */
 export function bowlFlatSvg(v, c, background = c.bg) {
   const bowl = pick(v, c.bowl, c.dark.bowl, "#FFFFFF");

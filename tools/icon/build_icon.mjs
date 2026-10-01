@@ -5,6 +5,7 @@
 //   node build_icon.mjs --palettes                   把 lens 和 bowl 用 PALETTES 里的每套配色各渲染一遍，生成 out/palette-sheet.png
 //   node build_icon.mjs --bowl-colors                扁平的碗按 BOWL_COLORS 里的每种颜色渲染，生成 out/bowl-colors.png
 //   node build_icon.mjs --bowl-colors muted          同上，但用低饱和度的 BOWL_COLORS_MUTED，生成 out/bowl-colors-muted.png
+//   node build_icon.mjs --bowl-colors light          同上，但用浅米色的 BOWL_COLORS_LIGHT，生成 out/bowl-colors-light.png
 //   node build_icon.mjs --install heart              把 heart 方案的三张图装进 App 的 AppIcon.appiconset
 //   node build_icon.mjs --install bowl --palette ink 同上，但用 ink 这套配色（只有 lens 和 bowl 支持）
 // 渲染用的是 sharp（GitHub 上三万多星的 Node 图片库，内置 SVG 渲染）。
@@ -13,7 +14,7 @@ import sharp from "sharp";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { BOWL_COLORS, BOWL_COLORS_MUTED, CONCEPTS, PALETTES, PALETTE_CONCEPTS, bowlFlatSvg } from "./concepts.mjs";
+import { BOWL_COLORS, BOWL_COLORS_LIGHT, BOWL_COLORS_MUTED, CONCEPTS, PALETTES, PALETTE_CONCEPTS, bowlFlatSvg } from "./concepts.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "out");
@@ -162,7 +163,7 @@ async function paletteSheet() {
 /** 碗的颜色对比图：每行一种颜色，列是纯白底、米白底、两个主屏幕大小、深色外观 */
 async function bowlColorSheet(group = "bright") {
   mkdirSync(OUT, { recursive: true });
-  const colors = group === "muted" ? BOWL_COLORS_MUTED : BOWL_COLORS;
+  const colors = { muted: BOWL_COLORS_MUTED, light: BOWL_COLORS_LIGHT }[group] ?? BOWL_COLORS;
   const names = Object.keys(colors);
   const big = 180, small = 60, gap = 24, labelW = 250, top = 70;
   const columns = [big, big, small, small, big];
@@ -204,7 +205,7 @@ async function bowlColorSheet(group = "bright") {
   }
   layers.unshift({ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" font-family="Helvetica, Arial, sans-serif">${labels.join("")}</svg>`), left: 0, top: 0 });
   const sheet = await sharp({ create: { width, height, channels: 4, background: light } }).composite(layers).png().toBuffer();
-  const file = group === "muted" ? "bowl-colors-muted.png" : "bowl-colors.png";
+  const file = { muted: "bowl-colors-muted.png", light: "bowl-colors-light.png" }[group] ?? "bowl-colors.png";
   writeFileSync(join(OUT, file), sheet);
   console.log(`bowl color sheet: ${join(OUT, file)}`);
 }
