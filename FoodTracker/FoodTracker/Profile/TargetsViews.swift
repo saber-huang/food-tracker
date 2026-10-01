@@ -20,31 +20,39 @@ struct TargetsSummaryView: View {
                     .foregroundStyle(.secondary)
             }
             HStack {
-                NutrientColumn(name: String(localized: "蛋白质"), grams: targets.proteinG, color: .blue)
-                NutrientColumn(name: String(localized: "碳水"), grams: targets.carbsG, color: .orange)
-                NutrientColumn(name: String(localized: "脂肪"), grams: targets.fatG, color: .pink)
+                NutrientColumn(name: String(localized: "蛋白质"), value: targets.proteinG.noDecimal, color: Theme.protein)
+                NutrientColumn(name: String(localized: "碳水"), value: targets.carbsG.noDecimal, color: Theme.carbs)
+                NutrientColumn(name: String(localized: "脂肪"), value: targets.fatG.noDecimal, color: Theme.fat)
             }
         }
         .padding(.vertical, 4)
     }
 }
 
-/// 一种营养素：克数 + 名称
+/// 一种营养素：克数 + 名称。数字用正常的文字颜色（彩色的字不好读，也容易被当成可以点的链接），
+/// 名称前面的小色条告诉你是哪一种（和「今日」卡片里的进度条同一个颜色）
 struct NutrientColumn: View {
     let name: String
-    let grams: Double
+    let value: String  // 已经排好版的克数，比如「120」「38.1」
     let color: Color
 
     var body: some View {
-        VStack(spacing: 4) {
-            Text("\(grams.noDecimal) 克")
-                .font(.headline)
-                .foregroundStyle(color)
-            Text(name)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        VStack(spacing: 6) {
+            Text("\(value) 克")
+                .font(.headline.monospacedDigit())
+            HStack(spacing: 5) {
+                Capsule()
+                    .fill(color)
+                    .frame(width: 12, height: 4)
+                Text(name)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .frame(maxWidth: .infinity)
+        // 旁白读成「蛋白质 120 克」
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(name) \(value) 克")
     }
 }
 

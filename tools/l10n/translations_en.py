@@ -142,6 +142,12 @@ LOCALIZABLE = {
     "刚好达到目标": "Right on Target",
     "比目标多 %@ 千卡": "%@ kcal above target",
     "还可以吃 %@ 千卡": "%@ kcal left",
+    # 「今日」卡片：大数字上面的一行小字（数字和单位单独显示）
+    "还可以吃": "Left to eat",
+    "比目标少": "Below target by",
+    "比目标多": "Above target by",
+    # 营养素的旁白：「蛋白质 120 克」
+    "%@ %@ 克": "%1$@ %2$@ g",
     "比目标少 %@ 千卡": "%@ kcal below target",
     "打开月历，选择日期": "Opens the calendar to pick a date",
     "回到今天": "Back to Today",

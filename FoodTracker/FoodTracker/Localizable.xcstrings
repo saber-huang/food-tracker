@@ -1,6 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ %@ 克" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@ g"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ %@ 克"
+          }
+        }
+      }
+    },
     "%@ %@ 克，目标 %@ 克" : {
       "localizations" : {
         "en" : {
@@ -3257,6 +3273,22 @@
         }
       }
     },
+    "比目标多" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Above target by"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比目标多"
+          }
+        }
+      }
+    },
     "比目标多 %@ 千卡" : {
       "localizations" : {
         "en" : {
@@ -3269,6 +3301,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "比目标多 %@ 千卡"
+          }
+        }
+      }
+    },
+    "比目标少" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Below target by"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比目标少"
           }
         }
       }
@@ -4725,6 +4773,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "运动营养联合声明（热量缺口、脂肪比例）：ACSM 等，2016 年"
+          }
+        }
+      }
+    },
+    "还可以吃" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Left to eat"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还可以吃"
           }
         }
       }

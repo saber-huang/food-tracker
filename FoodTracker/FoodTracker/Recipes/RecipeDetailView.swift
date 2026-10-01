@@ -35,9 +35,9 @@ struct RecipeDetailView: View {
                             .foregroundStyle(.secondary)
                     }
                     HStack {
-                        NutrientColumn(name: String(localized: "蛋白质"), grams: recipe.proteinG, color: .blue)
-                        NutrientColumn(name: String(localized: "碳水"), grams: recipe.carbsG, color: .orange)
-                        NutrientColumn(name: String(localized: "脂肪"), grams: recipe.fatG, color: .pink)
+                        NutrientColumn(name: String(localized: "蛋白质"), value: recipe.proteinG.noDecimal, color: Theme.protein)
+                        NutrientColumn(name: String(localized: "碳水"), value: recipe.carbsG.noDecimal, color: Theme.carbs)
+                        NutrientColumn(name: String(localized: "脂肪"), value: recipe.fatG.noDecimal, color: Theme.fat)
                     }
                 }
                 .padding(.vertical, 4)
