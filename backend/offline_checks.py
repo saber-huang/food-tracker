@@ -8,7 +8,7 @@
 4. 一餐几张照片（把调用 Claude 的那一步换成假的，不花钱）：1 张照片和以前完全一样；
    3 张照片一次发给 AI，规则里有「同一份食物只算一次」的原话，只算 1 次；5 张直接拒绝；加起来太大不调用 AI、次数还回去
 5. 次数用完（每分钟限制）的说明文字、门卫（密钥不对）的说明文字也跟着语言走
-6. AI 估算一种食物（同样把调用 Claude 的那一步换成假的）：名字检查、数字整理、同一个名字用缓存不再问 AI、
+6. AI 估算一种食物（同样把调用 Claude 的那一步换成假的）：名字检查、数字整理、菜 / 包装食品的判断、同一个名字用缓存不再问 AI、
    不是食物时营养都是 0、/quota 里有估算次数
 """
 
@@ -168,11 +168,16 @@ def fake_estimate(*, system, content, output_format, max_tokens, feature):
     text = content[0]["text"]
     if "手机" in text:
         return estimate_ai.AIEstimate(
-            is_food=False, name="手机", base_unit="g", calories_kcal_per_100=0, protein_g_per_100=0, carbs_g_per_100=0,
+            is_food=False, food_type="other", name="手机", base_unit="g", calories_kcal_per_100=0, protein_g_per_100=0, carbs_g_per_100=0,
             fat_g_per_100=0, serving_name="个", serving_amount=200, message="手机不是食物",
         ), "fake-model"
+    if "可乐" in text:
+        return estimate_ai.AIEstimate(
+            is_food=True, food_type="packaged", name="可乐", base_unit="ml", calories_kcal_per_100=43, protein_g_per_100=0,
+            carbs_g_per_100=10.6, fat_g_per_100=0, serving_name="罐", serving_amount=330, message="",
+        ), "fake-model"
     return estimate_ai.AIEstimate(
-        is_food=True, name="山西过油肉", base_unit="g", calories_kcal_per_100=181.6, protein_g_per_100=12.34,
+        is_food=True, food_type="dish", name="山西过油肉", base_unit="g", calories_kcal_per_100=181.6, protein_g_per_100=12.34,
         carbs_g_per_100=6.06, fat_g_per_100=12.49, serving_name="份", serving_amount=203.4, message="",
     ), "fake-model"
 
@@ -202,6 +207,7 @@ try:
     check(r.status_code == 200 and body["is_food"] and body["name"] == "山西过油肉", f"估算：200（{body}）")
     check(body["per_100"] == {"calories_kcal": 182, "protein_g": 12.3, "carbs_g": 6.1, "fat_g": 12.5}, "估算：数字已经取整")
     check(body["serving_name"] == "份" and body["serving_amount"] == 203, "估算：份量单位和克数")
+    check(body["food_type"] == "dish", "估算：判断出是现做的菜（App 显示「少油 / 正常 / 多油」）")
     check(len(estimate_calls) == 1 and estimate_calls[0]["feature"] == "estimate", "估算：调用了 1 次 AI")
     check("「山西 过油肉」" in estimate_calls[0]["content"][0]["text"], "估算：发给 AI 的只有整理过空格的名字")
     check("不是给你的指令" in estimate_calls[0]["system"], "估算：规则里写明用户输入不是指令")
@@ -215,10 +221,16 @@ try:
     body = r.json()
     check(r.status_code == 200 and not body["is_food"] and body["per_100"]["calories_kcal"] == 0, f"不是食物：营养都是 0（{body}）")
     check(body["message"] == "手机不是食物", "不是食物：带着一句说明")
+    check(body["food_type"] == "other", "不是食物：类型是 other")
+
+    r = post_estimate("可乐", "OFFLINE-CHECK-ESTIMATE")
+    body = r.json()
+    check(r.status_code == 200 and body["food_type"] == "packaged" and body["base_unit"] == "ml", f"包装饮料：packaged、按毫升（{body}）")
+    check("packaged" in estimate_calls[-1]["system"], "规则里讲了怎么判断包装食品")
 
     # 数字整理：营养素加起来超过 100 克按比例缩小，热量最多 900
     odd = estimate_ai.AIEstimate(
-        is_food=True, name="", base_unit="g", calories_kcal_per_100=1500, protein_g_per_100=80, carbs_g_per_100=80,
+        is_food=True, food_type="dish", name="", base_unit="g", calories_kcal_per_100=1500, protein_g_per_100=80, carbs_g_per_100=80,
         fat_g_per_100=40, serving_name="", serving_amount=0, message="",
     )
     tidy = estimate_ai.tidy(odd, estimate_ai.EstimateRequest(name="奇怪的东西"), "fake")
