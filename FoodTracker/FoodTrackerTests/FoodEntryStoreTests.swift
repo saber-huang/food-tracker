@@ -198,9 +198,18 @@ struct FoodEntryStoreTests {
             values: NutrientValues(caloriesKcal: 158, proteinG: 8, carbsG: 12, fatG: 8), source: .manual,
             amountUnit: .milliliter, serving: ServingChoice(unitID: "cup", unitName: "杯", quantity: 1), foodRef: "catalog:milk")
         context.insert(entry)
+        let dish = FoodEntry(
+            dayKey: 20261002, meal: .lunch, name: "番茄炒蛋", weightG: 200, values: NutrientValues(caloriesKcal: 227),
+            source: .manual, foodRef: "catalog:tomato_egg", oilLevel: .heavy)
+        context.insert(dish)
         try context.save()
 
-        let loaded = try #require(try context.fetch(FetchDescriptor<FoodEntry>()).first)
+        let entries = try context.fetch(FetchDescriptor<FoodEntry>())
+        let loaded = try #require(entries.first { $0.name == "牛奶" })
+        #expect(loaded.oilLevel == nil)  // 不是家常菜：没有油量
+        let loadedDish = try #require(entries.first { $0.name == "番茄炒蛋" })
+        #expect(loadedDish.oilLevel == .heavy && loadedDish.recentFood.oilLevel == .heavy)
+        #expect(EditableItem(entry: loadedDish).oilLevel == .heavy)
         #expect(loaded.amountUnit == .milliliter)
         #expect(loaded.serving == ServingChoice(unitID: "cup", unitName: "杯", quantity: 1))
         #expect(loaded.foodRef == "catalog:milk")

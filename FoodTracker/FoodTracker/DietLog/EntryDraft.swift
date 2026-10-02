@@ -289,6 +289,8 @@ final class EntryDraft {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         // 名称、重量和数字都没变时，保留 AI 原来的把握程度；改过任何一项就显示「已修改」
         let unchanged = original.map { $0.name == trimmedName && $0.weightG == weightG && $0.values == values } ?? false
+        // 家常菜选过的油量：数字没改才保留（自己改了数字，就不再是「多油」那份估算了）
+        let sameNumbers = original.map { $0.weightG == weightG && $0.values == values } ?? false
         return EditableItem(
             id: id,
             name: trimmedName,
@@ -299,6 +301,7 @@ final class EntryDraft {
             dayKey: dayKey,
             amountUnit: amountUnit,
             serving: servingOutput,
-            foodRef: foodRef)
+            foodRef: foodRef,
+            oilLevel: sameNumbers ? original?.oilLevel : nil)
     }
 }

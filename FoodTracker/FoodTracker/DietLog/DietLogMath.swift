@@ -66,6 +66,7 @@ nonisolated struct EditableItem: Identifiable, Equatable {
     var serving: ServingChoice? = nil
     /// 来自哪种食物（catalog:rice、custom:<UUID>）；随手填写、拍照识别的是 nil
     var foodRef: String? = nil
+    var oilLevel: OilLevel? = nil  // 家常菜选的油量（少油 / 多油；正常是 nil）
 }
 
 nonisolated extension EditableItem {

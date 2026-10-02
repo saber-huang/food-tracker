@@ -141,8 +141,8 @@ struct FoodSearchRankingTests {
     private func myFood(_ name: String, kcal: Double = 350, amount: Double? = 200, ai: Bool = false) -> CustomFoodSnapshot {
         CustomFoodSnapshot(
             id: UUID(), name: name, amountUnit: .gram, servingName: "", servingAmount: amount,
-            servingValues: NutrientValues(caloriesKcal: kcal, proteinG: 20, carbsG: 10, fatG: 25), isAIEstimate: ai,
-            lastUsedAt: nil)
+            servingValues: NutrientValues(caloriesKcal: kcal, proteinG: 20, carbsG: 10, fatG: 25), source: ai ? .ai : .user,
+            foodType: ai ? .dish : nil)
     }
 
     @Test("rice / 米饭 / 白米饭：米饭排第一，而且是完全匹配（不显示 AI 估算）")
@@ -378,7 +378,7 @@ struct FoodChoiceSourceTests {
     func customBasis() throws {
         let withWeight = CustomFoodSnapshot(
             id: UUID(), name: "妈妈做的炸酱面", amountUnit: .gram, servingName: "", servingAmount: 450,
-            servingValues: NutrientValues(caloriesKcal: 620), isAIEstimate: false, lastUsedAt: nil)
+            servingValues: NutrientValues(caloriesKcal: 620))
         let a = FoodChoice.custom(withWeight)
         #expect(a.isMine && !a.isEstimate)
         #expect(a.basis.amountUnit == .gram)
@@ -388,8 +388,7 @@ struct FoodChoiceSourceTests {
 
         let noWeight = CustomFoodSnapshot(
             id: UUID(), name: "奶茶", amountUnit: .milliliter, servingName: "杯", servingAmount: nil,
-            servingValues: NutrientValues(caloriesKcal: 300, proteinG: 2, carbsG: 50, fatG: 10), isAIEstimate: false,
-            lastUsedAt: nil)
+            servingValues: NutrientValues(caloriesKcal: 300, proteinG: 2, carbsG: 50, fatG: 10))
         let b = FoodChoice.custom(noWeight)
         #expect(b.basis.amountUnit == nil)  // 没有「克」可选
         #expect(b.units.first?.name == "杯")
@@ -436,6 +435,7 @@ struct FoodChoiceSourceTests {
             amountUnit: .gram, servingName: "份", servingAmount: 200)
         let choice = FoodChoice.aiEstimate(estimate)
         #expect(choice.isAIEstimate && choice.isEstimate && choice.foodRef == nil)
+        #expect(choice.adjustsOil && !choice.suggestsLabel)  // 旧版后端没说类型、按克算：当作菜
         let shown = ServingMath.displayed(ServingMath.values(of: choice.initialSelection, in: choice), isEstimate: true)
         #expect(shown == NutrientValues(caloriesKcal: 350, proteinG: 24, carbsG: 13, fatG: 23))
         #expect(FoodRowText.typical(choice) == "约 180 千卡 / 100 克 · 1 份 · 约 200 克")
@@ -445,7 +445,7 @@ struct FoodChoiceSourceTests {
     func estimateResponse() {
         func response(name: String, unit: String = "g", servingName: String = "份", amount: Double = 200) -> EstimateResponse {
             EstimateResponse(
-                isFood: true, name: name, baseUnit: unit,
+                isFood: true, foodType: "dish", name: name, baseUnit: unit,
                 per100: EstimatedNutrients(caloriesKcal: 177, proteinG: 11.8, carbsG: 6.4, fatG: 11.7),
                 servingName: servingName, servingAmount: amount, message: "", model: "test", remainingToday: 19)
         }

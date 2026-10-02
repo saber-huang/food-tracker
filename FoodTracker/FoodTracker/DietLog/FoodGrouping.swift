@@ -79,6 +79,7 @@ nonisolated struct RecentFood: Identifiable, Hashable, Sendable {
     var servingUnitID: String? = nil
     var foodRef: String? = nil  // 来自哪种食物
     var loggedAt: Date? = nil  // 什么时候记的（算「常吃」用）
+    var oilLevel: OilLevel? = nil  // 上次选的油量（家常菜）
 
     var id: String { FoodNameKey.normalize(name) }
 }

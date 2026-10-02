@@ -2,35 +2,34 @@
 //  FoodServingView.swift
 //  FoodTracker
 //
-//  份量页：搜索结果、最近吃过、我的食物、AI 估算点进来都到这里。
+//  份量页：搜索结果、最近吃过、我的食物、AI 估算、差不多的菜点进来都到这里。
 //  看这一份有多少热量 → 选份量（1 碗 / 半碗 / 克）→ 底部「添加到午餐」。不用再填一张表。
 //  - 自然份量都写「约」（「1 碗 · 约 150 克」）；有秤的人切到「克」直接填（137 克）
-//  - 估算的食物（AI 估算、按做法估算的家常菜）热量取整到 10、写「约」，不假装精确
-//  - AI 估算：可以顺手保存到「我的食物」（默认打开），下次搜同样的名字直接出现；数字不对可以先改再保存
-//  - 我的食物：可以编辑、删除（删掉不影响已经记过的饮食记录）
+//  - 估算的食物（AI 估算、差不多的菜、按做法估算的家常菜）热量取整到 10、写「约」，不假装精确
+//  - 菜可以选「少油 / 正常 / 多油」：一盘菜有几克脂肪谁也说不准，但油大不大看得出来。不让人改营养数字
+//  - AI 估算、差不多的菜：可以顺手保存到「我的食物」（默认打开），下次搜同样的名字直接出现
+//  - AI 觉得是包装食品：提示包装上的营养成分表更准，可以照着填
+//  - 我的食物：照包装填的可以修改；估算出来的只能改名字；都可以删除（删掉不影响已经记过的饮食记录）
 //
 
 import SwiftData
 import SwiftUI
 
-/// AI 估算的数字，交给「我的食物」编辑页时带上的初始值
+/// 照包装填写时带进去的初始值（搜索的名字）
 struct CustomFoodSeed: Hashable {
     var name: String
-    var amountUnit: AmountUnit = .gram
-    var servingName: String = ""
-    var servingAmount: Double?
-    var servingValues: NutrientValues?
-    var isAIEstimate = false
 }
 
 struct FoodServingView: View {
     let choice: FoodChoice
     let meal: MealType
     let dayKey: Int
-    /// AI 估算：「修改营养数据」→ 打开「我的食物」编辑页，填好 AI 的数字
-    var onEditEstimate: ((CustomFoodSeed) -> Void)?
-    /// 我的食物：编辑
+    /// AI 觉得是包装食品：「照营养成分表填写」
+    var onFillFromLabel: ((String) -> Void)?
+    /// 我的食物（照包装填的）：修改
     var onEditCustom: ((UUID) -> Void)?
+    /// 我的食物改了名字：换成新的样子
+    var onRenamedCustom: ((CustomFoodSnapshot) -> Void)?
     /// 我的食物删掉了：回到搜索页
     var onDeletedCustom: (() -> Void)?
     /// 点了「添加到午餐」：交给打开它的页面存进去
@@ -39,24 +38,30 @@ struct FoodServingView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var selection: ServingSelection
     @State private var amountText: String
+    @State private var oil: OilLevel
     @State private var saveToMyFoods = true
     @State private var confirmingDelete = false
+    @State private var renaming = false
+    @State private var newName = ""
     @State private var didAdd = false
     @FocusState private var focusedField: Field?
     private enum Field { case amount }
 
     init(
-        choice: FoodChoice, meal: MealType, dayKey: Int, onEditEstimate: ((CustomFoodSeed) -> Void)? = nil,
-        onEditCustom: ((UUID) -> Void)? = nil, onDeletedCustom: (() -> Void)? = nil, onAdd: @escaping (EditableItem) -> Void
+        choice: FoodChoice, meal: MealType, dayKey: Int, onFillFromLabel: ((String) -> Void)? = nil,
+        onEditCustom: ((UUID) -> Void)? = nil, onRenamedCustom: ((CustomFoodSnapshot) -> Void)? = nil,
+        onDeletedCustom: (() -> Void)? = nil, onAdd: @escaping (EditableItem) -> Void
     ) {
         self.choice = choice
         self.meal = meal
         self.dayKey = dayKey
-        self.onEditEstimate = onEditEstimate
+        self.onFillFromLabel = onFillFromLabel
         self.onEditCustom = onEditCustom
+        self.onRenamedCustom = onRenamedCustom
         self.onDeletedCustom = onDeletedCustom
         self.onAdd = onAdd
         _selection = State(initialValue: choice.initialSelection)
+        _oil = State(initialValue: choice.adjustsOil ? choice.initialOil : .normal)
         let amount = ServingMath.amount(of: choice.initialSelection, in: choice)
         _amountText = State(initialValue: amount.map { NumberText.text(from: DietLogMath.round1($0)) } ?? "")
     }
@@ -71,9 +76,10 @@ struct FoodServingView: View {
 
     private var amount: Double? { ServingMath.amount(of: effectiveSelection, in: choice) }
 
-    /// 显示和保存的数字（估算的已经取整）
+    /// 显示和保存的数字：先按油量调整，估算的再取整
     private var shownValues: NutrientValues {
-        ServingMath.displayed(ServingMath.values(of: effectiveSelection, in: choice), isEstimate: choice.isEstimate)
+        let values = ServingMath.oilAdjusted(ServingMath.values(of: effectiveSelection, in: choice), oil)
+        return ServingMath.displayed(values, isEstimate: choice.isEstimate)
     }
 
     private var amountError: String? {
@@ -97,6 +103,9 @@ struct FoodServingView: View {
         return 1
     }
 
+    /// AI 估算、差不多的菜：可以保存到我的食物
+    private var isSavableEstimate: Bool { choice.isAIEstimate || choice.isSimilar }
+
     // MARK: - 页面
 
     var body: some View {
@@ -114,8 +123,14 @@ struct FoodServingView: View {
                         prompt: String(localized: "请输入"))
                 }
             }
-            if choice.isAIEstimate {
-                estimateSection
+            if choice.adjustsOil {
+                oilSection
+            }
+            if choice.suggestsLabel {
+                labelHintSection
+            }
+            if isSavableEstimate {
+                saveSection
             }
             if case .custom(let id) = choice.origin {
                 customSection(id)
@@ -148,9 +163,14 @@ struct FoodServingView: View {
         } message: {
             Text("只从「我的食物」里删除，已经记过的饮食记录不受影响。")
         }
+        .alert(String(localized: "改个名字"), isPresented: $renaming) {
+            TextField("名称", text: $newName)
+            Button("保存", action: renameCustomFood)
+            Button("取消", role: .cancel) {}
+        }
     }
 
-    /// 名字和小标签：AI 估算 ⓘ / 我的食物 / 按常见做法估算
+    /// 名字和小标签：AI 估算 ⓘ / 我的食物 / 按「青椒肉丝」估算 / 按常见做法估算
     private var header: some View {
         VStack(alignment: .leading, spacing: AppSpacing.xxs) {
             Text(choice.name)
@@ -161,8 +181,19 @@ struct FoodServingView: View {
             if choice.isAIEstimate {
                 AIEstimateBadge()
             } else if choice.isMine {
-                FoodTag(text: String(localized: "我的食物"))
-                    .padding(.top, AppSpacing.xxs)
+                HStack(spacing: AppSpacing.xs) {
+                    FoodTag(text: String(localized: "我的食物"))
+                    if let basedOn = choice.basedOnName {
+                        Text("按「\(basedOn)」估算")
+                            .font(AppTypography.detail)
+                            .foregroundStyle(AppColors.textSecondary)
+                    }
+                }
+                .padding(.top, AppSpacing.xxs)
+            } else if let basedOn = choice.basedOnName {
+                Text("按「\(basedOn)」的常见做法估算，仅供参考")
+                    .font(AppTypography.detail)
+                    .foregroundStyle(AppColors.textSecondary)
             } else if choice.isEstimate {
                 Text("按常见做法估算，仅供参考")
                     .font(AppTypography.detail)
@@ -206,7 +237,7 @@ struct FoodServingView: View {
         .appCard(.primary)
     }
 
-    /// 自己建的食物只填了热量（营养素是选填的）：写「没有填写」，不显示三个「0 克」
+    /// 自己填的食物只填了热量（营养素是选填的）：写「没有填写」，不显示三个「0 克」
     private var macrosMissing: Bool {
         guard choice.isMine else { return false }
         let values: NutrientValues
@@ -217,14 +248,38 @@ struct FoodServingView: View {
         return values.caloriesKcal > 0 && values.proteinG == 0 && values.carbsG == 0 && values.fatG == 0
     }
 
-    /// 份量下面的一行灰字：每 100 克多少千卡
+    /// 份量下面的一行灰字：每 100 克多少千卡（选了油量的，按选的算）
     private var per100Footer: String? {
         guard case .per100(let per100, let unit) = choice.basis else { return nil }
-        return PortionText.per100(per100.caloriesKcal, unit: unit, isEstimate: choice.isEstimate)
+        let kcal = ServingMath.oilAdjusted(per100, oil).caloriesKcal
+        return PortionText.per100(kcal, unit: unit, isEstimate: choice.isEstimate)
     }
 
-    /// AI 估算：保存到我的食物、修改数字
-    private var estimateSection: some View {
+    /// 少油 / 正常 / 多油
+    private var oilSection: some View {
+        AppFormSection(
+            String(localized: "油量"),
+            footer: String(localized: "按常见做法估算。看着油大就选「多油」，清淡就选「少油」，脂肪和热量会跟着变。")
+        ) {
+            AppSegmentedControl(title: String(localized: "油量"), selection: $oil, options: OilLevel.allCases) { $0.title }
+                .padding(AppSpacing.sm)
+        }
+    }
+
+    /// AI 觉得是包装食品：营养成分表比估算准
+    private var labelHintSection: some View {
+        AppFormSection(nil, footer: String(localized: "包装背面的营养成分表比 AI 估算更准。")) {
+            Button {
+                onFillFromLabel?(choice.name)
+            } label: {
+                AppFormLinkLabel(title: String(localized: "照营养成分表填写"))
+            }
+            .buttonStyle(AppPressStyle(scales: false))
+        }
+    }
+
+    /// AI 估算、差不多的菜：保存到我的食物
+    private var saveSection: some View {
         AppFormSection(nil, footer: String(localized: "保存后，下次搜索「\(choice.name)」会直接出现，不用再估算。")) {
             AppFormRow {
                 Toggle(isOn: $saveToMyFoods) {
@@ -233,23 +288,21 @@ struct FoodServingView: View {
                 }
                 .tint(AppColors.brand)
             }
-            AppFormDivider()
-            Button {
-                onEditEstimate?(estimateSeed)
-            } label: {
-                AppFormLinkLabel(title: String(localized: "修改营养数据"))
-            }
-            .buttonStyle(AppPressStyle(scales: false))
         }
     }
 
-    /// 我的食物：编辑、删除
+    /// 我的食物：照包装填的可以修改；估算出来的只能改名字（没人说得准一盘菜有几克脂肪）；都可以删除
     private func customSection(_ id: UUID) -> some View {
         AppFormSection(nil) {
             Button {
-                onEditCustom?(id)
+                if choice.isEstimate {
+                    newName = choice.name
+                    renaming = true
+                } else {
+                    onEditCustom?(id)
+                }
             } label: {
-                AppFormLinkLabel(title: String(localized: "编辑这个食物"))
+                AppFormLinkLabel(title: choice.isEstimate ? String(localized: "改个名字") : String(localized: "修改营养成分表"))
             }
             .buttonStyle(AppPressStyle(scales: false))
             AppFormDivider()
@@ -289,23 +342,11 @@ struct FoodServingView: View {
         selection = .natural(unitID: id, quantity: ServingMath.stepped(quantity, by: direction, step: unit.step))
     }
 
-    /// AI 估算的这一份，交给编辑页的初始值
-    private var estimateSeed: CustomFoodSeed {
-        let unit = choice.units.first
-        var values: NutrientValues?
-        if case .per100(let per100, _) = choice.basis, let unit {
-            values = ServingMath.displayed(DietLogMath.scaled(per100, toWeightG: unit.amount), isEstimate: true)
-        }
-        return CustomFoodSeed(
-            name: choice.name, amountUnit: choice.basis.amountUnit ?? .gram, servingName: unit?.name ?? "",
-            servingAmount: unit?.amount, servingValues: values, isAIEstimate: true)
-    }
-
     private func add() {
         guard canAdd, !didAdd else { return }
         focusedField = nil
         var foodRef = choice.foodRef
-        if choice.isAIEstimate, saveToMyFoods {
+        if isSavableEstimate, saveToMyFoods {
             foodRef = saveEstimateToMyFoods()
         }
         if case .custom(let id) = choice.origin {
@@ -317,37 +358,52 @@ struct FoodServingView: View {
         }
         let item = EditableItem(
             id: UUID(), name: choice.name, weightG: amount.map(DietLogMath.round1), values: shownValues, confidence: nil,
-            meal: meal, dayKey: dayKey, amountUnit: choice.basis.amountUnit ?? .gram, serving: serving, foodRef: foodRef)
+            meal: meal, dayKey: dayKey, amountUnit: choice.basis.amountUnit ?? .gram, serving: serving, foodRef: foodRef,
+            oilLevel: choice.adjustsOil && oil != .normal ? oil : nil)
         didAdd = true
         ProductLog.log(.foodLogged, detail: originTag, name: choice.name)
         onAdd(item)
     }
 
-    /// 把 AI 估算的结果存成「我的食物」，返回它的来源标记
+    /// 把 AI 估算 / 差不多的菜存成「我的食物」（存正常做法的 1 份），返回它的来源标记
     private func saveEstimateToMyFoods() -> String? {
-        let seed = estimateSeed
-        guard let values = seed.servingValues else { return nil }
+        guard let unit = choice.units.first, case .per100(let per100, let amountUnit) = choice.basis else { return nil }
+        // 存不取整到 10 的数字（显示时再取整）：免得取整两次，每 100 克从 150 变成 160
+        let values = DietLogMath.rounded(DietLogMath.scaled(per100, toWeightG: unit.amount))
+        var basedOnRef: String?
+        if case .similar(let id) = choice.origin { basedOnRef = FoodRef.catalog(id) }
+        let foodType: EstimatedFoodType = choice.adjustsOil ? .dish : (choice.suggestsLabel ? .packaged : .other)
         let food = CustomFood(
-            name: seed.name, amountUnit: seed.amountUnit, servingName: seed.servingName, servingAmount: seed.servingAmount,
-            servingValues: values, source: .ai)
+            name: choice.name, amountUnit: amountUnit, servingName: unit.name, servingAmount: unit.amount,
+            servingValues: values, source: choice.isSimilar ? .similar : .ai, foodType: foodType, basedOnRef: basedOnRef)
         food.lastUsedAt = .now
         modelContext.insert(food)
-        ProductLog.log(.customFoodCreated, detail: "ai")
+        ProductLog.log(.customFoodCreated, detail: choice.isSimilar ? "similar" : "ai")
         return FoodRef.custom(food.id)
     }
 
-    private func markCustomFoodUsed(_ id: UUID) {
+    private func customFood(_ id: UUID) -> CustomFood? {
         let descriptor = FetchDescriptor<CustomFood>(predicate: #Predicate { $0.id == id })
-        if let food = try? modelContext.fetch(descriptor).first { food.lastUsedAt = .now }
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    private func markCustomFoodUsed(_ id: UUID) {
+        customFood(id)?.lastUsedAt = .now
+    }
+
+    private func renameCustomFood() {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard case .custom(let id) = choice.origin, EntryValidator.nameError(trimmed) == nil, let food = customFood(id)
+        else { return }
+        food.name = trimmed
+        try? modelContext.save()
+        onRenamedCustom?(food.snapshot)
     }
 
     private func deleteCustomFood() {
-        guard case .custom(let id) = choice.origin else { return }
-        let descriptor = FetchDescriptor<CustomFood>(predicate: #Predicate { $0.id == id })
-        if let food = try? modelContext.fetch(descriptor).first {
-            modelContext.delete(food)
-            try? modelContext.save()
-        }
+        guard case .custom(let id) = choice.origin, let food = customFood(id) else { return }
+        modelContext.delete(food)
+        try? modelContext.save()
         onDeletedCustom?()
     }
 
@@ -357,11 +413,12 @@ struct FoodServingView: View {
         case .custom: "custom"
         case .recent: "recent"
         case .aiEstimate: "ai"
+        case .similar: "similar"
         }
     }
 }
 
-/// 小标签：「我的食物」「最近吃过」「AI 估算」
+/// 小标签：「我的食物」「最近吃过」「AI 估算」「估算」
 struct FoodTag: View {
     let text: String
     var emphasized = true

@@ -413,38 +413,6 @@
         }
       }
     },
-    "1 %@大约" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 %@ is about"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 %@大约"
-          }
-        }
-      }
-    },
-    "1 %@的热量和营养" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calories and Nutrition per %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 %@的热量和营养"
-          }
-        }
-      }
-    },
     "1 份" : {
       "localizations" : {
         "en" : {
@@ -525,18 +493,18 @@
         }
       }
     },
-    "AI 估算会把你输入的食物名称发给 AI。也可以不用 AI，自己创建这个食物。" : {
+    "AI 估算会把你输入的食物名称发给 AI。不想用 AI 的话，可以选一道差不多的菜。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AI estimates send the food name you typed to AI. You can also skip AI and create this food yourself."
+            "value" : "AI estimates send the food name you typed to AI. If you'd rather not use AI, pick a similar dish."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AI 估算会把你输入的食物名称发给 AI。也可以不用 AI，自己创建这个食物。"
+            "value" : "AI 估算会把你输入的食物名称发给 AI。不想用 AI 的话，可以选一道差不多的菜。"
           }
         }
       }
@@ -665,6 +633,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "。你的 BMI 超过 %@，为了避免目标高得吃不下，按 BMI %@ 对应的体重 %@ 公斤来算："
+          }
+        }
+      }
+    },
+    "一包有多少" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Package Size"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一包有多少"
+          }
+        }
+      }
+    },
+    "一包的单位" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Package unit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一包的单位"
           }
         }
       }
@@ -877,6 +877,22 @@
         }
       }
     },
+    "主食和面点" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Staples and Dumplings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主食和面点"
+          }
+        }
+      }
+    },
     "久坐" : {
       "localizations" : {
         "en" : {
@@ -893,18 +909,18 @@
         }
       }
     },
-    "今天的 AI 估算次数用完了，可以先创建自定义食物" : {
+    "今天的 AI 估算次数用完了，可以先选一道差不多的菜" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You've used today's AI estimates. You can create a custom food for now"
+            "value" : "You've used today's AI estimates. You can pick a similar dish for now"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天的 AI 估算次数用完了，可以先创建自定义食物"
+            "value" : "今天的 AI 估算次数用完了，可以先选一道差不多的菜"
           }
         }
       }
@@ -1249,6 +1265,22 @@
         }
       }
     },
+    "估算" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估算"
+          }
+        }
+      }
+    },
     "低于安全下限，按 %@ 千卡" : {
       "localizations" : {
         "en" : {
@@ -1505,18 +1537,18 @@
         }
       }
     },
-    "例如：妈妈做的红烧肉" : {
+    "例如：某某牌燕麦奶" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "e.g. Mom's braised pork"
+            "value" : "e.g. Brand X Oat Milk"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "例如：妈妈做的红烧肉"
+            "value" : "例如：某某牌燕麦奶"
           }
         }
       }
@@ -1649,18 +1681,18 @@
         }
       }
     },
-    "修改营养数据" : {
+    "修改营养成分表" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit Nutrition"
+            "value" : "Edit Nutrition Label"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "修改营养数据"
+            "value" : "修改营养成分表"
           }
         }
       }
@@ -1789,6 +1821,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "先发到本 App 的服务器，再由服务器转交给 Anthropic。结果只发回你的手机。"
+          }
+        }
+      }
+    },
+    "先填上面「每份」是多少克（毫升），才能按一包记录。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fill in the serving size above first to log by package."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先填上面「每份」是多少克（毫升），才能按一包记录。"
           }
         }
       }
@@ -2049,6 +2097,22 @@
         }
       }
     },
+    "净含量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net Contents"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "净含量"
+          }
+        }
+      }
+    },
     "减脂" : {
       "localizations" : {
         "en" : {
@@ -2109,38 +2173,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "刚好达到目标"
-          }
-        }
-      }
-    },
-    "创建我的食物" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Custom Food"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "创建我的食物"
-          }
-        }
-      }
-    },
-    "创建自定义食物" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create Custom Food"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "创建自定义食物"
           }
         }
       }
@@ -2289,6 +2321,38 @@
         }
       }
     },
+    "包装背面的营养成分表比 AI 估算更准。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The nutrition label on the package is more accurate than an AI estimate."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "包装背面的营养成分表比 AI 估算更准。"
+          }
+        }
+      }
+    },
+    "包装食品：照营养成分表填写" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Packaged Food: Enter from the Label"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "包装食品：照营养成分表填写"
+          }
+        }
+      }
+    },
     "千卡" : {
       "localizations" : {
         "en" : {
@@ -2369,6 +2433,22 @@
         }
       }
     },
+    "千焦" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kJ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "千焦"
+          }
+        }
+      }
+    },
     "午餐" : {
       "localizations" : {
         "en" : {
@@ -2429,22 +2509,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "厘米 / 公斤"
-          }
-        }
-      }
-    },
-    "参考份量" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reference Serving"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "参考份量"
           }
         }
       }
@@ -2589,22 +2653,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "可以补拍不同角度，或同一餐中的其他食物。"
-          }
-        }
-      }
-    },
-    "可以让 AI 按常见做法估算，或者自己创建这个食物。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Let AI estimate it from a typical recipe, or create the food yourself."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "可以让 AI 按常见做法估算，或者自己创建这个食物。"
           }
         }
       }
@@ -2881,6 +2929,22 @@
         }
       }
     },
+    "多油" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oily"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "多油"
+          }
+        }
+      }
+    },
     "女" : {
       "localizations" : {
         "en" : {
@@ -2977,6 +3041,22 @@
         }
       }
     },
+    "家常菜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home-Style Dishes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "家常菜"
+          }
+        }
+      }
+    },
     "少一点" : {
       "localizations" : {
         "en" : {
@@ -2989,6 +3069,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "少一点"
+          }
+        }
+      }
+    },
+    "少油" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "少油"
           }
         }
       }
@@ -3353,6 +3449,22 @@
         }
       }
     },
+    "快餐和小吃" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fast Food and Snacks"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快餐和小吃"
+          }
+        }
+      }
+    },
     "怎么算的" : {
       "localizations" : {
         "en" : {
@@ -3641,6 +3753,38 @@
         }
       }
     },
+    "按「%@」估算" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated from “%@”"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按「%@」估算"
+          }
+        }
+      }
+    },
+    "按「%@」的常见做法估算，仅供参考" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated from a typical “%@”, for reference only"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按「%@」的常见做法估算，仅供参考"
+          }
+        }
+      }
+    },
     "按三大营养素算约 %@ 千卡，和填写的热量差得比较多，可以再核对一下。" : {
       "localizations" : {
         "en" : {
@@ -3705,6 +3849,22 @@
         }
       }
     },
+    "按常见做法估算。看着油大就选「多油」，清淡就选「少油」，脂肪和热量会跟着变。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated from a typical recipe. If it looks oily, choose Oily; if it's light, choose Light. Fat and calories adjust to match."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按常见做法估算。看着油大就选「多油」，清淡就选「少油」，脂肪和热量会跟着变。"
+          }
+        }
+      }
+    },
     "按常见做法估算份量和营养…" : {
       "localizations" : {
         "en" : {
@@ -3737,18 +3897,18 @@
         }
       }
     },
-    "按重量还是容量" : {
+    "挑一道做法差不多的菜，营养按它估算，名字照样记成「%@」。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "By Weight or Volume"
+            "value" : "Pick a dish that's cooked in a similar way. Nutrition is estimated from it, and the entry is still logged as “%@”."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "按重量还是容量"
+            "value" : "挑一道做法差不多的菜，营养按它估算，名字照样记成「%@」。"
           }
         }
       }
@@ -3769,18 +3929,18 @@
         }
       }
     },
-    "换个更具体的叫法试试，或者自己创建这个食物。" : {
+    "换个更具体的叫法试试。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Try a more specific name, or create the food yourself."
+            "value" : "Try a more specific name."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "换个更具体的叫法试试，或者自己创建这个食物。"
+            "value" : "换个更具体的叫法试试。"
           }
         }
       }
@@ -3893,6 +4053,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "收起蛋白质、碳水、脂肪"
+          }
+        }
+      }
+    },
+    "改个名字" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "改个名字"
+          }
+        }
+      }
+    },
+    "数字太大了，请检查单位" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That number is too large. Please check the unit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数字太大了，请检查单位"
           }
         }
       }
@@ -4549,6 +4741,102 @@
         }
       }
     },
+    "正常" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正常"
+          }
+        }
+      }
+    },
+    "每 100 克" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per 100 g"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每 100 克"
+          }
+        }
+      }
+    },
+    "每 100 克（毫升）不会超过约 900 千卡（3766 千焦），请检查单位" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per 100 g (ml) can't be more than about 900 kcal (3,766 kJ). Please check the unit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每 100 克（毫升）不会超过约 900 千卡（3766 千焦），请检查单位"
+          }
+        }
+      }
+    },
+    "每 100 毫升" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per 100 ml"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每 100 毫升"
+          }
+        }
+      }
+    },
+    "每份" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per Serving"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每份"
+          }
+        }
+      }
+    },
+    "每份按" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serving Measured In"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每份按"
+          }
+        }
+      }
+    },
     "每周运动 1～3 次" : {
       "localizations" : {
         "en" : {
@@ -4689,22 +4977,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每餐可接受的烹饪时间（分钟）"
-          }
-        }
-      }
-    },
-    "比如「1 份 约 220 克」。不知道重量可以不填，之后按份数记。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "For example, “1 serving ≈ 220 g”. If you don't know the weight, leave it blank and log by servings."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "比如「1 份 约 220 克」。不知道重量可以不填，之后按份数记。"
           }
         }
       }
@@ -4869,6 +5141,22 @@
         }
       }
     },
+    "没有找到，换个字试试" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing found. Try another word"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有找到，换个字试试"
+          }
+        }
+      }
+    },
     "没有换成功" : {
       "localizations" : {
         "en" : {
@@ -4933,6 +5221,22 @@
         }
       }
     },
+    "油量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oil"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "油量"
+          }
+        }
+      }
+    },
     "活动量" : {
       "localizations" : {
         "en" : {
@@ -4961,6 +5265,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "添加一项"
+          }
+        }
+      }
+    },
+    "添加包装食品" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Packaged Food"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加包装食品"
           }
         }
       }
@@ -5073,6 +5393,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "热量需要在 0～5000 千卡之间"
+          }
+        }
+      }
+    },
+    "照着包装背面的表抄。中国的包装能量一般写千焦（kJ），直接照抄，App 会换算成千卡。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy the table on the back of the package. Energy is often listed in kilojoules (kJ); just copy it and the app converts it to kcal."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "照着包装背面的表抄。中国的包装能量一般写千焦（kJ），直接照抄，App 会换算成千卡。"
+          }
+        }
+      }
+    },
+    "照营养成分表填写" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter from the Nutrition Label"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "照营养成分表填写"
           }
         }
       }
@@ -5381,6 +5733,22 @@
         }
       }
     },
+    "碳水化合物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carbohydrate"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "碳水化合物"
+          }
+        }
+      }
+    },
     "磅" : {
       "localizations" : {
         "en" : {
@@ -5521,6 +5889,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "等待超时。检查网络后再试一次。"
+          }
+        }
+      }
+    },
+    "筛选" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "筛选"
+          }
+        }
+      }
+    },
+    "筛选，比如「肉丝」" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter, e.g. “pork”"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "筛选，比如「肉丝」"
           }
         }
       }
@@ -5701,22 +6101,6 @@
         }
       }
     },
-    "编辑我的食物" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit Custom Food"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "编辑我的食物"
-          }
-        }
-      }
-    },
     "编辑资料" : {
       "localizations" : {
         "en" : {
@@ -5729,22 +6113,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "编辑资料"
-          }
-        }
-      }
-    },
-    "编辑这个食物" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit This Food"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "编辑这个食物"
           }
         }
       }
@@ -5777,6 +6145,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "联系邮箱稍后公布。"
+          }
+        }
+      }
+    },
+    "能量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energy"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "能量"
+          }
+        }
+      }
+    },
+    "能量的单位" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energy Unit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "能量的单位"
+          }
+        }
+      }
+    },
+    "能量要大于 0" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energy must be greater than 0"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "能量要大于 0"
           }
         }
       }
@@ -5893,6 +6309,38 @@
         }
       }
     },
+    "菜可以让 AI 按常见做法估算，也可以选一道差不多的菜。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For a dish, let AI estimate it from a typical recipe, or pick a similar dish."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "菜可以让 AI 按常见做法估算，也可以选一道差不多的菜。"
+          }
+        }
+      }
+    },
+    "营养成分表" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutrition Label"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "营养成分表"
+          }
+        }
+      }
+    },
     "营养数据为估算值，仅供参考。" : {
       "localizations" : {
         "en" : {
@@ -5989,6 +6437,22 @@
         }
       }
     },
+    "蛋白质、脂肪、碳水加起来比这一份还重，请检查单位" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protein, fat and carbs add up to more than the serving. Please check the units"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蛋白质、脂肪、碳水加起来比这一份还重，请检查单位"
+          }
+        }
+      }
+    },
     "蛋白质建议：国际运动营养学会立场声明，2017 年" : {
       "localizations" : {
         "en" : {
@@ -6001,6 +6465,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "蛋白质建议：国际运动营养学会立场声明，2017 年"
+          }
+        }
+      }
+    },
+    "表上写的是" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Label Shows"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表上写的是"
           }
         }
       }
@@ -6413,6 +6893,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请输入热量"
+          }
+        }
+      }
+    },
+    "请输入能量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the energy"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入能量"
           }
         }
       }
@@ -7137,6 +7633,22 @@
         }
       }
     },
+    "选一道差不多的菜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick a Similar Dish"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选一道差不多的菜"
+          }
+        }
+      }
+    },
     "选填" : {
       "localizations" : {
         "en" : {
@@ -7149,6 +7661,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选填"
+          }
+        }
+      }
+    },
+    "选填。填了以后，记录时可以直接选「1 包」「半包」。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional. Fill it in to log “1 pack” or “½ pack” directly."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选填。填了以后，记录时可以直接选「1 包」「半包」。"
           }
         }
       }
@@ -7373,6 +7901,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "需要先同意使用 AI"
+          }
+        }
+      }
+    },
+    "需要在 0～5000 之间" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Must be between 0 and 5,000"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要在 0～5000 之间"
           }
         }
       }

@@ -73,14 +73,42 @@ nonisolated struct CustomFoodSnapshot: Identifiable, Hashable, Sendable {
     let name: String
     let amountUnit: AmountUnit
     let servingName: String
-    let servingAmount: Double?  // 参考份量多少克（毫升）；nil = 不知道重量
+    let servingAmount: Double?  // 1 份多少克（毫升）；nil = 不知道重量
     let servingValues: NutrientValues  // 1 份的营养
-    let isAIEstimate: Bool
-    let lastUsedAt: Date?
+    var source: CustomFoodSource = .user
+    var labelBasis: NutritionLabelBasis? = nil  // 照包装填写的：营养成分表按什么写
+    var packageName: String? = nil  // 一包的单位（PackageUnit 的 id）
+    var packageAmount: Double? = nil  // 一包多少克（毫升）
+    var foodType: EstimatedFoodType? = nil
+    var basedOnRef: String? = nil  // 差不多的菜：按哪道菜估算的
+    var lastUsedAt: Date? = nil
 
+    var isAIEstimate: Bool { source == .ai }
+    /// 数字是估算的（AI 估算、差不多的菜）：取整、写「约」
+    var isEstimate: Bool { source != .user }
+    /// 能选油量：估算出来的菜（AI 说是菜，或者按一道家常菜估算的；按克算）
+    var adjustsOil: Bool { isEstimate && foodType == .dish && amountUnit == .gram }
+    /// 按哪道菜估算的（显示「按「青椒肉丝」估算」）
+    var basedOnName: String? { FoodCatalog.shared.food(ref: basedOnRef)?.displayName }
+
+    /// 「1 份」：没写单位名就是「份」
     var servingUnit: ServingUnit {
         let name = servingName.trimmingCharacters(in: .whitespaces)
         return ServingUnit.named(name.isEmpty ? String(localized: "份") : name, id: "custom", amount: servingAmount ?? 0)
+    }
+
+    /// 「1 包」：照包装填写、填了一包多重的才有（每份的表还要知道每份多重，才能换算）
+    var packageUnit: ServingUnit? {
+        guard let unit = PackageUnit.named(packageName), let amount = packageAmount, amount > 0 else { return nil }
+        if labelBasis == .perServing, (servingAmount ?? 0) <= 0 { return nil }
+        return unit.servingUnit(amount: amount)
+    }
+
+    /// 记录时能选的自然份量。每 100 克的营养成分表没有「份」：只按克数，或者按一包
+    var units: [ServingUnit] {
+        var units: [ServingUnit] = labelBasis == .per100 ? [] : [servingUnit]
+        if let packageUnit { units.append(packageUnit) }
+        return units
     }
 }
 

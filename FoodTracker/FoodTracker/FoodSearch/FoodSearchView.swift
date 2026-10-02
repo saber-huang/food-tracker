@@ -6,8 +6,8 @@
 //  - 顶部：记到哪一餐（早餐 / 午餐 / 晚餐 / 加餐）和搜索框
 //  - 还没打字：最近吃过、常吃（过去 30 天自动算出来）、我的食物；第一次用时是几种常见食物
 //  - 打了字：食物库、我的食物、最近吃过一起搜（排序和去重见 FoodSearch.swift）
-//  - 搜不到：「没有找到完全匹配的结果」+「AI 估算」（主要）+「创建自定义食物」（次要），永远有路可走；
-//    知道热量的（比如包装上写着）也可以「直接填写热量」
+//  - 搜不到：「没有找到完全匹配的结果」+「AI 估算」（主要）+「选一道差不多的菜」（次要，不用 AI），永远有路可走。
+//    菜品没有营养成分表，所以不让人手动填营养；包装食品可以「照营养成分表填写」；知道热量的可以「直接填写热量」
 //  点进一种食物是份量页（FoodServingView），在同一个弹出页里往里推，返回就回到搜索结果
 //
 
@@ -18,7 +18,8 @@ import SwiftUI
 enum FoodRoute: Hashable {
     case serving(FoodChoice)
     case aiEstimate(String)
-    case newCustomFood(CustomFoodSeed)
+    case similarDish(String)  // 选一道差不多的菜（用户搜的名字）
+    case newCustomFood(CustomFoodSeed)  // 照包装填写
     case editCustomFood(UUID)
 }
 
@@ -184,7 +185,7 @@ struct FoodSearchSheet: View {
                 ForEach(Array(customSnapshots.prefix(20).enumerated()), id: \.element.id) { index, food in
                     if index > 0 { AppFormDivider() }
                     let choice = FoodChoice.custom(food)
-                    FoodChoiceRow(choice: choice, subtitle: FoodRowText.typical(choice), tags: food.isAIEstimate ? [.aiEstimate] : []) {
+                    FoodChoiceRow(choice: choice, subtitle: FoodRowText.typical(choice), tags: estimateTags(food)) {
                         open(choice)
                     }
                 }
@@ -252,21 +253,33 @@ struct FoodSearchSheet: View {
 
     private func tags(for result: FoodSearchResult) -> [FoodRowTag] {
         var tags: [FoodRowTag] = []
-        if result.choice.isMine { tags.append(.mine) }
-        if result.choice.isMine, result.choice.isEstimate { tags.append(.aiEstimate) }
+        if case .custom(let id) = result.choice.origin {
+            tags.append(.mine)
+            if let food = customSnapshots.first(where: { $0.id == id }) { tags += estimateTags(food) }
+        }
         // 我的食物不再加「最近吃过」：下面那行写的是上次的份量，已经看得出来；最多两个标签，不挤
         if result.isRecent, !result.choice.isMine { tags.append(.recent) }
         return tags
     }
 
-    /// 一个都没搜到：不是死路，AI 估算（主要）或者自己建
+    /// 我的食物是估算出来的：「AI 估算」或「估算」（差不多的菜）
+    private func estimateTags(_ food: CustomFoodSnapshot) -> [FoodRowTag] {
+        switch food.source {
+        case .ai: [.aiEstimate]
+        case .similar: [.estimate]
+        case .user: []
+        }
+    }
+
+    /// 一个都没搜到：不是死路。菜：AI 估算（主要）或者选一道差不多的菜（不用 AI）；
+    /// 包装食品照营养成分表填；知道热量的直接填
     private var noResult: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                 Text("没有找到完全匹配的结果")
                     .font(AppTypography.sectionTitle)
                     .foregroundStyle(AppColors.textPrimary)
-                Text("可以让 AI 按常见做法估算，或者自己创建这个食物。")
+                Text("菜可以让 AI 按常见做法估算，也可以选一道差不多的菜。")
                     .font(AppTypography.detail)
                     .foregroundStyle(AppColors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -274,17 +287,16 @@ struct FoodSearchSheet: View {
             .padding(.horizontal, AppSpacing.xxs)
             estimateButton(kind: .primary)
             Button {
-                path.append(.newCustomFood(CustomFoodSeed(name: trimmedQuery)))
+                openSimilarDish()
             } label: {
-                Label("创建自定义食物", systemImage: "plus")
+                Label("选一道差不多的菜", systemImage: "list.bullet")
             }
             .buttonStyle(.appSecondary)
-            Button("直接填写热量", action: openManualForm)
-                .buttonStyle(.appTertiary)
+            smallLinks(includeSimilar: false)
         }
     }
 
-    /// 有结果，但没有名字完全一样的：结果下面再给 AI 估算和自己建
+    /// 有结果，但没有名字完全一样的：结果下面再给 AI 估算和别的办法
     private var notQuiteIt: some View {
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
             Text("没找到想要的？")
@@ -292,14 +304,21 @@ struct FoodSearchSheet: View {
                 .foregroundStyle(AppColors.textPrimary)
                 .padding(.horizontal, AppSpacing.xxs)
             estimateButton(kind: .secondary)
-            // 两个小入口放得下就排一行，放不下（英文、大字号）就上下排
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: AppSpacing.md) { otherWayButtons }
-                VStack(alignment: .leading, spacing: AppSpacing.xxs) { otherWayButtons }
-            }
-            .buttonStyle(AppButtonStyle(kind: .tertiary, tint: AppColors.brand, fullWidth: false))
-            .padding(.horizontal, AppSpacing.xxs)
+            smallLinks(includeSimilar: true)
         }
+    }
+
+    /// 几个小入口（选一道差不多的菜 / 包装食品：照营养成分表填写 / 直接填写热量）：一个一行，左对齐
+    private func smallLinks(includeSimilar: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if includeSimilar {
+                Button("选一道差不多的菜", action: openSimilarDish)
+            }
+            Button("包装食品：照营养成分表填写") { path.append(.newCustomFood(CustomFoodSeed(name: trimmedQuery))) }
+            Button("直接填写热量", action: openManualForm)
+        }
+        .buttonStyle(AppButtonStyle(kind: .tertiary, tint: AppColors.brand, fullWidth: false))
+        .padding(.horizontal, AppSpacing.xxs)
     }
 
     /// 没有要搜的、或者已经找到了：页面最下面两个小入口
@@ -312,10 +331,10 @@ struct FoodSearchSheet: View {
         .frame(maxWidth: .infinity)
     }
 
-    /// 「创建自定义食物」「直接填写热量」两个小入口
+    /// 「添加包装食品」「直接填写热量」两个小入口
     @ViewBuilder
     private var otherWayButtons: some View {
-        Button("创建自定义食物") { path.append(.newCustomFood(CustomFoodSeed(name: trimmedQuery))) }
+        Button("添加包装食品") { path.append(.newCustomFood(CustomFoodSeed(name: trimmedQuery))) }
         Button("直接填写热量", action: openManualForm)
     }
 
@@ -332,7 +351,7 @@ struct FoodSearchSheet: View {
             .buttonStyle(AppButtonStyle(kind: kind))
             .disabled(usedUp)
             if let remaining = estimateRemaining {
-                Text(remaining > 0 ? String(localized: "今天还可以 AI 估算 \(remaining) 次") : String(localized: "今天的 AI 估算次数用完了，可以先创建自定义食物"))
+                Text(remaining > 0 ? String(localized: "今天还可以 AI 估算 \(remaining) 次") : String(localized: "今天的 AI 估算次数用完了，可以先选一道差不多的菜"))
                     .font(.caption)
                     .foregroundStyle(AppColors.textTertiary)
                     .multilineTextAlignment(.center)
@@ -349,15 +368,20 @@ struct FoodSearchSheet: View {
         case .serving(let choice):
             FoodServingView(
                 choice: choice, meal: meal, dayKey: request.dayKey,
-                onEditEstimate: { seed in path.append(.newCustomFood(seed)) },
+                onFillFromLabel: { name in path.append(.newCustomFood(CustomFoodSeed(name: name))) },
                 onEditCustom: { id in path.append(.editCustomFood(id)) },
+                onRenamedCustom: { snapshot in path = [.serving(.custom(snapshot))] },
                 onDeletedCustom: { if !path.isEmpty { path.removeLast() } },
                 onAdd: log)
         case .aiEstimate(let query):
             AIEstimateView(
                 query: query, meal: meal, dayKey: request.dayKey, onAdd: log,
-                onEditEstimate: { seed in path.append(.newCustomFood(seed)) },
-                onCreateCustom: { name in path.append(.newCustomFood(CustomFoodSeed(name: name))) })
+                onPickSimilar: { name in path.append(.similarDish(name)) },
+                onFillFromLabel: { name in path.append(.newCustomFood(CustomFoodSeed(name: name))) })
+        case .similarDish(let query):
+            SimilarDishView(query: query) { food in
+                path.append(.serving(.similar(name: query, basedOn: food)))
+            }
         case .newCustomFood(let seed):
             CustomFoodEditView(seed: seed) { snapshot in
                 // 建好了：直接去选份量（返回就回到搜索页，不再回到 AI 估算或编辑页）
@@ -380,6 +404,11 @@ struct FoodSearchSheet: View {
         path.append(.serving(choice))
     }
 
+    private func openSimilarDish() {
+        searchFocused = false
+        path.append(.similarDish(trimmedQuery))
+    }
+
     private func openManualForm() {
         searchFocused = false
         let draft = EntryDraft(meal: meal, dayKey: request.dayKey)
@@ -392,7 +421,8 @@ struct FoodSearchSheet: View {
         modelContext.insert(
             FoodEntry(
                 dayKey: item.dayKey, meal: item.meal, name: item.name, weightG: item.weightG, values: item.values,
-                source: .manual, amountUnit: item.amountUnit, serving: item.serving, foodRef: item.foodRef))
+                source: .manual, amountUnit: item.amountUnit, serving: item.serving, foodRef: item.foodRef,
+                oilLevel: item.oilLevel))
         try? modelContext.save()
         toasts?.success(DayMath.loggedMessage(meal: item.meal, dayKey: item.dayKey, today: .now))
         if manualForm == nil { dismiss() }
@@ -409,13 +439,14 @@ struct ManualFormRequest: Identifiable {
 
 /// 一行食物右边的小标签
 enum FoodRowTag: Hashable {
-    case mine, recent, aiEstimate
+    case mine, recent, aiEstimate, estimate
 
     var text: String {
         switch self {
         case .mine: String(localized: "我的食物")
         case .recent: String(localized: "最近吃过")
         case .aiEstimate: String(localized: "AI 估算")
+        case .estimate: String(localized: "估算")
         }
     }
 }
@@ -488,9 +519,11 @@ nonisolated enum FoodRowText {
         }
     }
 
-    /// 最近吃过：上次的份量和热量，「1 碗 · 174 千卡」「150 克 · 174 千卡」
+    /// 最近吃过：上次的份量和热量（上次选了「多油」就按多油），「1 碗 · 174 千卡」「150 克 · 174 千卡」
     static func last(_ choice: FoodChoice) -> String {
-        let values = ServingMath.displayed(ServingMath.values(of: choice.initialSelection, in: choice), isEstimate: choice.isEstimate)
+        let values = ServingMath.displayed(
+            ServingMath.oilAdjusted(ServingMath.values(of: choice.initialSelection, in: choice), choice.initialOil),
+            isEstimate: choice.isEstimate)
         let kcal = PortionText.kcal(values.caloriesKcal, isEstimate: choice.isEstimate)
         switch choice.initialSelection {
         case .natural(let id, let quantity):

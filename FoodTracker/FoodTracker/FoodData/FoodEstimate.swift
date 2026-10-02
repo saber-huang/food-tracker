@@ -11,6 +11,11 @@
 
 import Foundation
 
+/// AI 判断的食物类型：现做的菜 / 有营养成分表的包装食品 / 其他（水果、生鲜等）
+nonisolated enum EstimatedFoodType: String, Codable, Hashable, Sendable {
+    case dish, packaged, other
+}
+
 /// 后端返回的营养数字
 nonisolated struct EstimatedNutrients: Codable, Hashable, Sendable {
     let caloriesKcal: Double
@@ -22,6 +27,7 @@ nonisolated struct EstimatedNutrients: Codable, Hashable, Sendable {
 /// /estimate 返回的完整结果
 nonisolated struct EstimateResponse: Codable, Hashable, Sendable {
     let isFood: Bool  // 输入的是不是一种食物
+    let foodType: String?  // dish / packaged / other（旧版后端没有这一项；不认识的值当作没有）
     let name: String  // 整理过的名字（「山西过油肉」）
     let baseUnit: String  // "g" 每 100 克 / "ml" 每 100 毫升
     let per100: EstimatedNutrients
@@ -39,14 +45,22 @@ nonisolated struct FoodEstimate: Hashable, Sendable {
     let amountUnit: AmountUnit
     let servingName: String
     let servingAmount: Double
+    let foodType: EstimatedFoodType?
 
-    init(name: String, per100: NutrientValues, amountUnit: AmountUnit, servingName: String, servingAmount: Double) {
+    init(
+        name: String, per100: NutrientValues, amountUnit: AmountUnit, servingName: String, servingAmount: Double,
+        foodType: EstimatedFoodType? = nil
+    ) {
         self.name = name
         self.per100 = per100
         self.amountUnit = amountUnit
         self.servingName = servingName
         self.servingAmount = servingAmount
+        self.foodType = foodType
     }
+
+    /// 当作现做的菜（能选油量）：AI 说是菜；旧版后端没说类型时，按克算的都当作菜
+    var isDish: Bool { foodType == .dish || (foodType == nil && amountUnit == .gram) }
 
     /// 从后端的结果来：名字为空就用用户输入的；份量不合理（0 或太大）就当作「1 份 约 100 克」
     init(_ response: EstimateResponse, query: String) {
@@ -60,6 +74,7 @@ nonisolated struct FoodEstimate: Hashable, Sendable {
                 carbsG: response.per100.carbsG, fatG: response.per100.fatG),
             amountUnit: response.baseUnit == "ml" ? .milliliter : .gram,
             servingName: serving.isEmpty ? String(localized: "份") : serving,
-            servingAmount: amountOK ? response.servingAmount : 100)
+            servingAmount: amountOK ? response.servingAmount : 100,
+            foodType: response.foodType.flatMap(EstimatedFoodType.init(rawValue:)))
     }
 }

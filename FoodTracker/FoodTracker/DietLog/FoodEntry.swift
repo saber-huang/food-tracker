@@ -40,11 +40,13 @@ final class FoodEntry {
     var servingUnitID: String? = nil  // 哪个单位（bowl）
     var servingUnitName: String? = nil  // 单位当时显示的名字（「碗」）
     var foodRef: String? = nil  // 来自哪种食物：catalog:rice、custom:<UUID>
+    var oilLevelRaw: String? = nil  // 家常菜选的油量：light / heavy；nil = 正常（或不是家常菜）
 
     /// dayKey：记到哪一天，20260929 这样的数字。要记到「今天」就写 DayMath.dayKey(for: .now)
     init(
         dayKey: Int, meal: MealType, name: String, weightG: Double?, values: NutrientValues, source: EntrySource,
-        createdAt: Date = .now, amountUnit: AmountUnit = .gram, serving: ServingChoice? = nil, foodRef: String? = nil
+        createdAt: Date = .now, amountUnit: AmountUnit = .gram, serving: ServingChoice? = nil, foodRef: String? = nil,
+        oilLevel: OilLevel? = nil
     ) {
         self.dayKey = dayKey
         self.mealRaw = meal.rawValue
@@ -61,10 +63,14 @@ final class FoodEntry {
         self.servingUnitID = serving?.unitID
         self.servingUnitName = serving?.unitName
         self.foodRef = foodRef
+        self.oilLevelRaw = oilLevel == .normal ? nil : oilLevel?.rawValue
     }
 
     /// 克还是毫升
     var amountUnit: AmountUnit { AmountUnit(storedValue: amountUnitRaw) }
+
+    /// 家常菜选的油量（没选过、不是家常菜是 nil）
+    var oilLevel: OilLevel? { oilLevelRaw.flatMap(OilLevel.init(rawValue:)) }
 
     /// 选了自然份量时：哪个单位、几份
     var serving: ServingChoice? {
@@ -107,6 +113,7 @@ final class FoodEntry {
         servingUnitID = item.serving?.unitID
         servingUnitName = item.serving?.unitName
         foodRef = item.foodRef
+        oilLevelRaw = item.oilLevel == .normal ? nil : item.oilLevel?.rawValue
     }
 
     /// 把一餐里的几项食物一起存进数据库（识别结果页的「保存到今日」、调试菜单的示例记录都用它）。
@@ -123,7 +130,7 @@ final class FoodEntry {
                 dayKey: dayKey, meal: meal, name: item.name, weightG: item.weightG,
                 values: DietLogMath.rounded(item.values), source: source,
                 createdAt: now.addingTimeInterval(Double(index) * 0.001), amountUnit: item.amountUnit,
-                serving: item.serving, foodRef: item.foodRef)
+                serving: item.serving, foodRef: item.foodRef, oilLevel: item.oilLevel)
             context.insert(entry)
             return entry
         }
@@ -159,7 +166,8 @@ extension EditableItem {
             dayKey: entry.dayKey,
             amountUnit: entry.amountUnit,
             serving: entry.serving,
-            foodRef: entry.foodRef
+            foodRef: entry.foodRef,
+            oilLevel: entry.oilLevel
         )
     }
 }
@@ -176,6 +184,7 @@ struct FoodEntrySnapshot {
     let amountUnit: AmountUnit
     let serving: ServingChoice?
     let foodRef: String?
+    let oilLevel: OilLevel?
 
     init(_ entry: FoodEntry) {
         dayKey = entry.dayKey
@@ -188,6 +197,7 @@ struct FoodEntrySnapshot {
         amountUnit = entry.amountUnit
         serving = entry.serving
         foodRef = entry.foodRef
+        oilLevel = entry.oilLevel
     }
 
     /// 放回数据库（调用的地方再 save）
@@ -195,7 +205,7 @@ struct FoodEntrySnapshot {
         context.insert(
             FoodEntry(
                 dayKey: dayKey, meal: meal, name: name, weightG: weightG, values: values, source: source, createdAt: createdAt,
-                amountUnit: amountUnit, serving: serving, foodRef: foodRef))
+                amountUnit: amountUnit, serving: serving, foodRef: foodRef, oilLevel: oilLevel))
     }
 }
 
@@ -223,7 +233,7 @@ extension FoodEntry {
     var recentFood: RecentFood {
         RecentFood(
             name: name, weightG: weightG, values: values, amountUnit: amountUnit, servingQuantity: servingQuantity,
-            servingUnitID: servingUnitID, foodRef: foodRef, loggedAt: createdAt)
+            servingUnitID: servingUnitID, foodRef: foodRef, loggedAt: createdAt, oilLevel: oilLevel)
     }
 
     /// 最近的记录（从新到旧），用来做「最近使用」。只取最近的几百条，够挑出常吃的食物，也不会慢

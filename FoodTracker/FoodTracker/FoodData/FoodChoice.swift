@@ -9,6 +9,7 @@
 //    和手动填写是同一套计算；只知道「1 份多少千卡」、不知道多重的食物，按份数乘
 //  - PortionText：份量怎么写给人看（「半碗」「1.5 碗」「约 150 克」）
 //  估算的数字（AI 估算、按做法估算的家常菜）不假装精确：热量取整到 10、营养素取整到 1 克，前面写「约」
+//  - OilLevel：家常菜的「少油 / 正常 / 多油」。一盘菜有几克脂肪谁也说不准，但油大不大看得出来
 //
 
 import Foundation
@@ -24,6 +25,28 @@ nonisolated enum NutritionBasis: Hashable, Sendable {
     var amountUnit: AmountUnit? {
         if case .per100(_, let unit) = self { return unit }
         return nil
+    }
+}
+
+/// 家常菜的油量。只改脂肪：少油 ×0.7、多油 ×1.4，热量按每克脂肪 9 千卡跟着变；蛋白质、碳水不变。
+/// 记录里存英文文字（light / heavy；正常不存），下次打开时还是上次选的
+nonisolated enum OilLevel: String, CaseIterable, Hashable, Sendable {
+    case light, normal, heavy
+
+    var fatFactor: Double {
+        switch self {
+        case .light: 0.7
+        case .normal: 1
+        case .heavy: 1.4
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .light: String(localized: "少油")
+        case .normal: String(localized: "正常")
+        case .heavy: String(localized: "多油")
+        }
     }
 }
 
@@ -47,6 +70,7 @@ nonisolated struct FoodChoice: Identifiable, Hashable, Sendable {
         case custom(UUID)
         case recent
         case aiEstimate
+        case similar(String)  // 搜不到时选的「差不多的菜」：食物库里那道菜的 id
     }
 
     let id: String
@@ -61,8 +85,17 @@ nonisolated struct FoodChoice: Identifiable, Hashable, Sendable {
     let isEstimate: Bool
     /// 存进记录的来源标记（catalog:rice、custom:<UUID>）；最近吃过的随手记录、AI 估算还没保存时是 nil
     let foodRef: String?
+    /// 能选「少油 / 正常 / 多油」：按做法估算的家常菜、AI 估算的菜
+    var adjustsOil = false
+    /// 打开时选中的油量（上次选了「多油」，这次还是「多油」）
+    var initialOil: OilLevel = .normal
+    /// 按哪道菜估算的（选了「差不多的菜」时）：「按「青椒肉丝」估算」
+    var basedOnName: String? = nil
+    /// AI 认为这是包装食品：提示「包装上的营养成分表更准」
+    var suggestsLabel = false
 
     var isAIEstimate: Bool { origin == .aiEstimate }
+    var isSimilar: Bool { if case .similar = origin { return true } else { return false } }
     var isMine: Bool { if case .custom = origin { return true } else { return false } }
 
     func unit(id: String) -> ServingUnit? { units.first { $0.id == id } }
@@ -107,6 +140,24 @@ nonisolated enum ServingMath {
         guard steps >= 1 else { return nil }
         let quantity = steps * unit.step
         return abs(quantity * unit.amount - grams) <= tolerance * grams ? quantity : nil
+    }
+
+    /// 按油量调整：少油 / 多油只改脂肪，热量按每克脂肪 9 千卡跟着变
+    static func oilAdjusted(_ values: NutrientValues, _ level: OilLevel) -> NutrientValues {
+        guard level != .normal else { return values }
+        let fat = values.fatG * level.fatFactor
+        return NutrientValues(
+            caloriesKcal: max(0, values.caloriesKcal + (fat - values.fatG) * 9), proteinG: values.proteinG,
+            carbsG: values.carbsG, fatG: fat)
+    }
+
+    /// 反过来：上次按「多油」记的数字换回正常做法的，打开时再按选中的油量算（不会叠加两次）
+    static func oilNormalized(_ values: NutrientValues, from level: OilLevel) -> NutrientValues {
+        guard level != .normal else { return values }
+        let fat = values.fatG / level.fatFactor
+        return NutrientValues(
+            caloriesKcal: max(0, values.caloriesKcal - (values.fatG - fat) * 9), proteinG: values.proteinG,
+            carbsG: values.carbsG, fatG: fat)
     }
 
     /// 估算的数字取整（不假装精确）：热量到 10 千卡、营养素到 1 克；准确的数字照常（热量整数、营养素 1 位小数）
@@ -192,30 +243,38 @@ nonisolated extension FoodChoice {
                 id: food.ref, name: food.displayName, origin: .catalog(food.id),
                 basis: .per100(food.values100, food.baseUnit), units: food.units,
                 initialSelection: .natural(unitID: food.units.first?.id ?? "", quantity: food.defaultQuantity),
-                isEstimate: food.isEstimate, foodRef: food.ref)
+                isEstimate: food.isEstimate, foodRef: food.ref, adjustsOil: food.adjustsOil)
         }
         guard let grams = recent.weightG, grams > 0, let per100 = DietLogMath.per100(recent.values, weightG: grams) else {
             return .recent(recent)
         }
+        // 上次选了「多油」：存的是多油的数字，先换回正常做法的，打开时还是选中「多油」
+        let oil = food.adjustsOil ? (recent.oilLevel ?? .normal) : .normal
         return FoodChoice(
-            id: food.ref, name: recent.name, origin: .catalog(food.id), basis: .per100(per100, recent.amountUnit),
+            id: food.ref, name: recent.name, origin: .catalog(food.id),
+            basis: .per100(ServingMath.oilNormalized(per100, from: oil), recent.amountUnit),
             units: food.units, initialSelection: lastSelection(recent, units: food.units) ?? .amount(grams),
-            isEstimate: false, foodRef: food.ref)
+            isEstimate: false, foodRef: food.ref, adjustsOil: food.adjustsOil, initialOil: oil)
     }
 
-    /// 我的食物
+    /// 我的食物。存的是正常做法的数字；上次选的份量、油量从 recent 来。
+    /// 照「每 100 克」的营养成分表填、又没填一包多重的：没有「份」可选，从 100 克开始
     static func custom(_ food: CustomFoodSnapshot, recent: RecentFood? = nil) -> FoodChoice {
-        let unit = food.servingUnit
+        let units = food.units
         let basis: NutritionBasis
         if let amount = food.servingAmount, amount > 0, let per100 = DietLogMath.per100(food.servingValues, weightG: amount) {
             basis = .per100(per100, food.amountUnit)
         } else {
             basis = .perServing(food.servingValues)
         }
+        let initial =
+            recent.flatMap { lastSelection($0, units: units) }
+            ?? units.first.map { ServingSelection.natural(unitID: $0.id, quantity: 1) } ?? .amount(100)
         return FoodChoice(
-            id: FoodRef.custom(food.id), name: food.name, origin: .custom(food.id), basis: basis, units: [unit],
-            initialSelection: recent.flatMap { lastSelection($0, units: [unit]) } ?? .natural(unitID: unit.id, quantity: 1),
-            isEstimate: food.isAIEstimate, foodRef: FoodRef.custom(food.id))
+            id: FoodRef.custom(food.id), name: food.name, origin: .custom(food.id), basis: basis, units: units,
+            initialSelection: initial, isEstimate: food.isEstimate, foodRef: FoodRef.custom(food.id),
+            adjustsOil: food.adjustsOil, initialOil: food.adjustsOil ? (recent?.oilLevel ?? .normal) : .normal,
+            basedOnName: food.basedOnName)
     }
 
     /// 最近吃过、但不是来自食物库或我的食物的（以前手动随手记的）：
@@ -235,13 +294,23 @@ nonisolated extension FoodChoice {
             initialSelection: .natural(unitID: unit.id, quantity: 1), isEstimate: false, foodRef: nil)
     }
 
-    /// AI 估算的结果（还没保存到我的食物）
+    /// AI 估算的结果（还没保存到我的食物）。菜可以选油量；包装食品提示照营养成分表填写更准
     static func aiEstimate(_ estimate: FoodEstimate) -> FoodChoice {
         let unit = ServingUnit.named(estimate.servingName, id: "ai", amount: estimate.servingAmount)
         return FoodChoice(
             id: "ai:\(estimate.name)", name: estimate.name, origin: .aiEstimate,
             basis: .per100(estimate.per100, estimate.amountUnit), units: [unit],
-            initialSelection: .natural(unitID: unit.id, quantity: 1), isEstimate: true, foodRef: nil)
+            initialSelection: .natural(unitID: unit.id, quantity: 1), isEstimate: true, foodRef: nil,
+            adjustsOil: estimate.isDish, suggestsLabel: estimate.foodType == .packaged)
+    }
+
+    /// 搜不到、选了一道差不多的菜：名字照用户写的（「山西过油肉」），营养按那道菜（「青椒肉丝」）估算
+    static func similar(name: String, basedOn food: CatalogFood) -> FoodChoice {
+        FoodChoice(
+            id: "similar:\(food.id):\(name)", name: name, origin: .similar(food.id),
+            basis: .per100(food.values100, food.baseUnit), units: food.units,
+            initialSelection: .natural(unitID: food.units.first?.id ?? "", quantity: food.defaultQuantity),
+            isEstimate: true, foodRef: nil, adjustsOil: food.adjustsOil, basedOnName: food.displayName)
     }
 
     /// 上次吃的份量：上次选的是哪个自然单位就还是它；上次填的克数正好是某个单位的整数倍就换成那个单位；

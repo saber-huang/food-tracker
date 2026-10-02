@@ -5,8 +5,9 @@
 //  AI 估算一种搜不到的食物（「山西过油肉」）：只把名字发给后端，AI 估算每 100 克的营养和一个常见份量。
 //  第一次用 AI 前先弹出说明征得同意（和拍照识别一样）。
 //  - 估算中：冒热气的碗 +「正在估算「山西过油肉」」，可以返回
-//  - 估好了：直接变成份量页（标「AI 估算 ⓘ」、数字取整加「约」），可以顺手保存到「我的食物」
-//  - 出错 / 不是食物：说清楚，给「重试」或「创建自定义食物」，不会走进死路
+//  - 估好了：直接变成份量页（标「AI 估算 ⓘ」、数字取整加「约」；菜可以选油量），可以顺手保存到「我的食物」
+//  - 出错 / 没同意用 AI：说清楚，给「重试」或「选一道差不多的菜」（不用 AI），不会走进死路
+//  - 不是食物：「换个说法」；如果其实是包装食品，可以照营养成分表填
 //
 
 import SwiftUI
@@ -16,10 +17,10 @@ struct AIEstimateView: View {
     let meal: MealType
     let dayKey: Int
     let onAdd: (EditableItem) -> Void
-    /// 「修改营养数据」：打开我的食物编辑页
-    let onEditEstimate: (CustomFoodSeed) -> Void
-    /// 「创建自定义食物」
-    let onCreateCustom: (String) -> Void
+    /// 「选一道差不多的菜」（不用 AI）
+    let onPickSimilar: (String) -> Void
+    /// 「照营养成分表填写」（包装食品）
+    let onFillFromLabel: (String) -> Void
 
     private enum Phase: Equatable {
         case waitingConsent  // 还没同意使用 AI（说明弹出来后点了「暂不使用」）
@@ -37,7 +38,7 @@ struct AIEstimateView: View {
     var body: some View {
         Group {
             if case .done(let choice) = phase {
-                FoodServingView(choice: choice, meal: meal, dayKey: dayKey, onEditEstimate: onEditEstimate, onAdd: onAdd)
+                FoodServingView(choice: choice, meal: meal, dayKey: dayKey, onFillFromLabel: onFillFromLabel, onAdd: onAdd)
             } else {
                 stateContent
                     .toolbar(.visible, for: .navigationBar)
@@ -81,29 +82,30 @@ struct AIEstimateView: View {
         case .waitingConsent:
             BrandedStateView(
                 kind: .empty, title: String(localized: "需要先同意使用 AI"),
-                message: String(localized: "AI 估算会把你输入的食物名称发给 AI。也可以不用 AI，自己创建这个食物。"), visualWidth: 72
+                message: String(localized: "AI 估算会把你输入的食物名称发给 AI。不想用 AI 的话，可以选一道差不多的菜。"),
+                visualWidth: 72
             ) {
                 Button("查看说明", action: start)
                     .buttonStyle(.appPrimary)
-                Button("创建自定义食物") { onCreateCustom(query) }
+                Button("选一道差不多的菜") { onPickSimilar(query) }
                     .buttonStyle(.appSecondary)
             }
         case .failed(let message):
             BrandedStateView(kind: .error, title: String(localized: "没有完成估算"), message: message, visualWidth: 72) {
                 Button("重试", action: start)
                     .buttonStyle(.appPrimary)
-                Button("创建自定义食物") { onCreateCustom(query) }
+                Button("选一道差不多的菜") { onPickSimilar(query) }
                     .buttonStyle(.appSecondary)
             }
         case .notFood(let message):
             BrandedStateView(
                 kind: .error, title: String(localized: "没能估算这个名字"),
-                message: message.isEmpty ? String(localized: "换个更具体的叫法试试，或者自己创建这个食物。") : message,
+                message: message.isEmpty ? String(localized: "换个更具体的叫法试试。") : message,
                 visualWidth: 72
             ) {
-                Button("创建自定义食物") { onCreateCustom(query) }
-                    .buttonStyle(.appPrimary)
                 Button("换个说法", action: { dismiss() })
+                    .buttonStyle(.appPrimary)
+                Button("包装食品：照营养成分表填写") { onFillFromLabel(query) }
                     .buttonStyle(.appTertiary)
             }
         }

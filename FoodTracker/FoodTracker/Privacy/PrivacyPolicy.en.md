@@ -14,7 +14,7 @@ This app helps you log what you eat and estimate calories and nutrition. This po
 
 - Profile: sex, age, height, weight, activity level and goal.
 - Food log: the name, weight, calories and nutrients of each food you log.
-- My Foods: foods you create yourself, or AI estimates you choose to save (name, serving and nutrition).
+- My Foods: packaged foods you enter from their nutrition labels, and estimates (from AI or from a similar dish) you choose to save (name, serving and nutrition).
 - Settings and preferences: your calorie hint setting, the tastes, allergies, foods to avoid and cooking time you enter, and your most recent recipes.
 
 All of this stays on your phone and is not stored on this app's server. Only when you use an AI feature is part of it sent with the request, as described in the next section. If you use iCloud Backup, it is included in your iPhone backup in your own iCloud account, which we cannot access.

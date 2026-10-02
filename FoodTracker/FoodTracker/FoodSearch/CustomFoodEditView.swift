@@ -2,19 +2,23 @@
 //  CustomFoodEditView.swift
 //  FoodTracker
 //
-//  创建 / 编辑「我的食物」：名称、参考份量（「1 份 约 220 克」，重量可以不填）、1 份的热量（必填）和营养（选填）。
-//  保存后以后搜这个名字会排在最前面。也用来修改 AI 估算的数字（打开时已经填好）。
-//  用的是和其他表单一样的样子（AppForm）；从「选择食物」页推进来，所以用系统的返回按钮，保存按钮在底部
-//  （正在打字时先收起，点键盘上的「完成」后出现）
+//  照包装填写「我的食物」：只给有营养成分表的包装食品（饮料、零食、速冻食品……）用。
+//  菜品没有营养成分表，谁也说不准有几克脂肪，所以菜走 AI 估算或「选一道差不多的菜」，不在这里填。
+//  表单照营养成分表的样子排：
+//  - 表上写的是：每 100 克 / 每 100 毫升 / 每份（每份多少克可以不填）
+//  - 能量照抄，单位可以选千焦（中国的包装大多写千焦，App 换算成千卡）或千卡
+//  - 蛋白质、脂肪、碳水化合物（顺序和中国的营养成分表一样，都可以不填）
+//  - 一包有多少（选填）：单位从「包、瓶、盒……」里选，不让随便打字（第一版能打字，打了「1」标题就成了「11大约」）
+//  换算和检查都在 NutritionLabel.swift；保存后打开份量页
 //
 
 import SwiftData
 import SwiftUI
 
 struct CustomFoodEditView: View {
-    /// 新建时的初始值（搜索的名字、AI 估算的数字）
+    /// 新建时的初始值（搜索的名字）
     let seed: CustomFoodSeed?
-    /// 编辑已有的我的食物（新建时为 nil）
+    /// 修改已有的我的食物（新建时为 nil）
     let editing: CustomFood?
     /// 保存好了：把新的样子交回去（打开份量页）
     let onSaved: (CustomFoodSnapshot) -> Void
@@ -22,65 +26,75 @@ struct CustomFoodEditView: View {
 
     @Environment(\.modelContext) private var modelContext
     @State private var name: String
-    @State private var servingName: String
-    @State private var amountUnit: AmountUnit
-    @State private var amountText: String
-    @State private var kcalText: String
+    @State private var column: LabelColumn
+    @State private var servingUnit: AmountUnit
+    @State private var servingSizeText: String
+    @State private var energyUnit: EnergyUnit
+    @State private var energyText: String
     @State private var proteinText: String
-    @State private var carbsText: String
     @State private var fatText: String
+    @State private var carbsText: String
+    @State private var packageID: String
+    @State private var packageAmountText: String
     @State private var saveAttempted = false
     @State private var missingTick = 0  // 每次没保存成功加 1：轻轻震一下
     @State private var confirmingDelete = false
     @FocusState private var focusedField: Field?
-    private enum Field { case name, servingName, amount, kcal, protein, carbs, fat }
+    private enum Field { case name, servingSize, energy, protein, fat, carbs, packageAmount }
 
     init(seed: CustomFoodSeed?, editing: CustomFood? = nil, onSaved: @escaping (CustomFoodSnapshot) -> Void, onDeleted: (() -> Void)? = nil) {
         self.seed = seed
         self.editing = editing
         self.onSaved = onSaved
         self.onDeleted = onDeleted
-        let text: (Double?) -> String = { $0.map { NumberText.text(from: $0) } ?? "" }
-        if let food = editing {
-            _name = State(initialValue: food.name)
-            _servingName = State(initialValue: food.servingName)
-            _amountUnit = State(initialValue: food.amountUnit)
-            _amountText = State(initialValue: text(food.servingAmount))
-            _kcalText = State(initialValue: text(food.servingKcal))
-            _proteinText = State(initialValue: food.servingProteinG > 0 ? text(food.servingProteinG) : "")
-            _carbsText = State(initialValue: food.servingCarbsG > 0 ? text(food.servingCarbsG) : "")
-            _fatText = State(initialValue: food.servingFatG > 0 ? text(food.servingFatG) : "")
-        } else {
-            let values = seed?.servingValues
-            _name = State(initialValue: seed?.name ?? "")
-            _servingName = State(initialValue: seed?.servingName ?? "")
-            _amountUnit = State(initialValue: seed?.amountUnit ?? .gram)
-            _amountText = State(initialValue: text(seed?.servingAmount))
-            _kcalText = State(initialValue: text(values?.caloriesKcal))
-            _proteinText = State(initialValue: text(values?.proteinG))
-            _carbsText = State(initialValue: text(values?.carbsG))
-            _fatText = State(initialValue: text(values?.fatG))
-        }
+        let input = editing.map { NutritionLabelInput(food: $0.snapshot) } ?? NutritionLabelInput(name: seed?.name ?? "")
+        let text: (Double?) -> String = { $0.map { NumberText.text(from: DietLogMath.round1($0)) } ?? "" }
+        _name = State(initialValue: input.name)
+        _column = State(initialValue: input.column)
+        _servingUnit = State(initialValue: input.servingUnit)
+        _servingSizeText = State(initialValue: text(input.servingSize))
+        _energyUnit = State(initialValue: input.energyUnit)
+        _energyText = State(initialValue: text(input.energy))
+        _proteinText = State(initialValue: text(input.protein))
+        _fatText = State(initialValue: text(input.fat))
+        _carbsText = State(initialValue: text(input.carbs))
+        _packageID = State(initialValue: input.packageID)
+        _packageAmountText = State(initialValue: text(input.packageAmount))
     }
 
-    // MARK: - 检查
+    // MARK: - 表单里填的内容
 
-    private var nameError: String? { EntryValidator.nameError(name) }
-    private var amountError: String? { EntryValidator.weightError(text: amountText) }
-    private var kcalError: String? { EntryValidator.caloriesError(text: kcalText) }
-    private var proteinError: String? { EntryValidator.macroError(text: proteinText, name: String(localized: "蛋白质")) }
-    private var carbsError: String? { EntryValidator.macroError(text: carbsText, name: String(localized: "碳水")) }
-    private var fatError: String? { EntryValidator.macroError(text: fatText, name: String(localized: "脂肪")) }
+    private var input: NutritionLabelInput {
+        NutritionLabelInput(
+            name: name, column: column, servingUnit: servingUnit, servingSize: NumberText.number(from: servingSizeText),
+            energy: NumberText.number(from: energyText), energyUnit: energyUnit, protein: NumberText.number(from: proteinText),
+            fat: NumberText.number(from: fatText), carbs: NumberText.number(from: carbsText), packageID: packageID,
+            packageAmount: NumberText.number(from: packageAmountText))
+    }
+
+    /// 营养素：没填可以；填了要是 0～1000 克的数
+    private func numberError(_ text: String, name: String) -> String? {
+        EntryValidator.macroError(text: text, name: name)
+    }
+
+    /// 每份、净含量：没填可以；填了要是 0～5000 的数（克或毫升）
+    private func amountError(_ text: String) -> String? {
+        if NumberText.isBlank(text) { return nil }
+        guard let value = NumberText.number(from: text) else { return String(localized: "请输入数字") }
+        return value > 0 && value <= 5000 ? nil : String(localized: "需要在 0～5000 之间")
+    }
+
+    /// 能量那一行的提示：没填先不说（保存时再提示）；填了先看是不是数，再看合不合理
+    private var energyRowError: String? {
+        if NumberText.isBlank(energyText) { return nil }
+        guard NumberText.number(from: energyText) != nil else { return String(localized: "请输入数字") }
+        return input.energyError
+    }
 
     private var isComplete: Bool {
-        [nameError, amountError, kcalError, proteinError, carbsError, fatError].allSatisfy { $0 == nil }
-    }
-
-    private var unitPlaceholder: String { String(localized: "份") }
-    /// 份量单位的名字（没填就是「份」）：「1 碗大约」「1 碗的热量和营养」
-    private var unitName: String {
-        let trimmed = servingName.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? unitPlaceholder : trimmed
+        input.isComplete
+            && [proteinText, fatText, carbsText].allSatisfy { numberError($0, name: "") == nil }
+            && amountError(servingSizeText) == nil && amountError(packageAmountText) == nil
     }
 
     // MARK: - 页面
@@ -88,60 +102,20 @@ struct CustomFoodEditView: View {
     var body: some View {
         AppForm {
             AppFormSection(String(localized: "名称")) {
-                TextField("名称", text: $name, prompt: Text("例如：妈妈做的红烧肉").foregroundStyle(AppColors.textTertiary))
+                TextField("名称", text: $name, prompt: Text("例如：某某牌燕麦奶").foregroundStyle(AppColors.textTertiary))
                     .foregroundStyle(AppColors.textPrimary)
                     .focused($focusedField, equals: .name)
                     .submitLabel(.next)
-                    .onSubmit { focusedField = .kcal }
+                    .onSubmit { focusedField = .energy }
                     .padding(.horizontal, AppSpacing.cardPadding)
                     .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
                     .contentShape(Rectangle())
                     .onTapGesture { focusedField = .name }
-                if saveAttempted, let nameError { hint(nameError) }
+                if saveAttempted, let error = input.nameError { hint(error) }
             }
 
-            AppFormSection(
-                String(localized: "参考份量"), footer: String(localized: "比如「1 份 约 220 克」。不知道重量可以不填，之后按份数记。")
-            ) {
-                AppFormRow {
-                    Text("份量单位")
-                        .foregroundStyle(AppColors.textPrimary)
-                    Spacer(minLength: AppSpacing.xs)
-                    TextField("份量单位", text: $servingName, prompt: Text(unitPlaceholder).foregroundStyle(AppColors.textTertiary))
-                        .multilineTextAlignment(.trailing)
-                        .foregroundStyle(AppColors.textPrimary)
-                        .focused($focusedField, equals: .servingName)
-                        .frame(maxWidth: 140)
-                }
-                AppFormDivider()
-                NumberRow(
-                    title: String(localized: "1 \(unitName)大约"), unit: amountUnit.symbol, text: $amountText, keyboard: .decimalPad,
-                    error: amountError, focus: $focusedField, field: .amount, prompt: String(localized: "选填"))
-                AppFormDivider()
-                AppSegmentedControl(
-                    title: String(localized: "按重量还是容量"), selection: $amountUnit, options: [.gram, .milliliter]
-                ) { $0.symbol }
-                .padding(AppSpacing.sm)
-            }
-
-            AppFormSection(String(localized: "1 \(unitName)的热量和营养")) {
-                NumberRow(
-                    title: String(localized: "热量"), unit: String(localized: "千卡"), text: $kcalText, keyboard: .numberPad,
-                    error: kcalError, focus: $focusedField, field: .kcal, prompt: String(localized: "必填"))
-                if saveAttempted, NumberText.isBlank(kcalText) { hint(String(localized: "请输入热量")) }
-                AppFormDivider()
-                NumberRow(
-                    title: String(localized: "蛋白质"), unit: String(localized: "克"), text: $proteinText, keyboard: .decimalPad,
-                    error: proteinError, focus: $focusedField, field: .protein, prompt: String(localized: "选填"))
-                AppFormDivider()
-                NumberRow(
-                    title: String(localized: "碳水"), unit: String(localized: "克"), text: $carbsText, keyboard: .decimalPad,
-                    error: carbsError, focus: $focusedField, field: .carbs, prompt: String(localized: "选填"))
-                AppFormDivider()
-                NumberRow(
-                    title: String(localized: "脂肪"), unit: String(localized: "克"), text: $fatText, keyboard: .decimalPad,
-                    error: fatError, focus: $focusedField, field: .fat, prompt: String(localized: "选填"))
-            }
+            labelSection
+            packageSection
 
             if editing != nil {
                 Button("从我的食物中删除", role: .destructive) { confirmingDelete = true }
@@ -159,7 +133,7 @@ struct CustomFoodEditView: View {
             }
         }
         .toolbar(.visible, for: .navigationBar)
-        .navigationTitle(editing == nil ? String(localized: "创建我的食物") : String(localized: "编辑我的食物"))
+        .navigationTitle(editing == nil ? String(localized: "添加包装食品") : String(localized: "修改营养成分表"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
@@ -182,6 +156,103 @@ struct CustomFoodEditView: View {
         .sensoryFeedback(.warning, trigger: missingTick)
     }
 
+    /// 营养成分表：按什么写、能量、三种营养素
+    private var labelSection: some View {
+        AppFormSection(
+            String(localized: "营养成分表"),
+            footer: String(localized: "照着包装背面的表抄。中国的包装能量一般写千焦（kJ），直接照抄，App 会换算成千卡。")
+        ) {
+            AppSegmentedControl(title: String(localized: "表上写的是"), selection: $column, options: LabelColumn.allCases) {
+                $0.title
+            }
+            .padding(AppSpacing.sm)
+            if column == .perServing {
+                AppFormDivider()
+                NumberRow(
+                    title: String(localized: "每份"), unit: servingUnit.symbol, text: $servingSizeText, keyboard: .decimalPad,
+                    error: amountError(servingSizeText), focus: $focusedField,
+                    field: .servingSize, prompt: String(localized: "选填"))
+                AppSegmentedControl(title: String(localized: "每份按"), selection: $servingUnit, options: [.gram, .milliliter]) {
+                    $0.symbol
+                }
+                .padding(.horizontal, AppSpacing.sm)
+                .padding(.bottom, AppSpacing.sm)
+            }
+            AppFormDivider()
+            AppSegmentedControl(title: String(localized: "能量的单位"), selection: $energyUnit, options: EnergyUnit.allCases) {
+                $0.symbol
+            }
+            .padding(AppSpacing.sm)
+            AppFormDivider()
+            NumberRow(
+                title: String(localized: "能量"), unit: energyUnit.symbol, text: $energyText, keyboard: .decimalPad,
+                error: energyRowError, focus: $focusedField, field: .energy, prompt: String(localized: "必填"))
+            if energyUnit == .kilojoule, let kcal = input.kcal, input.energyError == nil {
+                Text("约 \(kcal.noDecimal) 千卡")
+                    .font(AppTypography.detail)
+                    .foregroundStyle(AppColors.textSecondary)
+                    .padding(.horizontal, AppSpacing.cardPadding)
+                    .padding(.bottom, AppSpacing.sm)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            if saveAttempted, input.energy == nil { hint(String(localized: "请输入能量")) }
+            AppFormDivider()
+            macroRow(String(localized: "蛋白质"), text: $proteinText, field: .protein)
+            AppFormDivider()
+            macroRow(String(localized: "脂肪"), text: $fatText, field: .fat)
+            AppFormDivider()
+            macroRow(String(localized: "碳水化合物"), text: $carbsText, field: .carbs)
+            if let error = input.macrosError { hint(error) }
+        }
+    }
+
+    private func macroRow(_ title: String, text: Binding<String>, field: Field) -> some View {
+        NumberRow(
+            title: title, unit: String(localized: "克"), text: text, keyboard: .decimalPad,
+            error: numberError(text.wrappedValue, name: title), focus: $focusedField, field: field,
+            prompt: String(localized: "选填"))
+    }
+
+    /// 一包有多少：单位从几个常见的里选
+    private var packageSection: some View {
+        AppFormSection(
+            String(localized: "一包有多少"),
+            footer: input.canUsePackage
+                ? String(localized: "选填。填了以后，记录时可以直接选「1 包」「半包」。")
+                : String(localized: "先填上面「每份」是多少克（毫升），才能按一包记录。")
+        ) {
+            AppFormRow {
+                Text("单位")
+                    .foregroundStyle(AppColors.textPrimary)
+                Spacer(minLength: AppSpacing.xs)
+                Menu {
+                    Picker("单位", selection: $packageID) {
+                        ForEach(PackageUnit.all) { unit in
+                            Text(unit.displayName).tag(unit.id)
+                        }
+                    }
+                } label: {
+                    HStack(spacing: AppSpacing.xxs) {
+                        Text(PackageUnit.named(packageID)?.displayName ?? "")
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.footnote.weight(.semibold))
+                    }
+                    .foregroundStyle(AppColors.brand)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .accessibilityLabel(String(localized: "一包的单位"))
+            }
+            AppFormDivider()
+            NumberRow(
+                title: String(localized: "净含量"), unit: input.amountUnit.symbol, text: $packageAmountText,
+                keyboard: .decimalPad, error: amountError(packageAmountText),
+                focus: $focusedField, field: .packageAmount, prompt: String(localized: "选填"))
+        }
+        .disabled(!input.canUsePackage)
+        .opacity(input.canUsePackage ? 1 : 0.5)
+    }
+
     private func hint(_ text: String) -> some View {
         Text(text)
             .font(.caption)
@@ -193,34 +264,20 @@ struct CustomFoodEditView: View {
     // MARK: - 保存
 
     private func save() {
-        guard isComplete else {
+        guard isComplete, let fields = input.fields else {
             saveAttempted = true
             missingTick += 1
-            focusedField = nameError != nil ? .name : (NumberText.isBlank(kcalText) ? .kcal : nil)
+            focusedField = input.nameError != nil ? .name : (input.energy == nil ? .energy : nil)
             return
         }
-        func number(_ text: String) -> Double { NumberText.number(from: text) ?? 0 }
-        let values = DietLogMath.rounded(
-            NutrientValues(
-                caloriesKcal: number(kcalText), proteinG: number(proteinText), carbsG: number(carbsText), fatG: number(fatText)))
-        let grams = NumberText.number(from: amountText).map(DietLogMath.round1).flatMap { $0 > 0 ? $0 : nil }
-        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedUnit = servingName.trimmingCharacters(in: .whitespacesAndNewlines)
-
         let food: CustomFood
         if let editing {
-            editing.name = trimmedName
-            editing.servingName = trimmedUnit
-            editing.amountUnitRaw = amountUnit.rawValue
-            editing.servingAmount = grams
-            editing.servingValues = values
+            editing.apply(fields)
             food = editing
         } else {
-            food = CustomFood(
-                name: trimmedName, amountUnit: amountUnit, servingName: trimmedUnit, servingAmount: grams, servingValues: values,
-                source: seed?.isAIEstimate == true ? .ai : .user)
+            food = CustomFood.fromLabel(fields)
             modelContext.insert(food)
-            ProductLog.log(.customFoodCreated, detail: seed?.isAIEstimate == true ? "ai_edited" : "user")
+            ProductLog.log(.customFoodCreated, detail: "label")
         }
         try? modelContext.save()
         focusedField = nil

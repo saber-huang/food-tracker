@@ -335,4 +335,17 @@ struct EntryDraftTests {
         #expect(draft.servingUnits.isEmpty && draft.naturalServing == nil)
         #expect(draft.weightText == "180")  // 已经填的克数留着
     }
+
+    @Test("家常菜选过的油量：数字没改就留着；自己改了数字就不再算「多油」")
+    func oilLevelKept() throws {
+        var item = rice
+        item.oilLevel = .heavy
+        let unchanged = EntryDraft(item: item)
+        #expect(unchanged.output?.oilLevel == .heavy)
+        unchanged.meal = .dinner  // 只改餐次：数字没变
+        #expect(unchanged.output?.oilLevel == .heavy)
+        let edited = EntryDraft(item: item)
+        type(calories: "500", edited)
+        #expect(edited.output?.oilLevel == nil)
+    }
 }

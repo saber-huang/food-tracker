@@ -97,6 +97,9 @@ nonisolated struct CatalogFood: Codable, Identifiable, Hashable, Sendable {
     /// 按常见做法估算的家常菜：数字更粗略，界面上加「约」
     var isEstimate: Bool { source == "estimate" }
 
+    /// 能选「少油 / 正常 / 多油」：按常见做法估算的家常菜（番茄炒蛋、宫保鸡丁……）
+    var adjustsOil: Bool { category == "dish" && isEstimate }
+
     /// 搜索时参与比较的所有名字（中英文名和别名）
     var allNames: [String] { [name] + aliases + [nameEn] + aliasesEn }
 
