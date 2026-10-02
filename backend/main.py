@@ -33,6 +33,7 @@ from food_ai import MAX_PHOTOS, MAX_UPLOAD_BYTES, MODEL, ON_RENDER, AIError, Ana
 import messages
 from limits import Busy, Gate, Gatekeeper, Guard, LimitExceeded, ResultCache, Ticket
 from messages import Lang
+from estimate_ai import EstimateRequest, EstimateResult, estimate_food
 from recipes_ai import RecipeRequest, RecipesResult, generate_recipes
 
 # 让各模块的日志（用时、token 用量）显示在终端里
@@ -67,6 +68,10 @@ ANALYZE_PER_SITE = env_int("ANALYZE_PER_SITE", 100)
 RECIPES_PER_DEVICE = env_int("RECIPES_PER_DEVICE", 5)
 RECIPES_PER_IP = env_int("RECIPES_PER_IP", 20)
 RECIPES_PER_SITE = env_int("RECIPES_PER_SITE", 40)
+# AI 估算一种食物（只发一个名字）：150 次 × 约 1 美分 ≈ 1.5 美元/天
+ESTIMATE_PER_DEVICE = env_int("ESTIMATE_PER_DEVICE", 20)
+ESTIMATE_PER_IP = env_int("ESTIMATE_PER_IP", 60)
+ESTIMATE_PER_SITE = env_int("ESTIMATE_PER_SITE", 150)
 
 analyze_guard = Guard(
     per_device=ANALYZE_PER_DEVICE, per_ip=ANALYZE_PER_IP, per_ip_per_minute=6, per_site=ANALYZE_PER_SITE
@@ -74,8 +79,13 @@ analyze_guard = Guard(
 recipe_guard = Guard(
     per_device=RECIPES_PER_DEVICE, per_ip=RECIPES_PER_IP, per_ip_per_minute=4, per_site=RECIPES_PER_SITE
 )
+estimate_guard = Guard(
+    per_device=ESTIMATE_PER_DEVICE, per_ip=ESTIMATE_PER_IP, per_ip_per_minute=6, per_site=ESTIMATE_PER_SITE
+)
 gate = Gate(slots=2, wait_seconds=25)
 recipe_cache = ResultCache(ttl_seconds=24 * 3600)
+# 同一个食物名称的估算结果和用户无关：7 天内直接用缓存，不再花钱问 AI
+estimate_cache = ResultCache(ttl_seconds=7 * 24 * 3600, max_entries=1000)
 
 # App 密钥：设了环境变量才检查；本地开发时不设，方便用 /docs 测试
 APP_SHARED_SECRET = os.getenv("APP_SHARED_SECRET", "")
@@ -84,8 +94,8 @@ if ON_RENDER and not APP_SHARED_SECRET:
 
 app = FastAPI(
     title="饮食记录 App 后端",
-    description="上传餐食照片识别营养，或根据目标生成一日三餐食谱。",
-    version="0.3.0",
+    description="上传餐食照片识别营养，根据目标生成一日三餐食谱，或按名称估算一种食物的营养。",
+    version="0.4.0",
     # 部署到网上后关掉接口文档页面，不给陌生人看内部结构
     docs_url=None if ON_RENDER else "/docs",
     redoc_url=None if ON_RENDER else "/redoc",
@@ -212,13 +222,15 @@ def health():
 
 @app.get("/quota")
 def quota(request: Request, device_id: DeviceID = None):
-    """这台设备今天还能识别几次、生成几次食谱。"""
+    """这台设备今天还能识别几次、生成几次食谱、AI 估算几次。"""
     device_key, ip_key = keys_for(request, device_id)
     return {
         "analyze_remaining": analyze_guard.remaining(device_key, ip_key),
         "analyze_per_day": ANALYZE_PER_DEVICE,
         "recipes_remaining": recipe_guard.remaining(device_key, ip_key),
         "recipes_per_day": RECIPES_PER_DEVICE,
+        "estimate_remaining": estimate_guard.remaining(device_key, ip_key),
+        "estimate_per_day": ESTIMATE_PER_DEVICE,
     }
 
 
@@ -286,3 +298,20 @@ def recipes(body: RecipeRequest, request: Request, device_id: DeviceID = None):
     if cache_key:
         recipe_cache.set(cache_key, result)
     return result
+
+
+@app.post("/estimate", response_model=EstimateResult)
+def estimate(body: EstimateRequest, request: Request, device_id: DeviceID = None):
+    """按名称估算一种食物每 100 克（饮品每 100 毫升）的营养和一个常见份量。只收食物名称，不收照片和个人数据。
+    同一个名称 7 天内直接返回缓存（不算次数）。"""
+    device_key, ip_key = keys_for(request, device_id)
+    cache_key = ResultCache.key_for(body.cache_payload())
+    if (cached := estimate_cache.get(cache_key)) is not None:
+        return cached.model_copy(update={"remaining_today": estimate_guard.remaining(device_key, ip_key)})
+
+    ticket = acquire(estimate_guard, request, device_id, "estimate")
+    result = run_ai(estimate_guard, [ticket], lambda: estimate_food(body), request_lang(request))
+    result.remaining_today = estimate_guard.remaining(device_key, ip_key)
+    estimate_cache.set(cache_key, result)
+    return result
+
