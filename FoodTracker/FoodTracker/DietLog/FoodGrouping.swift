@@ -70,10 +70,15 @@ nonisolated enum FoodGrouping {
 }
 
 /// 「最近使用」里的一种食物：名字，和最近一次记录时的份量、营养（点了用来预填，用户可以再改）
-nonisolated struct RecentFood: Identifiable, Equatable {
+nonisolated struct RecentFood: Identifiable, Hashable, Sendable {
     let name: String
-    let weightG: Double?
+    let weightG: Double?  // 克（或毫升，见 amountUnit）
     let values: NutrientValues
+    var amountUnit: AmountUnit = .gram
+    var servingQuantity: Double? = nil  // 上次选的自然份量：几份、哪个单位
+    var servingUnitID: String? = nil
+    var foodRef: String? = nil  // 来自哪种食物
+    var loggedAt: Date? = nil  // 什么时候记的（算「常吃」用）
 
     var id: String { FoodNameKey.normalize(name) }
 }
@@ -88,6 +93,31 @@ nonisolated enum RecentFoods {
             if result.count == limit { break }
         }
         return result
+    }
+
+    /// 常吃：最近 days 天里记了至少 minCount 次的食物，次数多的在前（每种给最近一次的份量）。
+    /// 自动算出来，不用用户手动收藏。records 要按时间从新到旧排好
+    static func frequent(
+        _ records: [RecentFood], now: Date, days: Int = 30, minCount: Int = 3, limit: Int = 8
+    ) -> [RecentFood] {
+        let start = now.addingTimeInterval(-Double(days) * 86_400)
+        var counts: [String: Int] = [:]
+        var latest: [String: RecentFood] = [:]
+        var order: [String] = []
+        for record in records where !record.id.isEmpty {
+            guard let date = record.loggedAt, date >= start else { continue }
+            counts[record.id, default: 0] += 1
+            if latest[record.id] == nil {
+                latest[record.id] = record
+                order.append(record.id)
+            }
+        }
+        let firstSeen = Dictionary(order.enumerated().map { ($1, $0) }, uniquingKeysWith: min)
+        return order
+            .filter { (counts[$0] ?? 0) >= minCount }
+            .sorted { (counts[$0] ?? 0, -(firstSeen[$0] ?? 0)) > (counts[$1] ?? 0, -(firstSeen[$1] ?? 0)) }
+            .prefix(limit)
+            .compactMap { latest[$0] }
     }
 
     /// 输入框里打了字时，挑出名字里含有这些字的；名字一模一样的排最前，开头一样的其次。

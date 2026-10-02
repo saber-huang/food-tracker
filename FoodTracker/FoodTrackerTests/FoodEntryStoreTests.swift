@@ -25,7 +25,7 @@ struct FoodEntryStoreTests {
     init() throws {
         // isStoredInMemoryOnly 必须是 true：测试是在 App 里面跑的，否则会写进模拟器的真实数据库
         container = try ModelContainer(
-            for: UserProfile.self, FoodEntry.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+            for: Schema(AppModels.all), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         context = container.mainContext
     }
 
@@ -187,5 +187,72 @@ struct FoodEntryStoreTests {
         #expect(item.confidence == nil)
         #expect(item.meal == .dinner)
         #expect(item.dayKey == 20260929)
+    }
+
+    // MARK: - 第七轮：份量、来源、我的食物
+
+    @Test("新记录存下选的份量（1.5 碗）、克还是毫升、来自哪种食物；读回来一样")
+    func servingRoundTrip() throws {
+        let entry = FoodEntry(
+            dayKey: 20261002, meal: .lunch, name: "牛奶", weightG: 250,
+            values: NutrientValues(caloriesKcal: 158, proteinG: 8, carbsG: 12, fatG: 8), source: .manual,
+            amountUnit: .milliliter, serving: ServingChoice(unitID: "cup", unitName: "杯", quantity: 1), foodRef: "catalog:milk")
+        context.insert(entry)
+        try context.save()
+
+        let loaded = try #require(try context.fetch(FetchDescriptor<FoodEntry>()).first)
+        #expect(loaded.amountUnit == .milliliter)
+        #expect(loaded.serving == ServingChoice(unitID: "cup", unitName: "杯", quantity: 1))
+        #expect(loaded.foodRef == "catalog:milk")
+        // 修改表单、「最近吃过」里也带着这些
+        let item = EditableItem(entry: loaded)
+        #expect(item.amountUnit == .milliliter && item.serving?.quantity == 1 && item.foodRef == "catalog:milk")
+        let recent = loaded.recentFood
+        #expect(recent.servingUnitID == "cup" && recent.servingQuantity == 1 && recent.foodRef == "catalog:milk")
+        #expect(recent.amountUnit == .milliliter && recent.loggedAt == loaded.createdAt)
+    }
+
+    @Test("CASE 10：以前的记录（没有份量和来源）照常读出来：按克、没有份量")
+    func oldRecordsStillLoad() throws {
+        let old = FoodEntry(
+            dayKey: 20260930, meal: .dinner, name: "宫保鸡丁", weightG: 200,
+            values: NutrientValues(caloriesKcal: 398), source: .photo)
+        // 模拟旧版本存下的记录：新加的几个属性都是空的
+        old.amountUnitRaw = nil
+        old.servingQuantity = nil
+        old.servingUnitID = nil
+        old.servingUnitName = nil
+        old.foodRef = nil
+        context.insert(old)
+        try context.save()
+
+        let loaded = try #require(try context.fetch(FetchDescriptor<FoodEntry>()).first)
+        #expect(loaded.amountUnit == .gram)
+        #expect(loaded.serving == nil)
+        #expect(loaded.portionText == "约 200 克")
+        #expect(EditableItem(entry: loaded).serving == nil)
+        // 在「最近吃过」里点它：食物库认得「宫保鸡丁」，用上次的数字，能选份量
+        let choice = FoodSearch.choice(for: loaded.recentFood, catalog: .shared, custom: [])
+        #expect(choice.foodRef == "catalog:kung_pao_chicken")
+        #expect(ServingMath.values(of: choice.initialSelection, in: choice).caloriesKcal == 398)
+    }
+
+    @Test("我的食物：存进去、按最近用过排、读回来")
+    func customFoods() throws {
+        let older = CustomFood(
+            name: "妈妈做的炸酱面", servingName: "", servingAmount: 450, servingValues: NutrientValues(caloriesKcal: 620),
+            source: .user, createdAt: Date(timeIntervalSince1970: 1_790_000_000))
+        let newer = CustomFood(
+            name: "山西过油肉", servingName: "份", servingAmount: 200,
+            servingValues: NutrientValues(caloriesKcal: 350, proteinG: 24, carbsG: 13, fatG: 23), source: .ai,
+            createdAt: Date(timeIntervalSince1970: 1_790_000_100))
+        context.insert(older)
+        context.insert(newer)
+        try context.save()
+        #expect(try context.fetch(CustomFood.recentFirst).map(\.name) == ["山西过油肉", "妈妈做的炸酱面"])
+        older.lastUsedAt = Date(timeIntervalSince1970: 1_790_000_200)  // 刚用过：排到前面
+        try context.save()
+        #expect(try context.fetch(CustomFood.recentFirst).map(\.name) == ["妈妈做的炸酱面", "山西过油肉"])
+        #expect(newer.snapshot.isAIEstimate && !older.snapshot.isAIEstimate)
     }
 }

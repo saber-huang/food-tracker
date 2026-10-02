@@ -92,7 +92,7 @@ enum SampleData {
     /// 预览用的数据库：只在内存里，关掉预览就没了。已经放好一份资料和今天的两条记录
     static let previewContainer: ModelContainer = {
         let container = try! ModelContainer(
-            for: UserProfile.self, FoodEntry.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+            for: UserProfile.self, FoodEntry.self, CustomFood.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         container.mainContext.insert(profile)
         insertSampleEntries(into: container.mainContext, day: .now)
         return container

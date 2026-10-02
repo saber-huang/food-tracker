@@ -1,0 +1,4241 @@
+{
+ "version": 1,
+ "synonyms": [
+  [
+   "番茄",
+   "西红柿"
+  ],
+  [
+   "土豆",
+   "马铃薯",
+   "洋芋"
+  ],
+  [
+   "红薯",
+   "地瓜",
+   "番薯",
+   "山芋",
+   "甘薯"
+  ],
+  [
+   "玉米",
+   "苞米",
+   "包谷"
+  ],
+  [
+   "西兰花",
+   "西蓝花"
+  ],
+  [
+   "卷心菜",
+   "包菜",
+   "圆白菜",
+   "洋白菜",
+   "包心菜"
+  ],
+  [
+   "猕猴桃",
+   "奇异果"
+  ],
+  [
+   "菠萝",
+   "凤梨"
+  ],
+  [
+   "牛奶",
+   "牛乳"
+  ],
+  [
+   "三文鱼",
+   "鲑鱼"
+  ],
+  [
+   "馄饨",
+   "云吞",
+   "抄手"
+  ],
+  [
+   "冰淇淋",
+   "冰激凌"
+  ],
+  [
+   "披萨",
+   "比萨",
+   "匹萨"
+  ],
+  [
+   "汉堡",
+   "汉堡包"
+  ],
+  [
+   "青椒",
+   "菜椒",
+   "灯笼椒"
+  ],
+  [
+   "虾仁",
+   "虾肉"
+  ]
+ ],
+ "foods": [
+  {
+   "id": "rice",
+   "name": "米饭",
+   "nameEn": "Steamed rice",
+   "aliases": [
+    "白米饭",
+    "白饭",
+    "大米饭",
+    "蒸米饭",
+    "熟米饭"
+   ],
+   "aliasesEn": [
+    "rice",
+    "white rice",
+    "cooked rice"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 116,
+    "protein": 2.6,
+    "carbs": 25.9,
+    "fat": 0.3
+   },
+   "source": "cn",
+   "sourceRef": "米饭（蒸，粳米）",
+   "units": [
+    {
+     "id": "bowl",
+     "name": "碗",
+     "nameEn": "bowl",
+     "nameEnPlural": "bowls",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "brown_rice",
+   "name": "糙米饭",
+   "nameEn": "Brown rice",
+   "aliases": [
+    "糙米"
+   ],
+   "aliasesEn": [
+    "brown rice"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 123,
+    "protein": 2.7,
+    "carbs": 25.6,
+    "fat": 1.0
+   },
+   "source": "usda",
+   "sourceRef": "169704 Rice, brown, long-grain, cooked",
+   "units": [
+    {
+     "id": "bowl",
+     "name": "碗",
+     "nameEn": "bowl",
+     "nameEnPlural": "bowls",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "congee",
+   "name": "白粥",
+   "nameEn": "Rice porridge",
+   "aliases": [
+    "白米粥",
+    "大米粥",
+    "稀饭",
+    "粥"
+   ],
+   "aliasesEn": [
+    "congee",
+    "porridge"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 39,
+    "protein": 0.8,
+    "carbs": 8.4,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "2708418 Congee",
+   "units": [
+    {
+     "id": "bowl",
+     "name": "碗",
+     "nameEn": "bowl",
+     "nameEnPlural": "bowls",
+     "amount": 250,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "millet_porridge",
+   "name": "小米粥",
+   "nameEn": "Millet porridge",
+   "aliases": [
+    "小米稀饭"
+   ],
+   "aliasesEn": [
+    "millet porridge"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 46,
+    "protein": 1.4,
+    "carbs": 8.4,
+    "fat": 0.7
+   },
+   "source": "cn",
+   "sourceRef": "小米粥",
+   "units": [
+    {
+     "id": "bowl",
+     "name": "碗",
+     "nameEn": "bowl",
+     "nameEnPlural": "bowls",
+     "amount": 250,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "oats",
+   "name": "燕麦片",
+   "nameEn": "Rolled oats (dry)",
+   "aliases": [
+    "燕麦",
+    "麦片",
+    "即食燕麦"
+   ],
+   "aliasesEn": [
+    "oats",
+    "oatmeal"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 379,
+    "protein": 13.2,
+    "carbs": 67.7,
+    "fat": 6.5
+   },
+   "source": "usda",
+   "sourceRef": "173904 Cereals, oats, regular and quick, dry",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 40,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "mantou",
+   "name": "馒头",
+   "nameEn": "Steamed bun (mantou)",
+   "aliases": [
+    "白馒头",
+    "馍",
+    "馍馍"
+   ],
+   "aliasesEn": [
+    "mantou",
+    "steamed bun"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 223,
+    "protein": 7.0,
+    "carbs": 47.0,
+    "fat": 1.1
+   },
+   "source": "cn",
+   "sourceRef": "馒头（均值）",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "baozi",
+   "name": "肉包子",
+   "nameEn": "Meat bun (baozi)",
+   "aliases": [
+    "包子",
+    "猪肉包子",
+    "鲜肉包",
+    "肉包"
+   ],
+   "aliasesEn": [
+    "baozi",
+    "bao",
+    "meat bun"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 273,
+    "protein": 11.2,
+    "carbs": 39.8,
+    "fat": 7.6
+   },
+   "source": "usda",
+   "sourceRef": "2708724 Bao bun",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 80,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "dumplings",
+   "name": "饺子",
+   "nameEn": "Dumplings",
+   "aliases": [
+    "水饺",
+    "猪肉饺子",
+    "猪肉白菜饺子",
+    "煮饺子"
+   ],
+   "aliasesEn": [
+    "dumplings",
+    "jiaozi"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 220,
+    "protein": 8.5,
+    "carbs": 26.0,
+    "fat": 9.5
+   },
+   "source": "estimate",
+   "sourceRef": "按常见猪肉白菜速冻水饺的营养标签估算",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 20,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 10
+  },
+  {
+   "id": "potstickers",
+   "name": "煎饺",
+   "nameEn": "Pan-fried dumplings",
+   "aliases": [
+    "锅贴"
+   ],
+   "aliasesEn": [
+    "potstickers",
+    "fried dumplings"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 192,
+    "protein": 8.8,
+    "carbs": 14.1,
+    "fat": 11.1
+   },
+   "source": "usda",
+   "sourceRef": "2708705 Wonton, dumpling or pot sticker, fried",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 25,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 8
+  },
+  {
+   "id": "noodles",
+   "name": "面条",
+   "nameEn": "Noodles (cooked)",
+   "aliases": [
+    "挂面",
+    "煮面条",
+    "清汤面",
+    "素面"
+   ],
+   "aliasesEn": [
+    "noodles",
+    "wheat noodles"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 131,
+    "protein": 4.0,
+    "carbs": 27.5,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "168909 Noodles, japanese, somen, cooked（小麦挂面，煮）",
+   "units": [
+    {
+     "id": "bowl",
+     "name": "碗",
+     "nameEn": "bowl",
+     "nameEnPlural": "bowls",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "instant_noodles",
+   "name": "方便面",
+   "nameEn": "Instant noodles (dry)",
+   "aliases": [
+    "泡面",
+    "速食面"
+   ],
+   "aliasesEn": [
+    "instant noodles",
+    "ramen"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 440,
+    "protein": 10.2,
+    "carbs": 60.3,
+    "fat": 17.6
+   },
+   "source": "usda",
+   "sourceRef": "171177 Soup, ramen noodle, any flavor, dry",
+   "units": [
+    {
+     "id": "pack",
+     "name": "包",
+     "nameEn": "pack",
+     "nameEnPlural": "packs",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "rice_noodles",
+   "name": "米粉",
+   "nameEn": "Rice noodles (cooked)",
+   "aliases": [
+    "米线",
+    "河粉"
+   ],
+   "aliasesEn": [
+    "rice noodles",
+    "vermicelli"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 108,
+    "protein": 1.8,
+    "carbs": 24.0,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "168914 Rice noodles, cooked",
+   "units": [
+    {
+     "id": "bowl",
+     "name": "碗",
+     "nameEn": "bowl",
+     "nameEnPlural": "bowls",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "whole_wheat_bread",
+   "name": "全麦面包",
+   "nameEn": "Whole-wheat bread",
+   "aliases": [
+    "全麦吐司"
+   ],
+   "aliasesEn": [
+    "whole wheat bread",
+    "whole grain bread"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 252,
+    "protein": 12.4,
+    "carbs": 42.7,
+    "fat": 3.5
+   },
+   "source": "usda",
+   "sourceRef": "172688 Bread, whole-wheat, commercially prepared",
+   "units": [
+    {
+     "id": "slice",
+     "name": "片",
+     "nameEn": "slice",
+     "nameEnPlural": "slices",
+     "amount": 30,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "white_bread",
+   "name": "吐司",
+   "nameEn": "White bread",
+   "aliases": [
+    "白吐司",
+    "面包",
+    "白面包",
+    "切片面包",
+    "土司"
+   ],
+   "aliasesEn": [
+    "bread",
+    "white bread",
+    "toast"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 266,
+    "protein": 8.8,
+    "carbs": 49.4,
+    "fat": 3.3
+   },
+   "source": "usda",
+   "sourceRef": "174924 Bread, white, commercially prepared",
+   "units": [
+    {
+     "id": "slice",
+     "name": "片",
+     "nameEn": "slice",
+     "nameEnPlural": "slices",
+     "amount": 30,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "croissant",
+   "name": "牛角包",
+   "nameEn": "Croissant",
+   "aliases": [
+    "可颂",
+    "羊角包"
+   ],
+   "aliasesEn": [
+    "croissant"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 406,
+    "protein": 8.2,
+    "carbs": 45.8,
+    "fat": 21.0
+   },
+   "source": "usda",
+   "sourceRef": "2707678 Croissant",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 60,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "youtiao",
+   "name": "油条",
+   "nameEn": "Youtiao (fried dough)",
+   "aliases": [],
+   "aliasesEn": [
+    "youtiao",
+    "fried dough stick"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 386,
+    "protein": 6.9,
+    "carbs": 51.0,
+    "fat": 17.6
+   },
+   "source": "cn",
+   "sourceRef": "油条",
+   "units": [
+    {
+     "id": "stick",
+     "name": "根",
+     "nameEn": "stick",
+     "nameEnPlural": "sticks",
+     "amount": 60,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "corn",
+   "name": "玉米",
+   "nameEn": "Corn on the cob",
+   "aliases": [
+    "玉米棒",
+    "甜玉米",
+    "煮玉米",
+    "玉米粒"
+   ],
+   "aliasesEn": [
+    "corn",
+    "sweet corn"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 96,
+    "protein": 3.4,
+    "carbs": 21.0,
+    "fat": 1.5
+   },
+   "source": "usda",
+   "sourceRef": "169999 Corn, sweet, yellow, cooked, boiled",
+   "units": [
+    {
+     "id": "stick",
+     "name": "根",
+     "nameEn": "ear",
+     "nameEnPlural": "ears",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "sweet_potato",
+   "name": "红薯",
+   "nameEn": "Sweet potato",
+   "aliases": [
+    "烤红薯",
+    "蒸红薯",
+    "紫薯"
+   ],
+   "aliasesEn": [
+    "sweet potato",
+    "yam"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 90,
+    "protein": 2.0,
+    "carbs": 20.7,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "168483 Sweet potato, cooked, baked in skin, flesh",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "potato",
+   "name": "土豆",
+   "nameEn": "Potato (boiled)",
+   "aliases": [
+    "煮土豆",
+    "蒸土豆"
+   ],
+   "aliasesEn": [
+    "potato",
+    "boiled potato"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 86,
+    "protein": 1.7,
+    "carbs": 20.0,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "170440 Potatoes, boiled, cooked without skin, flesh",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "pumpkin",
+   "name": "南瓜",
+   "nameEn": "Pumpkin",
+   "aliases": [
+    "蒸南瓜"
+   ],
+   "aliasesEn": [
+    "pumpkin",
+    "squash"
+   ],
+   "category": "staple",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 20,
+    "protein": 0.7,
+    "carbs": 4.9,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "168449 Pumpkin, cooked, boiled, drained",
+   "units": [
+    {
+     "id": "chunk",
+     "name": "块",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "fried_rice",
+   "name": "蛋炒饭",
+   "nameEn": "Egg fried rice",
+   "aliases": [
+    "炒饭",
+    "鸡蛋炒饭",
+    "扬州炒饭"
+   ],
+   "aliasesEn": [
+    "fried rice",
+    "egg fried rice"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 174,
+    "protein": 4.0,
+    "carbs": 32.8,
+    "fat": 3.0
+   },
+   "source": "usda",
+   "sourceRef": "167668 Restaurant, Chinese, fried rice, without meat",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 300,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "lo_mein",
+   "name": "炒面",
+   "nameEn": "Stir-fried noodles",
+   "aliases": [
+    "炒面条",
+    "肉丝炒面"
+   ],
+   "aliasesEn": [
+    "lo mein",
+    "chow mein",
+    "fried noodles"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 121,
+    "protein": 4.8,
+    "carbs": 20.2,
+    "fat": 2.4
+   },
+   "source": "usda",
+   "sourceRef": "2708798 Lo mein, NFS",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 300,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "beef_noodle_soup",
+   "name": "牛肉面",
+   "nameEn": "Beef noodle soup",
+   "aliases": [
+    "兰州拉面",
+    "红烧牛肉面",
+    "拉面"
+   ],
+   "aliasesEn": [
+    "beef noodle soup",
+    "beef noodles"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 80,
+    "protein": 4.0,
+    "carbs": 10.5,
+    "fat": 2.3
+   },
+   "source": "estimate",
+   "sourceRef": "一碗约 550 克：煮面 200 克、牛肉 50 克、汤 300 克（含少量油）",
+   "units": [
+    {
+     "id": "bowl",
+     "name": "碗",
+     "nameEn": "bowl",
+     "nameEnPlural": "bowls",
+     "amount": 550,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "hamburger",
+   "name": "汉堡",
+   "nameEn": "Hamburger",
+   "aliases": [
+    "牛肉汉堡",
+    "芝士汉堡"
+   ],
+   "aliasesEn": [
+    "hamburger",
+    "burger",
+    "cheeseburger"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 288,
+    "protein": 17.5,
+    "carbs": 20.7,
+    "fat": 14.4
+   },
+   "source": "usda",
+   "sourceRef": "2706920 Hamburger, NFS",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 150,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "pizza",
+   "name": "披萨",
+   "nameEn": "Cheese pizza",
+   "aliases": [
+    "芝士披萨"
+   ],
+   "aliasesEn": [
+    "pizza",
+    "cheese pizza"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 266,
+    "protein": 11.4,
+    "carbs": 33.3,
+    "fat": 9.7
+   },
+   "source": "usda",
+   "sourceRef": "173292 Fast Food, Pizza Chain, 14\" pizza, cheese topping, regular crust",
+   "units": [
+    {
+     "id": "chunk",
+     "name": "块",
+     "nameEn": "slice",
+     "nameEnPlural": "slices",
+     "amount": 100,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "french_fries",
+   "name": "薯条",
+   "nameEn": "French fries",
+   "aliases": [
+    "炸薯条"
+   ],
+   "aliasesEn": [
+    "french fries",
+    "fries",
+    "chips"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 312,
+    "protein": 3.4,
+    "carbs": 41.4,
+    "fat": 14.7
+   },
+   "source": "usda",
+   "sourceRef": "170698 Fast foods, potato, french fried in vegetable oil",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 110,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "fried_chicken",
+   "name": "炸鸡",
+   "nameEn": "Fried chicken",
+   "aliases": [
+    "炸鸡腿",
+    "炸鸡块"
+   ],
+   "aliasesEn": [
+    "fried chicken"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 241,
+    "protein": 19.1,
+    "carbs": 6.0,
+    "fat": 15.1
+   },
+   "source": "usda",
+   "sourceRef": "2706018 Chicken drumstick, fried, coated, skin / coating eaten",
+   "units": [
+    {
+     "id": "chunk",
+     "name": "块",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 100,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "sushi",
+   "name": "寿司",
+   "nameEn": "Sushi",
+   "aliases": [
+    "寿司卷"
+   ],
+   "aliasesEn": [
+    "sushi"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 94,
+    "protein": 2.9,
+    "carbs": 18.4,
+    "fat": 0.7
+   },
+   "source": "usda",
+   "sourceRef": "2708959 Sushi, NFS",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 30,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 6
+  },
+  {
+   "id": "spring_roll",
+   "name": "春卷",
+   "nameEn": "Spring roll",
+   "aliases": [
+    "炸春卷"
+   ],
+   "aliasesEn": [
+    "spring roll",
+    "egg roll"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 272,
+    "protein": 7.6,
+    "carbs": 27.0,
+    "fat": 14.7
+   },
+   "source": "usda",
+   "sourceRef": "2708702 Egg roll, with beef and/or pork",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 50,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "egg",
+   "name": "鸡蛋",
+   "nameEn": "Egg (boiled)",
+   "aliases": [
+    "水煮蛋",
+    "煮鸡蛋",
+    "白煮蛋",
+    "茶叶蛋",
+    "卤蛋",
+    "蛋"
+   ],
+   "aliasesEn": [
+    "egg",
+    "boiled egg",
+    "hard-boiled egg"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 155,
+    "protein": 12.6,
+    "carbs": 1.1,
+    "fat": 10.6
+   },
+   "source": "usda",
+   "sourceRef": "173424 Egg, whole, cooked, hard-boiled",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "egg",
+     "nameEnPlural": "eggs",
+     "amount": 50,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "fried_egg",
+   "name": "煎蛋",
+   "nameEn": "Fried egg",
+   "aliases": [
+    "煎鸡蛋",
+    "荷包蛋"
+   ],
+   "aliasesEn": [
+    "fried egg"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 196,
+    "protein": 13.6,
+    "carbs": 0.8,
+    "fat": 14.8
+   },
+   "source": "usda",
+   "sourceRef": "173423 Egg, whole, cooked, fried",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "egg",
+     "nameEnPlural": "eggs",
+     "amount": 50,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "scrambled_egg",
+   "name": "炒鸡蛋",
+   "nameEn": "Scrambled eggs",
+   "aliases": [
+    "炒蛋",
+    "鸡蛋饼",
+    "煎蛋饼"
+   ],
+   "aliasesEn": [
+    "scrambled eggs",
+    "omelet"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 192,
+    "protein": 11.6,
+    "carbs": 0.9,
+    "fat": 15.8
+   },
+   "source": "usda",
+   "sourceRef": "2707200 Egg omelet or scrambled egg, made with oil",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "milk",
+   "name": "牛奶",
+   "nameEn": "Milk (whole)",
+   "aliases": [
+    "全脂牛奶",
+    "纯牛奶",
+    "鲜牛奶"
+   ],
+   "aliasesEn": [
+    "milk",
+    "whole milk"
+   ],
+   "category": "dairy",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 63,
+    "protein": 3.2,
+    "carbs": 4.9,
+    "fat": 3.3
+   },
+   "source": "usda",
+   "sourceRef": "171265 Milk, whole, 3.25% milkfat",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 250,
+     "step": 0.5
+    },
+    {
+     "id": "carton",
+     "name": "盒",
+     "nameEn": "carton",
+     "nameEnPlural": "cartons",
+     "amount": 250,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "skim_milk",
+   "name": "脱脂牛奶",
+   "nameEn": "Skim milk",
+   "aliases": [
+    "低脂牛奶",
+    "脱脂奶"
+   ],
+   "aliasesEn": [
+    "skim milk",
+    "nonfat milk"
+   ],
+   "category": "dairy",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 35,
+    "protein": 3.5,
+    "carbs": 5.2,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "171269 Milk, nonfat, fluid",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 250,
+     "step": 0.5
+    },
+    {
+     "id": "carton",
+     "name": "盒",
+     "nameEn": "carton",
+     "nameEnPlural": "cartons",
+     "amount": 250,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "yogurt",
+   "name": "酸奶",
+   "nameEn": "Yogurt (sweetened)",
+   "aliases": [
+    "酸牛奶",
+    "风味酸奶",
+    "原味酸奶"
+   ],
+   "aliasesEn": [
+    "yogurt",
+    "yoghurt"
+   ],
+   "category": "dairy",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 72,
+    "protein": 2.5,
+    "carbs": 9.3,
+    "fat": 2.7
+   },
+   "source": "cn",
+   "sourceRef": "酸奶（均值）",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "plain_yogurt",
+   "name": "无糖酸奶",
+   "nameEn": "Plain yogurt (unsweetened)",
+   "aliases": [
+    "无蔗糖酸奶"
+   ],
+   "aliasesEn": [
+    "plain yogurt",
+    "unsweetened yogurt"
+   ],
+   "category": "dairy",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 61,
+    "protein": 3.5,
+    "carbs": 4.7,
+    "fat": 3.2
+   },
+   "source": "usda",
+   "sourceRef": "171284 Yogurt, plain, whole milk",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "greek_yogurt",
+   "name": "希腊酸奶",
+   "nameEn": "Greek yogurt",
+   "aliases": [
+    "希腊式酸奶"
+   ],
+   "aliasesEn": [
+    "greek yogurt"
+   ],
+   "category": "dairy",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 97,
+    "protein": 9.0,
+    "carbs": 4.0,
+    "fat": 5.0
+   },
+   "source": "usda",
+   "sourceRef": "171304 Yogurt, Greek, plain, whole milk",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "soy_milk",
+   "name": "豆浆",
+   "nameEn": "Soy milk (unsweetened)",
+   "aliases": [
+    "无糖豆浆",
+    "原味豆浆"
+   ],
+   "aliasesEn": [
+    "soy milk",
+    "soymilk"
+   ],
+   "category": "dairy",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 34,
+    "protein": 3.0,
+    "carbs": 1.7,
+    "fat": 1.6
+   },
+   "source": "usda",
+   "sourceRef": "175215 Soymilk (all flavors), unsweetened",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 250,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "sweet_soy_milk",
+   "name": "甜豆浆",
+   "nameEn": "Soy milk (sweetened)",
+   "aliases": [
+    "加糖豆浆",
+    "豆奶"
+   ],
+   "aliasesEn": [
+    "sweetened soy milk"
+   ],
+   "category": "dairy",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 55,
+    "protein": 3.4,
+    "carbs": 6.4,
+    "fat": 1.8
+   },
+   "source": "usda",
+   "sourceRef": "172446 Soymilk, original and vanilla, unfortified",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 250,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "tofu",
+   "name": "豆腐",
+   "nameEn": "Tofu",
+   "aliases": [
+    "北豆腐",
+    "老豆腐",
+    "卤水豆腐"
+   ],
+   "aliasesEn": [
+    "tofu",
+    "bean curd"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 76,
+    "protein": 8.1,
+    "carbs": 1.9,
+    "fat": 4.8
+   },
+   "source": "usda",
+   "sourceRef": "172476 Tofu, raw, regular, prepared with calcium sulfate",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "silken_tofu",
+   "name": "嫩豆腐",
+   "nameEn": "Silken tofu",
+   "aliases": [
+    "内酯豆腐",
+    "南豆腐"
+   ],
+   "aliasesEn": [
+    "silken tofu",
+    "soft tofu"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 62,
+    "protein": 6.9,
+    "carbs": 2.4,
+    "fat": 2.7
+   },
+   "source": "usda",
+   "sourceRef": "172461 MORI-NU, Tofu, silken, firm",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "cheese_slice",
+   "name": "奶酪片",
+   "nameEn": "Cheese slice",
+   "aliases": [
+    "芝士片",
+    "芝士",
+    "奶酪"
+   ],
+   "aliasesEn": [
+    "cheese",
+    "cheese slice"
+   ],
+   "category": "dairy",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 366,
+    "protein": 18.1,
+    "carbs": 4.8,
+    "fat": 30.7
+   },
+   "source": "usda",
+   "sourceRef": "170853 Cheese, pasteurized process, American",
+   "units": [
+    {
+     "id": "slice",
+     "name": "片",
+     "nameEn": "slice",
+     "nameEnPlural": "slices",
+     "amount": 20,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "chicken_breast",
+   "name": "鸡胸肉",
+   "nameEn": "Chicken breast (cooked)",
+   "aliases": [
+    "鸡胸",
+    "鸡胸脯肉",
+    "鸡脯肉",
+    "水煮鸡胸肉"
+   ],
+   "aliasesEn": [
+    "chicken breast",
+    "chicken"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 165,
+    "protein": 31.0,
+    "carbs": 0.0,
+    "fat": 3.6
+   },
+   "source": "usda",
+   "sourceRef": "171477 Chicken, broilers or fryers, breast, meat only, cooked, roasted",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "chicken_drumstick",
+   "name": "鸡腿",
+   "nameEn": "Chicken drumstick",
+   "aliases": [
+    "鸡腿肉",
+    "烤鸡腿",
+    "卤鸡腿",
+    "琵琶腿"
+   ],
+   "aliasesEn": [
+    "chicken drumstick",
+    "drumstick",
+    "chicken leg"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 191,
+    "protein": 23.4,
+    "carbs": 0.0,
+    "fat": 10.2
+   },
+   "source": "usda",
+   "sourceRef": "173612 Chicken, broilers or fryers, drumstick, meat and skin, cooked, roasted",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 80,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "chicken_wing",
+   "name": "鸡翅",
+   "nameEn": "Chicken wing",
+   "aliases": [
+    "鸡翅中",
+    "烤鸡翅",
+    "奥尔良鸡翅"
+   ],
+   "aliasesEn": [
+    "chicken wing",
+    "wings"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 254,
+    "protein": 23.8,
+    "carbs": 0.0,
+    "fat": 16.9
+   },
+   "source": "usda",
+   "sourceRef": "173630 Chicken, broilers or fryers, wing, meat and skin, cooked, roasted",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 30,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 3
+  },
+  {
+   "id": "pork_lean",
+   "name": "瘦猪肉",
+   "nameEn": "Lean pork (cooked)",
+   "aliases": [
+    "猪里脊",
+    "里脊肉",
+    "猪瘦肉",
+    "猪肉"
+   ],
+   "aliasesEn": [
+    "pork",
+    "lean pork",
+    "pork loin"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 143,
+    "protein": 26.2,
+    "carbs": 0.0,
+    "fat": 3.5
+   },
+   "source": "usda",
+   "sourceRef": "168250 Pork, fresh, loin, tenderloin, separable lean only, cooked, roasted",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "beef_lean",
+   "name": "牛肉",
+   "nameEn": "Beef (lean, cooked)",
+   "aliases": [
+    "瘦牛肉",
+    "牛腱",
+    "牛腱子"
+   ],
+   "aliasesEn": [
+    "beef",
+    "lean beef"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 169,
+    "protein": 29.7,
+    "carbs": 0.0,
+    "fat": 4.7
+   },
+   "source": "usda",
+   "sourceRef": "171809 Beef, round, eye of round, roast, separable lean only, cooked, roasted",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "steak",
+   "name": "牛排",
+   "nameEn": "Beef steak",
+   "aliases": [
+    "西冷牛排",
+    "煎牛排",
+    "牛扒"
+   ],
+   "aliasesEn": [
+    "steak",
+    "sirloin"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 219,
+    "protein": 29.0,
+    "carbs": 0.0,
+    "fat": 10.5
+   },
+   "source": "usda",
+   "sourceRef": "169458 Beef, top sirloin, steak, separable lean and fat, choice, cooked, broiled",
+   "units": [
+    {
+     "id": "chunk",
+     "name": "块",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "lamb",
+   "name": "羊肉",
+   "nameEn": "Lamb (lean, cooked)",
+   "aliases": [
+    "羊腿肉",
+    "烤羊肉"
+   ],
+   "aliasesEn": [
+    "lamb",
+    "mutton"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 191,
+    "protein": 28.3,
+    "carbs": 0.0,
+    "fat": 7.7
+   },
+   "source": "usda",
+   "sourceRef": "174314 Lamb, leg, whole, separable lean only, cooked, roasted",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "salmon",
+   "name": "三文鱼",
+   "nameEn": "Salmon",
+   "aliases": [
+    "煎三文鱼",
+    "烤三文鱼"
+   ],
+   "aliasesEn": [
+    "salmon"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 206,
+    "protein": 22.1,
+    "carbs": 0.0,
+    "fat": 12.3
+   },
+   "source": "usda",
+   "sourceRef": "175168 Fish, salmon, Atlantic, farmed, cooked, dry heat",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "sea_bass",
+   "name": "鲈鱼",
+   "nameEn": "Sea bass",
+   "aliases": [
+    "清蒸鲈鱼",
+    "清蒸鱼",
+    "鱼肉",
+    "鱼"
+   ],
+   "aliasesEn": [
+    "sea bass",
+    "fish",
+    "steamed fish"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 124,
+    "protein": 23.6,
+    "carbs": 0.0,
+    "fat": 2.6
+   },
+   "source": "usda",
+   "sourceRef": "173694 Fish, sea bass, mixed species, cooked, dry heat",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "shrimp",
+   "name": "虾",
+   "nameEn": "Shrimp (boiled)",
+   "aliases": [
+    "白灼虾",
+    "虾仁",
+    "大虾",
+    "基围虾",
+    "水煮虾"
+   ],
+   "aliasesEn": [
+    "shrimp",
+    "prawns"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 99,
+    "protein": 24.0,
+    "carbs": 0.2,
+    "fat": 0.3
+   },
+   "source": "usda",
+   "sourceRef": "175180 Crustaceans, shrimp, cooked",
+   "units": [
+    {
+     "id": "each",
+     "name": "只",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 10,
+     "step": 1
+    },
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 10
+  },
+  {
+   "id": "ham_sausage",
+   "name": "火腿肠",
+   "nameEn": "Ham sausage",
+   "aliases": [],
+   "aliasesEn": [
+    "ham sausage",
+    "sausage"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 212,
+    "protein": 14.0,
+    "carbs": 15.6,
+    "fat": 10.4
+   },
+   "source": "cn",
+   "sourceRef": "火腿肠",
+   "units": [
+    {
+     "id": "stick",
+     "name": "根",
+     "nameEn": "stick",
+     "nameEnPlural": "sticks",
+     "amount": 45,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "bacon",
+   "name": "培根",
+   "nameEn": "Bacon",
+   "aliases": [
+    "煎培根"
+   ],
+   "aliasesEn": [
+    "bacon"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 468,
+    "protein": 33.9,
+    "carbs": 1.7,
+    "fat": 35.1
+   },
+   "source": "usda",
+   "sourceRef": "2705890 Bacon or side pork, fresh, cooked",
+   "units": [
+    {
+     "id": "slice",
+     "name": "片",
+     "nameEn": "slice",
+     "nameEnPlural": "slices",
+     "amount": 10,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 2
+  },
+  {
+   "id": "luncheon_meat",
+   "name": "午餐肉",
+   "nameEn": "Luncheon meat",
+   "aliases": [
+    "午餐肉罐头",
+    "斯帕姆"
+   ],
+   "aliasesEn": [
+    "luncheon meat",
+    "spam"
+   ],
+   "category": "protein",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 334,
+    "protein": 12.5,
+    "carbs": 2.1,
+    "fat": 30.3
+   },
+   "source": "usda",
+   "sourceRef": "174571 Luncheon meat, pork, canned",
+   "units": [
+    {
+     "id": "slice",
+     "name": "片",
+     "nameEn": "slice",
+     "nameEnPlural": "slices",
+     "amount": 20,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "broccoli",
+   "name": "西兰花",
+   "nameEn": "Broccoli",
+   "aliases": [
+    "绿花菜",
+    "白灼西兰花",
+    "水煮西兰花"
+   ],
+   "aliasesEn": [
+    "broccoli"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 35,
+    "protein": 2.4,
+    "carbs": 7.2,
+    "fat": 0.4
+   },
+   "source": "usda",
+   "sourceRef": "169967 Broccoli, cooked, boiled, drained",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "bok_choy",
+   "name": "小白菜",
+   "nameEn": "Bok choy",
+   "aliases": [
+    "青菜",
+    "上海青",
+    "油菜",
+    "小油菜",
+    "菜心"
+   ],
+   "aliasesEn": [
+    "bok choy",
+    "pak choi",
+    "greens"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 12,
+    "protein": 1.6,
+    "carbs": 1.8,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "170391 Cabbage, chinese (pak-choi), cooked, boiled, drained",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "spinach",
+   "name": "菠菜",
+   "nameEn": "Spinach",
+   "aliases": [
+    "菠菜叶"
+   ],
+   "aliasesEn": [
+    "spinach"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 23,
+    "protein": 3.0,
+    "carbs": 3.8,
+    "fat": 0.3
+   },
+   "source": "usda",
+   "sourceRef": "168463 Spinach, cooked, boiled, drained",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "lettuce",
+   "name": "生菜",
+   "nameEn": "Lettuce",
+   "aliases": [
+    "罗马生菜",
+    "球生菜"
+   ],
+   "aliasesEn": [
+    "lettuce",
+    "romaine"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 17,
+    "protein": 1.2,
+    "carbs": 3.3,
+    "fat": 0.3
+   },
+   "source": "usda",
+   "sourceRef": "169247 Lettuce, cos or romaine, raw",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "cucumber",
+   "name": "黄瓜",
+   "nameEn": "Cucumber",
+   "aliases": [
+    "青瓜",
+    "凉拌黄瓜"
+   ],
+   "aliasesEn": [
+    "cucumber"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 15,
+    "protein": 0.7,
+    "carbs": 3.6,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "168409 Cucumber, with peel, raw",
+   "units": [
+    {
+     "id": "stick",
+     "name": "根",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "tomato",
+   "name": "番茄",
+   "nameEn": "Tomato",
+   "aliases": [
+    "小番茄",
+    "圣女果"
+   ],
+   "aliasesEn": [
+    "tomato",
+    "cherry tomato"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 18,
+    "protein": 0.9,
+    "carbs": 3.9,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "170457 Tomatoes, red, ripe, raw, year round average",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "carrot",
+   "name": "胡萝卜",
+   "nameEn": "Carrot",
+   "aliases": [
+    "红萝卜"
+   ],
+   "aliasesEn": [
+    "carrot"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 41,
+    "protein": 0.9,
+    "carbs": 9.6,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "170393 Carrots, raw",
+   "units": [
+    {
+     "id": "stick",
+     "name": "根",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "onion",
+   "name": "洋葱",
+   "nameEn": "Onion",
+   "aliases": [
+    "圆葱"
+   ],
+   "aliasesEn": [
+    "onion"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 40,
+    "protein": 1.1,
+    "carbs": 9.3,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "170000 Onions, raw",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "green_pepper",
+   "name": "青椒",
+   "nameEn": "Green bell pepper",
+   "aliases": [
+    "甜椒"
+   ],
+   "aliasesEn": [
+    "bell pepper",
+    "green pepper"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 20,
+    "protein": 0.9,
+    "carbs": 4.6,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "170427 Peppers, sweet, green, raw",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "eggplant",
+   "name": "茄子",
+   "nameEn": "Eggplant",
+   "aliases": [
+    "蒸茄子"
+   ],
+   "aliasesEn": [
+    "eggplant",
+    "aubergine"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 35,
+    "protein": 0.8,
+    "carbs": 8.7,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "169229 Eggplant, cooked, boiled, drained",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "napa_cabbage",
+   "name": "大白菜",
+   "nameEn": "Napa cabbage",
+   "aliases": [
+    "白菜",
+    "娃娃菜",
+    "黄芽白"
+   ],
+   "aliasesEn": [
+    "napa cabbage",
+    "chinese cabbage"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 16,
+    "protein": 1.2,
+    "carbs": 3.2,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "169979 Cabbage, chinese (pe-tsai), raw",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "cabbage",
+   "name": "卷心菜",
+   "nameEn": "Cabbage",
+   "aliases": [
+    "甘蓝",
+    "莲花白"
+   ],
+   "aliasesEn": [
+    "cabbage"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 25,
+    "protein": 1.3,
+    "carbs": 5.8,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "169975 Cabbage, raw",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "celery",
+   "name": "芹菜",
+   "nameEn": "Celery",
+   "aliases": [
+    "西芹"
+   ],
+   "aliasesEn": [
+    "celery"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 14,
+    "protein": 0.7,
+    "carbs": 3.0,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "169988 Celery, raw",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "mushroom",
+   "name": "蘑菇",
+   "nameEn": "Mushrooms",
+   "aliases": [
+    "白蘑菇",
+    "口蘑"
+   ],
+   "aliasesEn": [
+    "mushroom",
+    "mushrooms"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 22,
+    "protein": 3.1,
+    "carbs": 3.3,
+    "fat": 0.3
+   },
+   "source": "usda",
+   "sourceRef": "169251 Mushrooms, white, raw",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "bean_sprouts",
+   "name": "豆芽",
+   "nameEn": "Bean sprouts",
+   "aliases": [
+    "绿豆芽"
+   ],
+   "aliasesEn": [
+    "bean sprouts"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 30,
+    "protein": 3.0,
+    "carbs": 5.9,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "169957 Mung beans, sprouted, raw",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "winter_melon",
+   "name": "冬瓜",
+   "nameEn": "Winter melon",
+   "aliases": [],
+   "aliasesEn": [
+    "winter melon"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 14,
+    "protein": 0.4,
+    "carbs": 3.0,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "170475 Waxgourd, cooked, boiled, drained",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "enoki",
+   "name": "金针菇",
+   "nameEn": "Enoki mushrooms",
+   "aliases": [],
+   "aliasesEn": [
+    "enoki"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 37,
+    "protein": 2.7,
+    "carbs": 7.8,
+    "fat": 0.3
+   },
+   "source": "usda",
+   "sourceRef": "169382 Mushrooms, enoki, raw",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "edamame",
+   "name": "毛豆",
+   "nameEn": "Edamame",
+   "aliases": [
+    "水煮毛豆",
+    "毛豆仁"
+   ],
+   "aliasesEn": [
+    "edamame"
+   ],
+   "category": "vegetable",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 121,
+    "protein": 11.9,
+    "carbs": 8.9,
+    "fat": 5.2
+   },
+   "source": "usda",
+   "sourceRef": "168411 Edamame, frozen, prepared",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "apple",
+   "name": "苹果",
+   "nameEn": "Apple",
+   "aliases": [],
+   "aliasesEn": [
+    "apple"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 52,
+    "protein": 0.3,
+    "carbs": 13.8,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "171688 Apples, raw, with skin",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "apple",
+     "nameEnPlural": "apples",
+     "amount": 180,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "banana",
+   "name": "香蕉",
+   "nameEn": "Banana",
+   "aliases": [],
+   "aliasesEn": [
+    "banana"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 89,
+    "protein": 1.1,
+    "carbs": 22.8,
+    "fat": 0.3
+   },
+   "source": "usda",
+   "sourceRef": "173944 Bananas, raw",
+   "units": [
+    {
+     "id": "stick",
+     "name": "根",
+     "nameEn": "banana",
+     "nameEnPlural": "bananas",
+     "amount": 120,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "orange",
+   "name": "橙子",
+   "nameEn": "Orange",
+   "aliases": [
+    "橙",
+    "甜橙",
+    "脐橙"
+   ],
+   "aliasesEn": [
+    "orange"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 47,
+    "protein": 0.9,
+    "carbs": 11.8,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "169097 Oranges, raw, all commercial varieties",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "orange",
+     "nameEnPlural": "oranges",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "pear",
+   "name": "梨",
+   "nameEn": "Pear",
+   "aliases": [
+    "雪梨",
+    "梨子",
+    "香梨"
+   ],
+   "aliasesEn": [
+    "pear"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 57,
+    "protein": 0.4,
+    "carbs": 15.2,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "169118 Pears, raw",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "pear",
+     "nameEnPlural": "pears",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "grapes",
+   "name": "葡萄",
+   "nameEn": "Grapes",
+   "aliases": [
+    "提子",
+    "青提",
+    "红提"
+   ],
+   "aliasesEn": [
+    "grapes"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 69,
+    "protein": 0.7,
+    "carbs": 18.1,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "174683 Grapes, red or green, raw",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "watermelon",
+   "name": "西瓜",
+   "nameEn": "Watermelon",
+   "aliases": [],
+   "aliasesEn": [
+    "watermelon"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 30,
+    "protein": 0.6,
+    "carbs": 7.5,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "167765 Watermelon, raw",
+   "units": [
+    {
+     "id": "chunk",
+     "name": "块",
+     "nameEn": "slice",
+     "nameEnPlural": "slices",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "strawberry",
+   "name": "草莓",
+   "nameEn": "Strawberries",
+   "aliases": [],
+   "aliasesEn": [
+    "strawberry",
+    "strawberries"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 32,
+    "protein": 0.7,
+    "carbs": 7.7,
+    "fat": 0.3
+   },
+   "source": "usda",
+   "sourceRef": "167762 Strawberries, raw",
+   "units": [
+    {
+     "id": "berry",
+     "name": "颗",
+     "nameEn": "strawberry",
+     "nameEnPlural": "strawberries",
+     "amount": 15,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 8
+  },
+  {
+   "id": "kiwi",
+   "name": "猕猴桃",
+   "nameEn": "Kiwi",
+   "aliases": [],
+   "aliasesEn": [
+    "kiwi",
+    "kiwifruit"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 61,
+    "protein": 1.1,
+    "carbs": 14.7,
+    "fat": 0.5
+   },
+   "source": "usda",
+   "sourceRef": "168153 Kiwifruit, green, raw",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "kiwi",
+     "nameEnPlural": "kiwis",
+     "amount": 75,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "mango",
+   "name": "芒果",
+   "nameEn": "Mango",
+   "aliases": [],
+   "aliasesEn": [
+    "mango"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 60,
+    "protein": 0.8,
+    "carbs": 15.0,
+    "fat": 0.4
+   },
+   "source": "usda",
+   "sourceRef": "169910 Mangos, raw",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "mango",
+     "nameEnPlural": "mangoes",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "peach",
+   "name": "桃子",
+   "nameEn": "Peach",
+   "aliases": [
+    "桃",
+    "水蜜桃",
+    "黄桃"
+   ],
+   "aliasesEn": [
+    "peach"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 39,
+    "protein": 0.9,
+    "carbs": 9.5,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "169928 Peaches, yellow, raw",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "peach",
+     "nameEnPlural": "peaches",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "cherry",
+   "name": "樱桃",
+   "nameEn": "Cherries",
+   "aliases": [
+    "车厘子"
+   ],
+   "aliasesEn": [
+    "cherries",
+    "cherry"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 63,
+    "protein": 1.1,
+    "carbs": 16.0,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "171719 Cherries, sweet, raw",
+   "units": [
+    {
+     "id": "berry",
+     "name": "颗",
+     "nameEn": "cherry",
+     "nameEnPlural": "cherries",
+     "amount": 8,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 10
+  },
+  {
+   "id": "blueberry",
+   "name": "蓝莓",
+   "nameEn": "Blueberries",
+   "aliases": [],
+   "aliasesEn": [
+    "blueberries",
+    "blueberry"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 57,
+    "protein": 0.7,
+    "carbs": 14.5,
+    "fat": 0.3
+   },
+   "source": "usda",
+   "sourceRef": "171711 Blueberries, raw",
+   "units": [
+    {
+     "id": "box",
+     "name": "盒",
+     "nameEn": "box",
+     "nameEnPlural": "boxes",
+     "amount": 125,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "pineapple",
+   "name": "菠萝",
+   "nameEn": "Pineapple",
+   "aliases": [],
+   "aliasesEn": [
+    "pineapple"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 50,
+    "protein": 0.5,
+    "carbs": 13.1,
+    "fat": 0.1
+   },
+   "source": "usda",
+   "sourceRef": "169124 Pineapple, raw, all varieties",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "dragon_fruit",
+   "name": "火龙果",
+   "nameEn": "Dragon fruit",
+   "aliases": [
+    "红心火龙果",
+    "白心火龙果"
+   ],
+   "aliasesEn": [
+    "dragon fruit",
+    "pitaya"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 68,
+    "protein": 0.7,
+    "carbs": 16.2,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "2709234 Dragon fruit",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 300,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "pomelo",
+   "name": "柚子",
+   "nameEn": "Pomelo",
+   "aliases": [
+    "柚",
+    "西柚",
+    "沙田柚"
+   ],
+   "aliasesEn": [
+    "pomelo",
+    "grapefruit"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 38,
+    "protein": 0.8,
+    "carbs": 9.6,
+    "fat": 0.0
+   },
+   "source": "usda",
+   "sourceRef": "167754 Pummelo, raw",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 100,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "cantaloupe",
+   "name": "哈密瓜",
+   "nameEn": "Cantaloupe",
+   "aliases": [
+    "甜瓜",
+    "蜜瓜"
+   ],
+   "aliasesEn": [
+    "cantaloupe",
+    "melon"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 34,
+    "protein": 0.8,
+    "carbs": 8.2,
+    "fat": 0.2
+   },
+   "source": "usda",
+   "sourceRef": "169092 Melons, cantaloupe, raw",
+   "units": [
+    {
+     "id": "chunk",
+     "name": "块",
+     "nameEn": "slice",
+     "nameEnPlural": "slices",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "lychee",
+   "name": "荔枝",
+   "nameEn": "Lychee",
+   "aliases": [],
+   "aliasesEn": [
+    "lychee",
+    "litchi"
+   ],
+   "category": "fruit",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 66,
+    "protein": 0.8,
+    "carbs": 16.5,
+    "fat": 0.4
+   },
+   "source": "usda",
+   "sourceRef": "169086 Litchis, raw",
+   "units": [
+    {
+     "id": "berry",
+     "name": "颗",
+     "nameEn": "lychee",
+     "nameEnPlural": "lychees",
+     "amount": 20,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 10
+  },
+  {
+   "id": "peanuts",
+   "name": "花生",
+   "nameEn": "Peanuts",
+   "aliases": [
+    "花生米",
+    "炒花生"
+   ],
+   "aliasesEn": [
+    "peanuts"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 587,
+    "protein": 24.4,
+    "carbs": 21.3,
+    "fat": 49.7
+   },
+   "source": "usda",
+   "sourceRef": "173806 Peanuts, all types, dry-roasted",
+   "units": [
+    {
+     "id": "handful",
+     "name": "小把",
+     "nameEn": "small handful",
+     "nameEnPlural": "small handfuls",
+     "amount": 15,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "walnuts",
+   "name": "核桃",
+   "nameEn": "Walnuts",
+   "aliases": [
+    "核桃仁"
+   ],
+   "aliasesEn": [
+    "walnuts"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 654,
+    "protein": 15.2,
+    "carbs": 13.7,
+    "fat": 65.2
+   },
+   "source": "usda",
+   "sourceRef": "170187 Nuts, walnuts, english",
+   "units": [
+    {
+     "id": "piece",
+     "name": "个",
+     "nameEn": "walnut",
+     "nameEnPlural": "walnuts",
+     "amount": 5,
+     "step": 1
+    },
+    {
+     "id": "handful",
+     "name": "小把",
+     "nameEn": "small handful",
+     "nameEnPlural": "small handfuls",
+     "amount": 15,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 3
+  },
+  {
+   "id": "almonds",
+   "name": "杏仁",
+   "nameEn": "Almonds",
+   "aliases": [
+    "巴旦木",
+    "扁桃仁"
+   ],
+   "aliasesEn": [
+    "almonds"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 598,
+    "protein": 21.0,
+    "carbs": 21.0,
+    "fat": 52.5
+   },
+   "source": "usda",
+   "sourceRef": "170158 Nuts, almonds, dry roasted",
+   "units": [
+    {
+     "id": "handful",
+     "name": "小把",
+     "nameEn": "small handful",
+     "nameEnPlural": "small handfuls",
+     "amount": 15,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "cashews",
+   "name": "腰果",
+   "nameEn": "Cashews",
+   "aliases": [],
+   "aliasesEn": [
+    "cashews"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 574,
+    "protein": 15.3,
+    "carbs": 32.7,
+    "fat": 46.4
+   },
+   "source": "usda",
+   "sourceRef": "170571 Nuts, cashew nuts, dry roasted",
+   "units": [
+    {
+     "id": "handful",
+     "name": "小把",
+     "nameEn": "small handful",
+     "nameEnPlural": "small handfuls",
+     "amount": 15,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "mixed_nuts",
+   "name": "混合坚果",
+   "nameEn": "Mixed nuts",
+   "aliases": [
+    "每日坚果",
+    "坚果"
+   ],
+   "aliasesEn": [
+    "mixed nuts",
+    "nuts"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 607,
+    "protein": 19.5,
+    "carbs": 22.4,
+    "fat": 53.5
+   },
+   "source": "usda",
+   "sourceRef": "170585 Nuts, mixed nuts, dry roasted, with peanuts",
+   "units": [
+    {
+     "id": "pack",
+     "name": "包",
+     "nameEn": "pack",
+     "nameEnPlural": "packs",
+     "amount": 25,
+     "step": 1
+    },
+    {
+     "id": "handful",
+     "name": "小把",
+     "nameEn": "small handful",
+     "nameEnPlural": "small handfuls",
+     "amount": 15,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "sunflower_seeds",
+   "name": "瓜子",
+   "nameEn": "Sunflower seeds",
+   "aliases": [
+    "葵花籽",
+    "瓜子仁"
+   ],
+   "aliasesEn": [
+    "sunflower seeds"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 582,
+    "protein": 19.3,
+    "carbs": 24.1,
+    "fat": 49.8
+   },
+   "source": "usda",
+   "sourceRef": "170563 Seeds, sunflower seed kernels, dry roasted",
+   "units": [
+    {
+     "id": "handful",
+     "name": "小把",
+     "nameEn": "small handful",
+     "nameEnPlural": "small handfuls",
+     "amount": 15,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "potato_chips",
+   "name": "薯片",
+   "nameEn": "Potato chips",
+   "aliases": [],
+   "aliasesEn": [
+    "potato chips",
+    "crisps"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 532,
+    "protein": 6.4,
+    "carbs": 53.8,
+    "fat": 34.0
+   },
+   "source": "usda",
+   "sourceRef": "169677 Snacks, potato chips, plain, salted",
+   "units": [
+    {
+     "id": "bag",
+     "name": "小包",
+     "nameEn": "small bag",
+     "nameEnPlural": "small bags",
+     "amount": 40,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "cookies",
+   "name": "饼干",
+   "nameEn": "Cookies",
+   "aliases": [
+    "曲奇",
+    "黄油饼干"
+   ],
+   "aliasesEn": [
+    "cookies",
+    "biscuits"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 467,
+    "protein": 6.1,
+    "carbs": 68.9,
+    "fat": 18.8
+   },
+   "source": "usda",
+   "sourceRef": "174950 Cookies, butter, commercially prepared",
+   "units": [
+    {
+     "id": "chunk",
+     "name": "块",
+     "nameEn": "piece",
+     "nameEnPlural": "pieces",
+     "amount": 10,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 3
+  },
+  {
+   "id": "dark_chocolate",
+   "name": "黑巧克力",
+   "nameEn": "Dark chocolate",
+   "aliases": [
+    "巧克力"
+   ],
+   "aliasesEn": [
+    "dark chocolate",
+    "chocolate"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 598,
+    "protein": 7.8,
+    "carbs": 45.9,
+    "fat": 42.6
+   },
+   "source": "usda",
+   "sourceRef": "170273 Chocolate, dark, 70-85% cacao solids",
+   "units": [
+    {
+     "id": "square",
+     "name": "小块",
+     "nameEn": "square",
+     "nameEnPlural": "squares",
+     "amount": 10,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "sponge_cake",
+   "name": "蛋糕",
+   "nameEn": "Sponge cake",
+   "aliases": [
+    "海绵蛋糕",
+    "戚风蛋糕"
+   ],
+   "aliasesEn": [
+    "cake",
+    "sponge cake"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 290,
+    "protein": 5.4,
+    "carbs": 61.0,
+    "fat": 2.7
+   },
+   "source": "usda",
+   "sourceRef": "172706 Cake, sponge, commercially prepared",
+   "units": [
+    {
+     "id": "chunk",
+     "name": "块",
+     "nameEn": "slice",
+     "nameEnPlural": "slices",
+     "amount": 80,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "ice_cream",
+   "name": "冰淇淋",
+   "nameEn": "Ice cream",
+   "aliases": [
+    "雪糕",
+    "香草冰淇淋"
+   ],
+   "aliasesEn": [
+    "ice cream"
+   ],
+   "category": "snack",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 207,
+    "protein": 3.5,
+    "carbs": 23.6,
+    "fat": 11.0
+   },
+   "source": "usda",
+   "sourceRef": "167575 Ice creams, vanilla",
+   "units": [
+    {
+     "id": "scoop",
+     "name": "球",
+     "nameEn": "scoop",
+     "nameEnPlural": "scoops",
+     "amount": 65,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "cola",
+   "name": "可乐",
+   "nameEn": "Cola",
+   "aliases": [
+    "可口可乐",
+    "百事可乐",
+    "汽水"
+   ],
+   "aliasesEn": [
+    "cola",
+    "coke",
+    "soda"
+   ],
+   "category": "drink",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 44,
+    "protein": 0.0,
+    "carbs": 10.8,
+    "fat": 0.0
+   },
+   "source": "usda",
+   "sourceRef": "2710541 Soft drink, cola",
+   "units": [
+    {
+     "id": "can",
+     "name": "罐",
+     "nameEn": "can",
+     "nameEnPlural": "cans",
+     "amount": 330,
+     "step": 1
+    },
+    {
+     "id": "bottle",
+     "name": "瓶",
+     "nameEn": "bottle",
+     "nameEnPlural": "bottles",
+     "amount": 500,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "diet_cola",
+   "name": "无糖可乐",
+   "nameEn": "Diet cola",
+   "aliases": [
+    "零度可乐",
+    "健怡可乐",
+    "零糖可乐"
+   ],
+   "aliasesEn": [
+    "diet coke",
+    "coke zero",
+    "diet cola"
+   ],
+   "category": "drink",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 2,
+    "protein": 0.1,
+    "carbs": 0.3,
+    "fat": 0.0
+   },
+   "source": "usda",
+   "sourceRef": "2710542 Soft drink, cola, diet",
+   "units": [
+    {
+     "id": "can",
+     "name": "罐",
+     "nameEn": "can",
+     "nameEnPlural": "cans",
+     "amount": 330,
+     "step": 1
+    },
+    {
+     "id": "bottle",
+     "name": "瓶",
+     "nameEn": "bottle",
+     "nameEnPlural": "bottles",
+     "amount": 500,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "orange_juice",
+   "name": "橙汁",
+   "nameEn": "Orange juice",
+   "aliases": [
+    "鲜榨橙汁",
+    "果汁"
+   ],
+   "aliasesEn": [
+    "orange juice",
+    "juice"
+   ],
+   "category": "drink",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 49,
+    "protein": 0.8,
+    "carbs": 10.6,
+    "fat": 0.3
+   },
+   "source": "usda",
+   "sourceRef": "2709186 Orange juice, 100%, NFS",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 250,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "black_coffee",
+   "name": "美式咖啡",
+   "nameEn": "Black coffee",
+   "aliases": [
+    "黑咖啡",
+    "咖啡",
+    "美式"
+   ],
+   "aliasesEn": [
+    "black coffee",
+    "coffee",
+    "americano"
+   ],
+   "category": "drink",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 1,
+    "protein": 0.1,
+    "carbs": 0.0,
+    "fat": 0.0
+   },
+   "source": "usda",
+   "sourceRef": "171890 Beverages, coffee, brewed",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 350,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "latte",
+   "name": "拿铁",
+   "nameEn": "Latte",
+   "aliases": [
+    "拿铁咖啡",
+    "咖啡拿铁"
+   ],
+   "aliasesEn": [
+    "latte",
+    "cafe latte"
+   ],
+   "category": "drink",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 44,
+    "protein": 2.9,
+    "carbs": 4.4,
+    "fat": 1.6
+   },
+   "source": "usda",
+   "sourceRef": "2710386 Coffee, Latte",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 350,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "bubble_tea",
+   "name": "奶茶",
+   "nameEn": "Bubble tea",
+   "aliases": [
+    "珍珠奶茶",
+    "波霸奶茶"
+   ],
+   "aliasesEn": [
+    "bubble tea",
+    "milk tea",
+    "boba"
+   ],
+   "category": "drink",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 57,
+    "protein": 0.4,
+    "carbs": 10.7,
+    "fat": 1.5
+   },
+   "source": "usda",
+   "sourceRef": "2710508 Tea, bubble",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "cup",
+     "nameEnPlural": "cups",
+     "amount": 500,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "beer",
+   "name": "啤酒",
+   "nameEn": "Beer",
+   "aliases": [],
+   "aliasesEn": [
+    "beer"
+   ],
+   "category": "drink",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 43,
+    "protein": 0.5,
+    "carbs": 3.5,
+    "fat": 0.0
+   },
+   "source": "usda",
+   "sourceRef": "168746 Alcoholic beverage, beer, regular, all",
+   "units": [
+    {
+     "id": "can",
+     "name": "罐",
+     "nameEn": "can",
+     "nameEnPlural": "cans",
+     "amount": 330,
+     "step": 1
+    },
+    {
+     "id": "bottle",
+     "name": "瓶",
+     "nameEn": "bottle",
+     "nameEnPlural": "bottles",
+     "amount": 500,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "red_wine",
+   "name": "红酒",
+   "nameEn": "Red wine",
+   "aliases": [
+    "葡萄酒",
+    "红葡萄酒"
+   ],
+   "aliasesEn": [
+    "red wine",
+    "wine"
+   ],
+   "category": "drink",
+   "baseUnit": "ml",
+   "per100": {
+    "kcal": 84,
+    "protein": 0.1,
+    "carbs": 2.6,
+    "fat": 0.0
+   },
+   "source": "usda",
+   "sourceRef": "173190 Alcoholic beverage, wine, table, red",
+   "units": [
+    {
+     "id": "cup",
+     "name": "杯",
+     "nameEn": "glass",
+     "nameEnPlural": "glasses",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "cooking_oil",
+   "name": "食用油",
+   "nameEn": "Cooking oil",
+   "aliases": [
+    "植物油",
+    "花生油",
+    "菜籽油",
+    "大豆油",
+    "色拉油",
+    "橄榄油",
+    "油"
+   ],
+   "aliasesEn": [
+    "oil",
+    "cooking oil",
+    "olive oil"
+   ],
+   "category": "condiment",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 884,
+    "protein": 0.0,
+    "carbs": 0.0,
+    "fat": 100.0
+   },
+   "source": "usda",
+   "sourceRef": "171411 Oil, soybean, salad or cooking",
+   "units": [
+    {
+     "id": "tbsp",
+     "name": "汤匙",
+     "nameEn": "tbsp",
+     "nameEnPlural": "tbsp",
+     "amount": 10,
+     "step": 0.5
+    },
+    {
+     "id": "tsp",
+     "name": "茶匙",
+     "nameEn": "tsp",
+     "nameEnPlural": "tsp",
+     "amount": 4,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "sugar",
+   "name": "白砂糖",
+   "nameEn": "Sugar",
+   "aliases": [
+    "白糖",
+    "砂糖",
+    "糖"
+   ],
+   "aliasesEn": [
+    "sugar"
+   ],
+   "category": "condiment",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 387,
+    "protein": 0.0,
+    "carbs": 100.0,
+    "fat": 0.0
+   },
+   "source": "usda",
+   "sourceRef": "169655 Sugars, granulated",
+   "units": [
+    {
+     "id": "tsp",
+     "name": "茶匙",
+     "nameEn": "tsp",
+     "nameEnPlural": "tsp",
+     "amount": 4,
+     "step": 1
+    },
+    {
+     "id": "tbsp",
+     "name": "汤匙",
+     "nameEn": "tbsp",
+     "nameEnPlural": "tbsp",
+     "amount": 12,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "honey",
+   "name": "蜂蜜",
+   "nameEn": "Honey",
+   "aliases": [],
+   "aliasesEn": [
+    "honey"
+   ],
+   "category": "condiment",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 304,
+    "protein": 0.3,
+    "carbs": 82.4,
+    "fat": 0.0
+   },
+   "source": "usda",
+   "sourceRef": "169640 Honey",
+   "units": [
+    {
+     "id": "tbsp",
+     "name": "汤匙",
+     "nameEn": "tbsp",
+     "nameEnPlural": "tbsp",
+     "amount": 20,
+     "step": 0.5
+    },
+    {
+     "id": "tsp",
+     "name": "茶匙",
+     "nameEn": "tsp",
+     "nameEnPlural": "tsp",
+     "amount": 7,
+     "step": 1
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "peanut_butter",
+   "name": "花生酱",
+   "nameEn": "Peanut butter",
+   "aliases": [],
+   "aliasesEn": [
+    "peanut butter"
+   ],
+   "category": "condiment",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 598,
+    "protein": 22.2,
+    "carbs": 22.3,
+    "fat": 51.4
+   },
+   "source": "usda",
+   "sourceRef": "172470 Peanut butter, smooth style",
+   "units": [
+    {
+     "id": "tbsp",
+     "name": "汤匙",
+     "nameEn": "tbsp",
+     "nameEnPlural": "tbsp",
+     "amount": 16,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "tomato_egg",
+   "name": "番茄炒蛋",
+   "nameEn": "Tomato and egg stir-fry",
+   "aliases": [
+    "番茄炒鸡蛋",
+    "番茄鸡蛋"
+   ],
+   "aliasesEn": [
+    "tomato egg stir-fry",
+    "tomato and egg"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 91,
+    "protein": 4.6,
+    "carbs": 4.3,
+    "fat": 6.3
+   },
+   "source": "estimate",
+   "sourceRef": "鸡蛋 100 克、番茄 200 克、油 10 克、糖 5 克",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "kung_pao_chicken",
+   "name": "宫保鸡丁",
+   "nameEn": "Kung pao chicken",
+   "aliases": [
+    "宫爆鸡丁"
+   ],
+   "aliasesEn": [
+    "kung pao chicken"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 219,
+    "protein": 17.4,
+    "carbs": 7.4,
+    "fat": 13.5
+   },
+   "source": "estimate",
+   "sourceRef": "鸡腿肉 250 克（熟后约 190 克）、花生 30 克、油 20 克、黄瓜葱段 60 克、糖和淀粉各 8 克",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "mapo_tofu",
+   "name": "麻婆豆腐",
+   "nameEn": "Mapo tofu",
+   "aliases": [],
+   "aliasesEn": [
+    "mapo tofu"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 117,
+    "protein": 7.4,
+    "carbs": 2.8,
+    "fat": 8.9
+   },
+   "source": "estimate",
+   "sourceRef": "豆腐 300 克、肉末 50 克、油 15 克、豆瓣酱 15 克、淀粉 5 克、汤汁 80 克",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 250,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "pork_pepper",
+   "name": "青椒肉丝",
+   "nameEn": "Shredded pork with peppers",
+   "aliases": [
+    "青椒炒肉丝",
+    "青椒炒肉"
+   ],
+   "aliasesEn": [
+    "pork with peppers"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 114,
+    "protein": 10.5,
+    "carbs": 4.3,
+    "fat": 6.2
+   },
+   "source": "estimate",
+   "sourceRef": "猪里脊 150 克、青椒 200 克、油 15 克、淀粉 5 克",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "yuxiang_pork",
+   "name": "鱼香肉丝",
+   "nameEn": "Yuxiang shredded pork",
+   "aliases": [],
+   "aliasesEn": [
+    "yuxiang pork",
+    "fish-flavored pork"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 154,
+    "protein": 11.0,
+    "carbs": 9.1,
+    "fat": 7.9
+   },
+   "source": "estimate",
+   "sourceRef": "猪里脊 150 克、木耳胡萝卜笋丝 150 克、油 20 克、糖 10 克、淀粉 8 克",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "braised_pork",
+   "name": "红烧肉",
+   "nameEn": "Braised pork belly",
+   "aliases": [
+    "红烧五花肉",
+    "东坡肉"
+   ],
+   "aliasesEn": [
+    "braised pork belly",
+    "red braised pork"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 460,
+    "protein": 10.0,
+    "carbs": 6.0,
+    "fat": 44.0
+   },
+   "source": "estimate",
+   "sourceRef": "五花肉炖煮后（部分油脂析出），含少量糖和酱油",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 150,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "stir_fried_greens",
+   "name": "清炒时蔬",
+   "nameEn": "Stir-fried greens",
+   "aliases": [
+    "炒青菜",
+    "清炒青菜",
+    "蒜蓉青菜",
+    "炒时蔬",
+    "清炒小白菜",
+    "炒菜心"
+   ],
+   "aliasesEn": [
+    "stir-fried vegetables",
+    "stir-fried greens"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 48,
+    "protein": 1.7,
+    "carbs": 1.9,
+    "fat": 3.8
+   },
+   "source": "estimate",
+   "sourceRef": "青菜 300 克（炒后约 280 克）、油 10 克",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  },
+  {
+   "id": "potato_shreds",
+   "name": "土豆丝",
+   "nameEn": "Stir-fried shredded potato",
+   "aliases": [
+    "酸辣土豆丝",
+    "炒土豆丝",
+    "醋溜土豆丝"
+   ],
+   "aliasesEn": [
+    "shredded potato stir-fry"
+   ],
+   "category": "dish",
+   "baseUnit": "g",
+   "per100": {
+    "kcal": 121,
+    "protein": 2.0,
+    "carbs": 17.4,
+    "fat": 5.1
+   },
+   "source": "estimate",
+   "sourceRef": "土豆 300 克、油 15 克、醋和辣椒少量",
+   "units": [
+    {
+     "id": "serving",
+     "name": "份",
+     "nameEn": "serving",
+     "nameEnPlural": "servings",
+     "amount": 200,
+     "step": 0.5
+    }
+   ],
+   "defaultQuantity": 1
+  }
+ ]
+}

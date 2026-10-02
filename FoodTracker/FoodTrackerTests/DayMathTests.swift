@@ -125,6 +125,18 @@ struct DayMathTests {
         #expect(DayMath.recordCaption(day: d(2026, 9, 28, cal), today: today, calendar: cal) == "记录到 9月28日 周一")
     }
 
+    @Test("份量页底部的按钮：今天写「添加到午餐」，别的日子带上日期", arguments: zones)
+    func addButtonTitles(zone: String) {
+        let cal = calendar(zone)
+        let today = d(2026, 9, 29, hour: 10, cal)
+        let todayKey = DayMath.dayKey(for: today, calendar: cal)
+        let earlierKey = DayMath.dayKey(for: d(2026, 9, 28, cal), calendar: cal)
+        #expect(DayMath.addButtonTitle(meal: .lunch, dayKey: todayKey, today: today, calendar: cal, language: .zh) == "添加到午餐")
+        #expect(DayMath.addButtonTitle(meal: .snack, dayKey: todayKey, today: today, calendar: cal, language: .zh) == "添加到加餐")
+        #expect(DayMath.addButtonTitle(meal: .lunch, dayKey: earlierKey, today: today, calendar: cal, language: .zh) == "添加到 9月28日 午餐")
+        #expect(DayMath.addButtonTitle(meal: .lunch, dayKey: earlierKey, today: today, calendar: cal, language: .en).hasSuffix("Sep 28"))
+    }
+
     // 古巴的夏令时在 0 点切换：3 月 8 日没有 0 点（直接从 23:59 跳到 1:00），11 月 1 日有两个 0 点
     @Test("夏令时从 0 点开始的地方也显示「昨天」")
     func yesterdayWhenDSTAtMidnight() {

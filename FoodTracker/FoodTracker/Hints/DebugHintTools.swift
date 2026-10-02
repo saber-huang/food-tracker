@@ -30,6 +30,13 @@ struct DebugHintSection: View {
             Button(HintCopy.debugSeedLastWeekOnTarget) { seed(days: lastWeek(5), kcalPerDay: target * 1.03, meals: [.breakfast, .lunch, .dinner]) }
             Button(HintCopy.debugSeedLastWeekAbove) { seed(days: lastWeek(7), kcalPerDay: target * 1.25, meals: [.breakfast, .lunch, .dinner]) }
             Button(HintCopy.debugSeedLastWeekFew) { seed(days: lastWeek(2), kcalPerDay: target, meals: [.breakfast, .lunch]) }
+            Button(HintCopy.debugSeedBelowPlan) {
+                // 规则 5 只在晚上、三顿正餐都记过以后才说：先把「假装现在是」调到今天 20:30
+                if let evening = calendar.date(bySettingHour: 20, minute: 30, second: 0, of: HintClock.now) {
+                    debugNow = evening.timeIntervalSince1970
+                }
+                seed(days: [today], kcalPerDay: target * 0.5, meals: [.breakfast, .lunch, .dinner])
+            }
             DatePicker(HintCopy.debugFakeNow, selection: fakeNow, in: fakeRange)
             Button(HintCopy.debugUseRealNow) { debugNow = 0 }
             Button(HintCopy.debugResetHintState) {

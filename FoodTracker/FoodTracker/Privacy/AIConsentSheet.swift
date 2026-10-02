@@ -12,10 +12,13 @@ import SwiftUI
 /// 第一次用 AI 功能时弹出。onDecision(true) = 同意并继续，false = 暂不使用
 struct AIConsentSheet: View {
     let onDecision: (Bool) -> Void
+    /// 以前同意过旧版说明：顶部先说一句改了什么
+    private let isUpdate = AIConsent.isUpdate(version: UserDefaults.standard.integer(forKey: AIConsent.key))
 
     var body: some View {
         NavigationStack {
             AppForm {
+                if isUpdate { updateNote }
                 AIDataDisclosure()
                 PrivacyPolicyLinkSection()
             }
@@ -35,6 +38,21 @@ struct AIConsentSheet: View {
             }
         }
         .appSheet()
+    }
+
+    /// 「说明有更新」：这一版多了什么（第 2 版：AI 估算食物）
+    private var updateNote: some View {
+        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.sm) {
+            Image(systemName: "sparkles")
+                .foregroundStyle(AppColors.brand)
+                .accessibilityHidden(true)
+            Text("说明有更新：新增了「AI 估算食物」，只会发送你输入的食物名称。其他内容和之前一样，确认后就能继续使用。")
+                .foregroundStyle(AppColors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(AppSpacing.cardPadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppColors.brandSoft, in: RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
     }
 }
 
@@ -68,7 +86,7 @@ private struct PrivacyPolicyLinkSection: View {
 /// 说明的正文，两个页面共用（放在 AppForm 里：一段开头的话，后面几块）
 struct AIDataDisclosure: View {
     var body: some View {
-        Text("拍照识别、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。第一次使用前，请先看看会发送哪些内容。")
+        Text("拍照识别、AI 估算食物、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。使用前，请先看看会发送哪些内容。")
             .font(.callout)
             .foregroundStyle(AppColors.textSecondary)
             .fixedSize(horizontal: false, vertical: true)
@@ -78,6 +96,8 @@ struct AIDataDisclosure: View {
             item("photo", "拍照识别：你选的餐食照片（同一餐最多 4 张）。上传前会缩小并重新压缩，不带拍摄地点等信息。")
             AppFormDivider()
             item("fork.knife", "生成食谱和推荐下一餐：你的目标（减脂、维持或增肌），热量和三大营养素目标，以及你填写的口味偏好、过敏、不吃的食物和做饭时间。")
+            AppFormDivider()
+            item("text.magnifyingglass", "AI 估算食物：你输入、但食物库里没有的那个食物名称（比如「山西过油肉」），只发这个名称。")
         }
 
         AppFormSection(String(localized: "不会发送什么")) {
@@ -87,7 +107,7 @@ struct AIDataDisclosure: View {
         AppFormSection(String(localized: "发给谁、怎么处理")) {
             item("arrow.up.arrow.down", "先发到本 App 的服务器，再由服务器转交给 Anthropic。结果只发回你的手机。")
             AppFormDivider()
-            item("externaldrive.badge.xmark", "本 App 的服务器不保存照片和你填写的内容。")
+            item("externaldrive.badge.xmark", "本 App 的服务器不保存照片和你填写的内容。为了更快返回，同样的食谱和食物估算结果会在服务器内存里暂存一段时间，不和你的设备关联。")
             AppFormDivider()
             item("building.2", "Anthropic 按商业服务条款处理：默认不用来训练模型，一般在 30 天内删除。")
             AppFormDivider()

@@ -31,6 +31,8 @@ struct EntryEditView: View {
     let onDelete: (() -> Void)?  // 有值时多一个「删除这一项」按钮
 
     @Environment(\.dismiss) private var dismiss
+    // 我的食物：认得的名字可以按它的份量单位选
+    @Query(CustomFood.recentFirst) private var customFoods: [CustomFood]
     @State private var draft: EntryDraft
     @State private var didSave = false  // 防止快速连点两次「保存」存成两条
     @State private var showsNutrition: Bool  // 「更多营养信息」是不是展开的
@@ -103,6 +105,9 @@ struct EntryEditView: View {
             }
             // 任何一个数字框变了，交给草稿判断要不要按比例换算
             .onChange(of: draft.allTexts) { draft.textsChanged() }
+            // 认得的食物（食物库、我的食物）可以按「碗、个」选份量：打开时按来源找，改名字时按名字找
+            .onAppear { linkServing(useStoredRef: true) }
+            .onChange(of: draft.name) { linkServing(useStoredRef: false) }
             .toolbar(.hidden, for: .navigationBar)
             // 和「偏好和忌口」「编辑资料」同一个顶栏：左「取消」、右「保存」。
             // 还差必填项时「保存」是浅色的，但仍然可以点（点了提示缺什么）；键盘弹出来时也看得见
@@ -201,10 +206,22 @@ struct EntryEditView: View {
                 fieldHint(String(localized: "请输入热量"))
             }
             AppFormDivider()
-            NumberRow(
-                title: String(localized: "份量"), unit: String(localized: "克"), text: $draft.weightText, keyboard: .decimalPad,
-                error: draft.weightError, focus: $focusedField, field: .weight, prompt: String(localized: "选填"))
-                .id(Field.weight)
+            if draft.servingUnits.isEmpty {
+                weightRow
+            } else {
+                // 认得的食物：选「1 碗 / 半碗」或切到「克」；选好的份量会填进重量，热量跟着按比例变
+                ServingPicker(
+                    units: draft.servingUnits, amountUnit: draft.amountUnit, selectedUnitID: draft.selectedServingUnit?.id,
+                    quantity: draft.naturalServing?.quantity ?? 1,
+                    onSelectUnit: { id in
+                        focusedField = nil
+                        if let id { draft.selectServingUnit(id) } else { draft.selectAmountInput() }
+                    },
+                    onStep: { draft.stepServing(by: $0) }
+                ) {
+                    weightRow
+                }
+            }
             if let note {
                 Text(note)
                     .font(.caption)
@@ -219,6 +236,32 @@ struct EntryEditView: View {
             if let warning = draft.macrosExceedWeightWarning {
                 warningRow(warning)
             }
+        }
+    }
+
+    /// 份量（克或毫升）
+    private var weightRow: some View {
+        NumberRow(
+            title: String(localized: "份量"), unit: draft.amountUnit.symbol, text: $draft.weightText, keyboard: .decimalPad,
+            error: draft.weightError, focus: $focusedField, field: .weight, prompt: String(localized: "选填"))
+            .id(Field.weight)
+    }
+
+    /// 找出这种食物的自然份量单位。useStoredRef：打开时先按记录里存的来源找（改过名字后只按名字找）
+    private func linkServing(useStoredRef: Bool) {
+        let catalog = FoodCatalog.shared
+        let nameKey = catalog.normalizer.key(draft.name)
+        let custom: CustomFood? =
+            (useStoredRef ? FoodRef.customID(draft.foodRef).flatMap { id in customFoods.first { $0.id == id } } : nil)
+            ?? (nameKey.isEmpty ? nil : customFoods.first { catalog.normalizer.key($0.name) == nameKey })
+        if let custom {
+            let food = custom.snapshot
+            let per100 = food.servingAmount.flatMap { DietLogMath.per100(food.servingValues, weightG: $0) }
+            draft.link(units: [food.servingUnit], amountUnit: food.amountUnit, foodRef: FoodRef.custom(food.id), fallbackPer100: per100)
+        } else if let food = (useStoredRef ? catalog.food(ref: draft.foodRef) : nil) ?? catalog.exactMatch(draft.name) {
+            draft.link(units: food.units, amountUnit: food.baseUnit, foodRef: food.ref, fallbackPer100: food.values100)
+        } else {
+            draft.unlinkServing()
         }
     }
 
@@ -384,30 +427,6 @@ struct ManualEntryRequest: Identifiable {
     let id = UUID()
     let meal: MealType
     let dayKey: Int
-}
-
-/// 「手动添加」：填好后存成一条记录（「今日」页和拍照识别页共用）
-struct ManualEntrySheet: View {
-    let request: ManualEntryRequest
-
-    @Environment(\.modelContext) private var modelContext
-    @Environment(ToastCenter.self) private var toasts: ToastCenter?
-    // 最近的几百条记录（从新到旧），挑出「最近使用」的食物
-    @Query(FoodEntry.recentDescriptor) private var recentEntries: [FoodEntry]
-
-    var body: some View {
-        EntryEditView(
-            draft: EntryDraft(meal: request.meal, dayKey: request.dayKey), title: String(localized: "手动添加"),
-            showsMealPicker: true, showsDate: true, suggestions: RecentFoods.from(recentEntries.map(\.recentFood))
-        ) { item in
-            modelContext.insert(
-                FoodEntry(
-                    dayKey: item.dayKey, meal: item.meal, name: item.name, weightG: item.weightG, values: item.values,
-                    source: .manual))
-            try? modelContext.save()
-            toasts?.success(DayMath.loggedMessage(meal: item.meal, dayKey: item.dayKey, today: .now))
-        }
-    }
 }
 
 #Preview("手动添加") {

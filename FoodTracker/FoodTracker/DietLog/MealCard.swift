@@ -89,11 +89,11 @@ struct MealRow: View {
         .accessibilityValue(detail)
     }
 
-    /// 「来自食谱 · 约 150 克」：只给旁白读
+    /// 「来自食谱 · 1 碗 · 约 150 克」：只给旁白读
     private var detail: String {
         var parts: [String] = []
         if entry.source == .recipe { parts.append(String(localized: "来自食谱")) }
-        if let weight = entry.weightG { parts.append(String(localized: "约 \(weight.oneDecimal) 克")) }
+        if let portion = entry.portionText { parts.append(portion) }
         return parts.joined(separator: " · ")
     }
 }
@@ -159,10 +159,10 @@ struct MealMemberRow: View {
         .accessibilityHint("修改这一条")
     }
 
-    /// 「约 150 克 · 来自食谱」；什么都没有时写「1 份」
+    /// 「1 碗 · 约 150 克 · 来自食谱」；什么都没有时写「1 份」
     private var detail: String {
         var parts: [String] = []
-        if let weight = entry.weightG { parts.append(String(localized: "约 \(weight.oneDecimal) 克")) }
+        if let portion = entry.portionText { parts.append(portion) }
         if entry.source == .recipe { parts.append(String(localized: "来自食谱")) }
         return parts.isEmpty ? String(localized: "1 份") : parts.joined(separator: " · ")
     }

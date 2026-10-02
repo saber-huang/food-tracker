@@ -62,6 +62,7 @@ nonisolated enum CalorieHint: Hashable {
     case over(byKcal: Int, nextMeal: MealSlot?)              // 规则 2：到达或多于目标；nextMeal = 还没记录、还来得及吃的正餐
     case weeklySummary(WeeklySummary)                        // 规则 3：每周小结
     case adjustTarget(consecutiveDays: Int)                  // 规则 4：连续几天明显偏高
+    case belowPlan                                           // 规则 5：晚上了、正餐都记过了，还明显低于目标
 }
 
 // MARK: - 判断
@@ -73,6 +74,9 @@ nonisolated enum HintEngine {
     static let clearlyOverShare = 1.20
     /// 规则 4：连续 3 天
     static let consecutiveDaysForAdjust = 3
+    /// 规则 5：低于目标的 60% 算「明显低于计划」；20 点以后（这一天基本吃完了）才说
+    static let belowPlanShare = 0.60
+    static let belowPlanFromHour = 20
     /// 连续天数最多往前看 7 天
     static let streakLookbackDays = 7
     /// 点「先不用」或「调整目标」后，7 天内不再问
@@ -122,12 +126,18 @@ nonisolated enum HintEngine {
         return [today, adjust ?? weekly].compactMap { $0 }
     }
 
-    /// 今天的提示：接近目标，或到达 / 多于目标
+    /// 今天的提示：接近目标，到达 / 多于目标，或者晚上了还明显低于计划
     static func todayHint(today: DayIntake?, targetKcal: Double, targetChangedAt: Date,
                           now: Date, calendar: Calendar) -> CalorieHint? {
         guard let today, targetKcal > 0 else { return nil }   // 今天还没有记录 → 不提示
         let hour = calendar.component(.hour, from: now)
         let next = nextMeal(unlogged: Set(MealSlot.allCases).subtracting(today.mainMeals), hour: hour)
+        // 晚上了、晚餐也记了，还不到目标的 60%：温和地说一句「饿了就吃」，不表扬吃得少。
+        // 改资料的当天不说（今天有一部分是按原来的目标吃的）
+        if next == nil, hour >= belowPlanFromHour, !reaches(today.kcal, belowPlanShare, of: targetKcal),
+           !calendar.isDate(targetChangedAt, inSameDayAs: now) {
+            return .belowPlan
+        }
         if reaches(today.kcal, 1.0, of: targetKcal) {
             // 改资料的当天不说「比目标多」：今天有一部分是按原来的目标吃的
             if calendar.isDate(targetChangedAt, inSameDayAs: now) { return nil }

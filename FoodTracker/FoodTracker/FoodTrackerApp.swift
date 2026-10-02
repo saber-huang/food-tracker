@@ -51,5 +51,5 @@ struct FoodTrackerApp: App {
 /// App 在手机上保存的所有数据类型。
 /// 新加一种类型时加在这里：已有的数据不受影响（SwiftData 会自动升级数据库）
 enum AppModels {
-    static let all: [any PersistentModel.Type] = [UserProfile.self, FoodEntry.self]
+    static let all: [any PersistentModel.Type] = [UserProfile.self, FoodEntry.self, CustomFood.self]
 }

@@ -280,4 +280,59 @@ struct EntryDraftTests {
         #expect(draft.kcalMismatchWarning != nil)  // 按营养素算约 580 千卡，和 100 差太多
         #expect(draft.output != nil)  // 灰色提醒不阻止保存
     }
+
+    // MARK: - 自然份量（第七轮）
+
+    private let bowl = ServingUnit.named("碗", id: "bowl", amount: 150)
+    private let ricePer100 = NutrientValues(caloriesKcal: 116, proteinG: 2.6, carbsG: 25.9, fatG: 0.3)
+
+    @Test("打开 150 克的米饭：认出是 1 碗；切到 1.5 碗，重量和热量按比例变；存进去带着份量")
+    func naturalServing() throws {
+        let draft = EntryDraft(item: rice)
+        draft.link(units: [bowl], amountUnit: .gram, foodRef: "catalog:rice", fallbackPer100: ricePer100)
+        #expect(draft.naturalServing?.unitID == "bowl" && draft.naturalServing?.quantity == 1)
+        draft.stepServing(by: 1)
+        draft.textsChanged()
+        #expect(draft.weightText == "225")
+        #expect(draft.caloriesText == "261")
+        let output = try #require(draft.output)
+        #expect(output.serving == ServingChoice(unitID: "bowl", unitName: "碗", quantity: 1.5))
+        #expect(output.foodRef == "catalog:rice")
+        #expect(output.weightG == 225)
+    }
+
+    @Test("选了份量以后又手动改了克数：不再算「几碗」，按克数存")
+    func servingDroppedAfterTypingGrams() throws {
+        let draft = EntryDraft(item: rice)
+        draft.link(units: [bowl], amountUnit: .gram, foodRef: "catalog:rice", fallbackPer100: ricePer100)
+        type(weight: "137", draft)
+        let output = try #require(draft.output)
+        #expect(output.serving == nil)
+        #expect(output.weightG == 137)
+        #expect(output.values.caloriesKcal == 159)
+    }
+
+    @Test("手动填写打了「米饭」、热量还空着：选「1 碗」时按食物库填上热量和营养素")
+    func fillsBlankFromCatalog() {
+        let draft = EntryDraft(meal: .lunch, dayKey: dayKey)
+        draft.name = "米饭"
+        draft.link(units: [bowl], amountUnit: .gram, foodRef: "catalog:rice", fallbackPer100: ricePer100)
+        #expect(draft.naturalServing == nil)  // 还没填重量：不猜
+        draft.selectServingUnit("bowl")
+        draft.textsChanged()
+        #expect(draft.weightText == "150")
+        #expect(nutrientTexts(draft) == ["174", "3.9", "38.9", "0.5"])
+    }
+
+    @Test("150 克以外的重量（比如 180 克）不硬说成几碗；名字改成别的食物就不再提供碗")
+    func notAServing() {
+        let draft = EntryDraft(item: rice)
+        type(weight: "180", draft)
+        draft.link(units: [bowl], amountUnit: .gram, foodRef: "catalog:rice", fallbackPer100: ricePer100)
+        #expect(draft.naturalServing == nil)
+        #expect(!draft.servingUnits.isEmpty)
+        draft.unlinkServing()
+        #expect(draft.servingUnits.isEmpty && draft.naturalServing == nil)
+        #expect(draft.weightText == "180")  // 已经填的克数留着
+    }
 }

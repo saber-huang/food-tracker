@@ -124,8 +124,9 @@ struct PhotoReviewView: View {
         .task { await refreshRemaining() }
         // 第一次识别前：说明照片会发给谁、怎么处理，同意后才上传（见 AIConsent.swift）
         .aiConsentSheet(pending: $pendingAIAction)
+        // 「手动添加」：和首页的「手动」一样，打开「选择食物」
         .sheet(item: $manualEntry) { request in
-            ManualEntrySheet(request: request)
+            FoodSearchSheet(request: request)
         }
         // 识别结果页：从这一页打开，点返回就回到这一页（照片还在，可以重拍、补拍、再识别）
         .navigationDestination(item: $resultRoute) { route in

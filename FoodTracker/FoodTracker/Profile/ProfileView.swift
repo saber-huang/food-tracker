@@ -186,7 +186,7 @@ struct ProfileView: View {
                 Button("取消", role: .cancel) {}
                 Button("删除", role: .destructive) { onEraseAll() }
             } message: {
-                Text("会删除这台手机上的个人资料、全部饮食记录和设置。此操作无法撤销。")
+                Text("会删除这台手机上的个人资料、全部饮食记录、我的食物和设置。此操作无法撤销。")
             }
         }
     }

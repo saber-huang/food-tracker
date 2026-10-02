@@ -55,10 +55,15 @@ nonisolated enum HintCopy {
             return String(localized: "今天的摄入差不多就在目标线上。明天照常吃、照常记录就好。", table: "HintCopy")
         }
         if let meal = nextMealName {
-            return String(localized: "今天比目标多了约 \(n(byKcal)) 千卡。偶尔一天这样很正常，对整体趋势没什么影响；\(mealInSentence(meal))照常吃、照常记录就好。", table: "HintCopy")
+            return String(localized: "今天比目标多约 \(n(byKcal)) 千卡。偶尔有些波动很正常，\(mealInSentence(meal))照常吃、照常记录就好。", table: "HintCopy")
         }
-        return String(localized: "今天比目标多了约 \(n(byKcal)) 千卡。一天的数字有起伏很正常，看的是几周的平均；明天照常吃、照常记录就好。", table: "HintCopy")
+        return String(localized: "今天比目标多约 \(n(byKcal)) 千卡。偶尔有些波动很正常，明天按原计划继续就好。", table: "HintCopy")
     }
+
+    // MARK: - 今日 · 明显低于计划（晚上、正餐都记过了，还不到目标的 60%）
+
+    /// 不表扬「吃得少」，也不让人为了数字忍饿
+    static let belowPlan = String(localized: "今天的摄入低于计划。如果还饿，可以正常吃，不需要为了保持数字而忍饿。", table: "HintCopy")
 
     // MARK: - 每周小结（每周一次，回顾上一个完整的周一～周日）
 
@@ -161,6 +166,7 @@ nonisolated enum HintCopy {
     static let debugSeedLastWeekOnTarget = String(localized: "演示：上周记录 5 天（和目标一致）", table: "HintCopy")
     static let debugSeedLastWeekAbove = String(localized: "演示：上周记录 7 天（明显偏高）", table: "HintCopy")
     static let debugSeedLastWeekFew = String(localized: "演示：上周只记了 2 天", table: "HintCopy")
+    static let debugSeedBelowPlan = String(localized: "演示：晚上 8 点半，今天只吃了一半", table: "HintCopy")
     static let debugResetHintState = String(localized: "重置提示状态（知道了 / 先不用）", table: "HintCopy")
     static let debugClearLog = String(localized: "清除全部饮食记录", table: "HintCopy")
     static let debugClearLogConfirm = String(localized: "确定要清除全部饮食记录吗？", table: "HintCopy")
@@ -184,6 +190,7 @@ nonisolated enum HintCopy {
             recommendNextMeal, recommendNextMealA11y,
             over(byKcal: 0, nextMealName: String(localized: "晚餐", table: "HintCopy")), over(byKcal: 40, nextMealName: nil),
             over(byKcal: 190, nextMealName: String(localized: "晚餐", table: "HintCopy")), over(byKcal: 190, nextMealName: nil),
+            belowPlan,
             weeklyTitle, weeklyNumbers(averageKcal: 1510, targetKcal: 1463, daysCounted: 5),
             weeklyOnTarget, weeklyAbove(differenceKcal: 367), weeklyBelow(differenceKcal: 160),
             weeklyFewDays(daysCounted: 2), weeklyTargetChangedNote, weeklyAdjustSuggestion, weeklyDismiss,
@@ -199,7 +206,7 @@ nonisolated enum HintCopy {
         + HintLevel.allCases.map(levelTitle) + HintLevel.allCases.map(levelExplanation)
         + [
             debugSectionTitle, debugSeedNearLimit, debugSeedOver, debugSeedStreak, debugSeedLastWeekOnTarget,
-            debugSeedLastWeekAbove, debugSeedLastWeekFew, debugResetHintState, debugClearLog, debugClearLogConfirm,
+            debugSeedLastWeekAbove, debugSeedLastWeekFew, debugSeedBelowPlan, debugResetHintState, debugClearLog, debugClearLogConfirm,
             debugClearLogAction, debugCancel, debugFakeNow, debugUseRealNow, debugEntryName(String(localized: "早餐", table: "HintCopy")),
             debugFakeNowCaption(Date(timeIntervalSince1970: 1_790_740_800)), debugFooter,
         ]

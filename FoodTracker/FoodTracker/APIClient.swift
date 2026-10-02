@@ -69,6 +69,14 @@ enum APIClient {
         return try await send(request)
     }
 
+    /// AI 估算一种食物的营养：只发用户输入的食物名称（和 App 的语言），不发照片和别的数据
+    static func estimate(name: String) async throws -> EstimateResponse {
+        var request = makeRequest(path: "estimate", method: "POST", timeout: 90)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(["name": name, "lang": AppLanguage.current.apiCode])
+        return try await send(request)
+    }
+
     /// 今天还能识别几次、生成几次食谱
     static func quota() async throws -> Quota {
         try await send(makeRequest(path: "quota", method: "GET", timeout: 90))
@@ -112,6 +120,10 @@ enum APIClient {
         guard let http = response as? HTTPURLResponse else { throw APIError.badResponse }
         guard http.statusCode == 200 else {
             networkLog.error("\(request.url?.path() ?? "", privacy: .public) HTTP \(http.statusCode)")
+            // 后端还没有这个接口（比如新功能的服务器还没更新）：不把「Not Found」这种字给用户看
+            if http.statusCode == 404 {
+                throw APIError.server(String(localized: "这个功能暂时还不能用，请稍后再试。"))
+            }
             // 后端的出错说明本来就是写给用户看的（比如「今天的识别次数用完了」），直接显示
             if let body = try? JSONDecoder().decode(ErrorBody.self, from: data) {
                 throw APIError.server(body.detail)

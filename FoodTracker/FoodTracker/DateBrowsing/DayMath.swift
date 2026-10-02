@@ -266,6 +266,20 @@ nonisolated enum DayMath {
         }
     }
 
+    /// 份量页底部按钮上的字：今天「添加到午餐」；往日写明哪一天「添加到 9月28日 午餐」；英文「Add to Lunch」「Add to Lunch · Sep 28」
+    static func addButtonTitle(
+        meal: MealType, dayKey: Int, today: Date, calendar: Calendar = DayMath.calendar, language: AppLanguage = .current
+    ) -> String {
+        let day = date(fromDayKey: dayKey, calendar: calendar)
+        let isToday = startOfDay(day, calendar: calendar) == startOfDay(today, calendar: calendar)
+        switch language {
+        case .zh:
+            return isToday ? "添加到" + meal.title : "添加到 " + shortDate(day, today: today, calendar: calendar, language: .zh) + " " + meal.title
+        case .en:
+            return isToday ? "Add to " + meal.title : "Add to " + meal.title + " · " + shortDate(day, today: today, calendar: calendar, language: .en)
+        }
+    }
+
     /// 记好一条以后的轻提示：今天写「已记录到午餐」；往日写上是哪天，「已记录到 9月28日 午餐」
     static func loggedMessage(
         meal: MealType, dayKey: Int, today: Date, calendar: Calendar = DayMath.calendar, language: AppLanguage = .current

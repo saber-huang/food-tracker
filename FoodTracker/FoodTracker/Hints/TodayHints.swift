@@ -118,6 +118,11 @@ struct TodayHints: View {
                 note(HintCopy.over(byKcal: byKcal, nextMealName: meal?.title), icon: "heart.circle")
                     .hintRow()
             }
+        case .belowPlan:
+            Section {
+                note(HintCopy.belowPlan, icon: "heart.circle")
+                    .hintRow()
+            }
         case .adjustTarget(let days):
             // 连续几天明显高于目标：温和地问一句要不要调整目标。两个按钮都会让这张卡片 7 天内不再出现
             Section {

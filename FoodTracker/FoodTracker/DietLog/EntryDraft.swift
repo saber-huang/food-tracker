@@ -15,6 +15,10 @@
 //  - 三大营养素加起来比重量还多（多半是单位填错了）：这时的「每 100 克含量」不可信，丢掉不用，
 //    免得改正重量时所有数字被放大几十倍
 //
+//  自然份量（第七轮）：认得的食物（食物库、我的食物）可以按「碗、个、杯」选份量。
+//  选了「1.5 碗」就是把重量框填成 225 克，热量照上面的规则跟着变：份量只是另一种填重量的方式，不另算一套。
+//  切到「克」可以直接填克数（有秤的人照样精确）
+//
 
 import Foundation
 import Observation
@@ -50,6 +54,15 @@ final class EntryDraft {
     /// 「每 100 克含量」是在多少克时记下的：重量删空（或填 0）时，按这个重量把数字换算回来
     @ObservationIgnored private var baseWeightG: Double?
 
+    /// 重量框的单位：克，或者毫升（牛奶这类）
+    private(set) var amountUnit: AmountUnit = .gram
+    /// 这种食物能选的自然份量单位（碗、个……）；空的 = 只能填克数
+    private(set) var servingUnits: [ServingUnit] = []
+    /// 现在选的是某个自然单位的几份；nil = 直接填克数
+    private(set) var naturalServing: (unitID: String, quantity: Double)?
+    /// 来自哪种食物（catalog:rice、custom:<UUID>）
+    private(set) var foodRef: String?
+
     /// 五个输入框，顺序：重量、热量、蛋白质、碳水、脂肪（给 .onChange 用）
     var allTexts: [String] { [weightText, caloriesText, proteinText, carbsText, fatText] }
 
@@ -76,9 +89,88 @@ final class EntryDraft {
         baseWeightG = item.weightG
         original = item
         id = item.id
+        amountUnit = item.amountUnit
+        foodRef = item.foodRef
+        if let serving = item.serving { naturalServing = (serving.unitID, serving.quantity) }
         lastTexts = allTexts
         // 打开时营养素就比重量还多：「每 100 克含量」不可信，不拿来换算
         if macrosExceedWeightWarning != nil { per100 = nil }
+    }
+
+    // MARK: - 自然份量
+
+    /// 告诉草稿这种食物有哪些自然单位（打开表单时，由页面按来源或名字从食物库 / 我的食物里找到）。
+    /// fallbackPer100：草稿自己还算不出「每 100 克含量」时（比如还没填重量），用食物库里的
+    func link(units: [ServingUnit], amountUnit: AmountUnit, foodRef: String?, fallbackPer100: NutrientValues?) {
+        servingUnits = units.filter { $0.amount > 0 }
+        self.amountUnit = amountUnit
+        self.foodRef = foodRef
+        if per100 == nil, weightG == nil, let fallbackPer100 { per100 = fallbackPer100 }
+        // 打开时：记录里存着选的是哪个单位就用它；否则看重量是不是正好某个单位的整数倍（150 克 = 1 碗）
+        if let current = naturalServing, servingUnits.contains(where: { $0.id == current.unitID }) { return }
+        naturalServing = nil
+        guard let grams = weightG else { return }
+        for unit in servingUnits {
+            if let quantity = ServingMath.quantity(forAmount: grams, unit: unit) {
+                naturalServing = (unit.id, quantity)
+                return
+            }
+        }
+    }
+
+    /// 名字改成了不认识的食物：不再提供自然单位（已经填的克数留着）
+    func unlinkServing() {
+        guard !servingUnits.isEmpty || naturalServing != nil else { return }
+        servingUnits = []
+        naturalServing = nil
+        foodRef = original?.foodRef
+    }
+
+    /// 选了某个自然单位（数量不变；刚从「克」切过来时从 1 份开始）
+    func selectServingUnit(_ unitID: String) {
+        guard let unit = servingUnits.first(where: { $0.id == unitID }) else { return }
+        setServing(unit: unit, quantity: naturalServing?.unitID == unitID ? naturalServing?.quantity ?? 1 : 1)
+    }
+
+    /// 加一步 / 减一步（direction 是 +1 或 -1）
+    func stepServing(by direction: Int) {
+        guard let current = naturalServing, let unit = servingUnits.first(where: { $0.id == current.unitID }) else { return }
+        setServing(unit: unit, quantity: ServingMath.stepped(current.quantity, by: direction, step: unit.step))
+    }
+
+    /// 切到直接填克数：重量框里的数字留着，接着改
+    func selectAmountInput() {
+        naturalServing = nil
+    }
+
+    /// 选好的自然份量：把重量框填成对应的克数（已经有数字的框由 textsChanged 按比例跟着变）。
+    /// 热量还空着（比如手动填写时刚打了「米饭」）：按食物库的含量直接填上，用户可以再改
+    private func setServing(unit: ServingUnit, quantity: Double) {
+        naturalServing = (unit.id, quantity)
+        let grams = DietLogMath.round1(quantity * unit.amount)
+        weightText = NumberText.text(from: grams)
+        guard NumberText.isBlank(caloriesText), let per100 else { return }
+        let values = DietLogMath.rounded(DietLogMath.scaled(per100, toWeightG: grams))
+        caloriesText = NumberText.text(from: values.caloriesKcal)
+        if per100.proteinG > 0 || per100.carbsG > 0 || per100.fatG > 0 {
+            if NumberText.isBlank(proteinText) { proteinText = NumberText.text(from: values.proteinG) }
+            if NumberText.isBlank(carbsText) { carbsText = NumberText.text(from: values.carbsG) }
+            if NumberText.isBlank(fatText) { fatText = NumberText.text(from: values.fatG) }
+        }
+        baseWeightG = grams
+    }
+
+    /// 现在选的自然单位（给界面显示「1.5 碗」）
+    var selectedServingUnit: ServingUnit? {
+        naturalServing.flatMap { current in servingUnits.first { $0.id == current.unitID } }
+    }
+
+    /// 存进记录的自然份量：重量框还是这个份量对应的克数时才算（用户后来改了克数就不算了）
+    private var servingOutput: ServingChoice? {
+        guard let current = naturalServing, let unit = selectedServingUnit, let grams = weightG,
+            abs(grams - DietLogMath.round1(current.quantity * unit.amount)) < 0.05
+        else { return nil }
+        return ServingChoice(unitID: unit.id, unitName: unit.displayName(quantity: current.quantity), quantity: current.quantity)
     }
 
     /// 重量（克），保留 1 位小数；没填、填 0 或小到四舍五入后是 0，都当作「不知道重量」
@@ -204,6 +296,9 @@ final class EntryDraft {
             values: values,
             confidence: unchanged ? original?.confidence : nil,
             meal: meal,
-            dayKey: dayKey)
+            dayKey: dayKey,
+            amountUnit: amountUnit,
+            serving: servingOutput,
+            foodRef: foodRef)
     }
 }

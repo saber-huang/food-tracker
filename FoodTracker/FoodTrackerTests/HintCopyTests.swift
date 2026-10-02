@@ -51,6 +51,24 @@ struct HintCopyTests {
         #expect(floor150.contains("150") && floor150.contains("320"))
     }
 
+    @Test("比目标多：说清楚多了多少，一句平静的话，不提补偿")
+    func overCopy() {
+        let over150 = HintCopy.over(byKcal: 150, nextMealName: nil)
+        #expect(over150.contains("今天比目标多") && over150.contains("150"))
+        #expect(over150.contains("很正常"))
+        let withMeal = HintCopy.over(byKcal: 150, nextMealName: "晚餐")
+        #expect(withMeal.contains("晚餐照常吃"))
+    }
+
+    @Test("吃得少：不表扬，告诉用户饿了可以正常吃")
+    func belowPlanCopy() {
+        let text = HintCopy.belowPlan
+        #expect(text.contains("如果还饿") && text.contains("正常吃"))
+        for word in ["很棒", "真棒", "厉害", "做得好", "太好了", "继续保持", "恭喜", "优秀"] {
+            #expect(!text.contains(word), "「\(word)」")
+        }
+    }
+
     @Test("设置项的三个选项")
     func settings() {
         #expect(HintLevel.allCases.map(HintCopy.levelTitle) == ["全部开启", "只看每周小结", "关闭"])

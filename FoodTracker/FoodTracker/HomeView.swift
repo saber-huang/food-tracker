@@ -123,11 +123,11 @@ struct HomeView: View {
                         jump(to: day)
                     }
                 }
-                // 手动添加：填好后存成一条记录，默认记到正在看的那一天。
-                // 用 sheet(item:)：打开时带着「哪一餐、哪一天」，表单第一次出现就是对的
+                // 手动记录：打开「选择食物」（搜索 → 选份量 → 添加），默认记到正在看的那一天。
+                // 用 sheet(item:)：打开时带着「哪一餐、哪一天」，第一次出现就是对的
                 // （用 isPresented 加另一个状态的话，第一次弹出时可能读到旧的餐次）
                 .sheet(item: $manualEntry) { request in
-                    ManualEntrySheet(request: request)
+                    FoodSearchSheet(request: request)
                 }
                 // 全屏打开相机；拍好一张（关掉相机之后）打开「确认照片」页
                 .fullScreenCover(isPresented: $showCamera, onDismiss: openPhotoReviewIfNeeded) {

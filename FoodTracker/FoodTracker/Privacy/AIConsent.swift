@@ -17,12 +17,18 @@ import SwiftUI
 nonisolated enum AIConsent {
     /// 存在 UserDefaults 里的名字：记的是「同意过第几版说明」，没有 = 没同意过或撤回了
     static let key = "aiConsentVersion"
-    /// 说明的内容有重要变化（比如多发了一种数据）时加 1：以前同意过的人会被重新询问一次
-    static let currentVersion = 1
+    /// 说明的内容有重要变化（比如多发了一种数据）时加 1：以前同意过的人会被重新询问一次。
+    /// 第 2 版（2026-10-02）：多了「AI 估算食物」，会发送用户输入的食物名称
+    static let currentVersion = 2
 
     /// 按存下来的版本号判断（「我的」页用 @AppStorage 读到的数字直接传进来）
     static func isGranted(version: Int) -> Bool {
         version >= currentVersion
+    }
+
+    /// 以前同意过旧版说明、现在要再问一次：说明页顶部写清楚改了什么
+    static func isUpdate(version: Int) -> Bool {
+        version > 0 && version < currentVersion
     }
 
     static func isGranted(in defaults: UserDefaults = .standard) -> Bool {

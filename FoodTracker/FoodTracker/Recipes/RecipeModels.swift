@@ -106,4 +106,7 @@ struct Quota: Codable {
     let analyzePerDay: Int
     let recipesRemaining: Int
     let recipesPerDay: Int
+    // AI 估算食物的次数：旧版后端没有这两项，所以是可选的
+    var estimateRemaining: Int? = nil
+    var estimatePerDay: Int? = nil
 }

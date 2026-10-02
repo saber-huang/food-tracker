@@ -16,7 +16,7 @@ import Foundation
 // MARK: - 热量和三大营养素
 
 /// 一组热量和三大营养素（一种食物、一餐或一整天）
-nonisolated struct NutrientValues: Equatable {
+nonisolated struct NutrientValues: Hashable, Sendable {
     var caloriesKcal = 0.0
     var proteinG = 0.0
     var carbsG = 0.0
@@ -60,6 +60,12 @@ nonisolated struct EditableItem: Identifiable, Equatable {
     /// 记到哪一天：20260929 这样的数字（和 FoodEntry.dayKey 一样）。
     /// 从打开表单的那一刻起就用数字，一直带到保存：中途手机换了时区，也还是这一天
     var dayKey: Int
+    /// weightG 的单位：克，或者毫升（牛奶、饮料）
+    var amountUnit: AmountUnit = .gram
+    /// 选了自然份量时（「1.5 碗」）：哪个单位、几份；直接填克数时是 nil
+    var serving: ServingChoice? = nil
+    /// 来自哪种食物（catalog:rice、custom:<UUID>）；随手填写、拍照识别的是 nil
+    var foodRef: String? = nil
 }
 
 nonisolated extension EditableItem {

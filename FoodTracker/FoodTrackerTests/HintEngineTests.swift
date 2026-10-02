@@ -117,6 +117,19 @@ struct HintEngineTests {
         #expect(today(1300, [.breakfast, .lunch], hour: 18, changedAt: changedToday) == .nearLimit(remainingKcal: 160, nextMeal: .dinner))
     }
 
+    @Test("晚上了、三顿正餐都记过，还不到目标的 60%：温和地说「饿了就吃」")
+    func belowPlan() {
+        // 60% 是 876 千卡
+        #expect(today(700, all, hour: 20) == .belowPlan)
+        #expect(today(875, all, hour: 21) == .belowPlan)
+        #expect(today(876, all, hour: 21) == nil)  // 到了 60%：不说
+        #expect(today(700, all, hour: 19) == nil)  // 还没到晚上
+        #expect(today(700, [.breakfast, .lunch], hour: 20) == nil)  // 晚餐还没记：可能还没吃
+        #expect(today(700, all, hour: 20, changedAt: at(2026, 9, 30, 9)) == nil)  // 改资料的当天不说
+        #expect(today(700, all, hour: 20, changedAt: at(2026, 9, 29, 9)) == .belowPlan)
+        #expect(today(1500, all, hour: 21) == .over(byKcal: 40, nextMeal: nil))  // 吃多了照常是「比目标多」
+    }
+
     // MARK: - 按目标和设置过滤
 
     @Test("没有记录就没有提示")

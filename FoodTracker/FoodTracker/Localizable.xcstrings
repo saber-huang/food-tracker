@@ -81,6 +81,38 @@
         }
       }
     },
+    "%@ 千卡 / 100 克" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kcal / 100 g"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 千卡 / 100 克"
+          }
+        }
+      }
+    },
+    "%@ 千卡 / 100 毫升" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kcal / 100 ml"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 千卡 / 100 毫升"
+          }
+        }
+      }
+    },
     "%@ 千卡 · 蛋白质 %@ · 碳水 %@ · 脂肪 %@ 克" : {
       "localizations" : {
         "en" : {
@@ -109,6 +141,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 厘米"
+          }
+        }
+      }
+    },
+    "%@ 毫升" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ml"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 毫升"
           }
         }
       }
@@ -365,6 +413,38 @@
         }
       }
     },
+    "1 %@大约" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 %@ is about"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 %@大约"
+          }
+        }
+      }
+    },
+    "1 %@的热量和营养" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calories and Nutrition per %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 %@的热量和营养"
+          }
+        }
+      }
+    },
     "1 份" : {
       "localizations" : {
         "en" : {
@@ -429,6 +509,38 @@
         }
       }
     },
+    "AI 估算「%@」" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI Estimate for “%@”"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 估算「%@」"
+          }
+        }
+      }
+    },
+    "AI 估算会把你输入的食物名称发给 AI。也可以不用 AI，自己创建这个食物。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI estimates send the food name you typed to AI. You can also skip AI and create this food yourself."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 估算会把你输入的食物名称发给 AI。也可以不用 AI，自己创建这个食物。"
+          }
+        }
+      }
+    },
     "AI 估算热量" : {
       "localizations" : {
         "en" : {
@@ -441,6 +553,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AI 估算热量"
+          }
+        }
+      }
+    },
+    "AI 估算食物：你输入、但食物库里没有的那个食物名称（比如「山西过油肉」），只发这个名称。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI food estimates: the name of a food you typed that isn't in the food database (like “Shanxi stir-fried pork”). Only the name is sent."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 估算食物：你输入、但食物库里没有的那个食物名称（比如「山西过油肉」），只发这个名称。"
           }
         }
       }
@@ -765,6 +893,22 @@
         }
       }
     },
+    "今天的 AI 估算次数用完了，可以先创建自定义食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've used today's AI estimates. You can create a custom food for now"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天的 AI 估算次数用完了，可以先创建自定义食物"
+          }
+        }
+      }
+    },
     "今天的识别次数用完了，可以先手动添加" : {
       "localizations" : {
         "en" : {
@@ -777,6 +921,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今天的识别次数用完了，可以先手动添加"
+          }
+        }
+      }
+    },
+    "今天还可以 AI 估算 %lld 次" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld AI estimate left today"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld AI estimates left today"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还可以 AI 估算 %lld 次"
           }
         }
       }
@@ -901,6 +1073,22 @@
         }
       }
     },
+    "从我的食物中删除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from My Foods"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从我的食物中删除"
+          }
+        }
+      }
+    },
     "从相册选择" : {
       "localizations" : {
         "en" : {
@@ -913,6 +1101,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "从相册选择"
+          }
+        }
+      }
+    },
+    "份" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "serving"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "份"
           }
         }
       }
@@ -945,6 +1149,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "份量不确定"
+          }
+        }
+      }
+    },
+    "份量单位" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serving Unit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "份量单位"
           }
         }
       }
@@ -997,18 +1217,18 @@
         }
       }
     },
-    "会删除这台手机上的个人资料、全部饮食记录和设置。此操作无法撤销。" : {
+    "会删除这台手机上的个人资料、全部饮食记录、我的食物和设置。此操作无法撤销。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This deletes your profile, all food entries and settings on this phone. This can't be undone."
+            "value" : "This deletes your profile, all food entries, My Foods and settings on this phone. This can't be undone."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "会删除这台手机上的个人资料、全部饮食记录和设置。此操作无法撤销。"
+            "value" : "会删除这台手机上的个人资料、全部饮食记录、我的食物和设置。此操作无法撤销。"
           }
         }
       }
@@ -1285,6 +1505,22 @@
         }
       }
     },
+    "例如：妈妈做的红烧肉" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. Mom's braised pork"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "例如：妈妈做的红烧肉"
+          }
+        }
+      }
+    },
     "例如：清淡少油，早餐想吃中式，喜欢吃辣" : {
       "localizations" : {
         "en" : {
@@ -1381,6 +1617,22 @@
         }
       }
     },
+    "保存后，下次搜索「%@」会直接出现，不用再估算。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once saved, “%@” shows up right away next time you search, with no need to estimate again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存后，下次搜索「%@」会直接出现，不用再估算。"
+          }
+        }
+      }
+    },
     "保持现在的体重" : {
       "localizations" : {
         "en" : {
@@ -1393,6 +1645,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保持现在的体重"
+          }
+        }
+      }
+    },
+    "修改营养数据" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Nutrition"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改营养数据"
           }
         }
       }
@@ -1845,6 +2113,38 @@
         }
       }
     },
+    "创建我的食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Custom Food"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "创建我的食物"
+          }
+        }
+      }
+    },
+    "创建自定义食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Custom Food"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "创建自定义食物"
+          }
+        }
+      }
+    },
     "删除" : {
       "localizations" : {
         "en" : {
@@ -1857,6 +2157,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "删除"
+          }
+        }
+      }
+    },
+    "删除「%@」？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete “%@”?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除「%@」？"
           }
         }
       }
@@ -2117,6 +2433,22 @@
         }
       }
     },
+    "参考份量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reference Serving"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "参考份量"
+          }
+        }
+      }
+    },
     "参考体重 %@" : {
       "localizations" : {
         "en" : {
@@ -2197,6 +2529,22 @@
         }
       }
     },
+    "只从「我的食物」里删除，已经记过的饮食记录不受影响。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This only removes it from My Foods. Entries you've already logged aren't affected."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只从「我的食物」里删除，已经记过的饮食记录不受影响。"
+          }
+        }
+      }
+    },
     "可以先按这个目标吃 2～3 周，看两周的平均体重再小幅调整。减脂时如果每周下降超过体重的 1%，每天多吃 150～200 千卡，或把活动量调高一档。" : {
       "localizations" : {
         "en" : {
@@ -2245,6 +2593,22 @@
         }
       }
     },
+    "可以让 AI 按常见做法估算，或者自己创建这个食物。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let AI estimate it from a typical recipe, or create the food yourself."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可以让 AI 按常见做法估算，或者自己创建这个食物。"
+          }
+        }
+      }
+    },
     "同意并继续" : {
       "localizations" : {
         "en" : {
@@ -2257,6 +2621,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "同意并继续"
+          }
+        }
+      }
+    },
+    "同时保存到我的食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Also Save to My Foods"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同时保存到我的食物"
           }
         }
       }
@@ -2469,6 +2849,22 @@
         }
       }
     },
+    "多一点" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "多一点"
+          }
+        }
+      }
+    },
     "多个食材用顿号或逗号分开。" : {
       "localizations" : {
         "en" : {
@@ -2577,6 +2973,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完成"
+          }
+        }
+      }
+    },
+    "少一点" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Less"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "少一点"
           }
         }
       }
@@ -2745,6 +3157,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已记录到%@"
+          }
+        }
+      }
+    },
+    "常吃" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frequent"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常吃"
+          }
+        }
+      }
+    },
+    "常见食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Common Foods"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常见食物"
           }
         }
       }
@@ -3005,6 +3449,22 @@
         }
       }
     },
+    "我的食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Foods"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的食物"
+          }
+        }
+      }
+    },
     "手动" : {
       "localizations" : {
         "en" : {
@@ -3017,6 +3477,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "手动"
+          }
+        }
+      }
+    },
+    "手动填写" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter Manually"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手动填写"
           }
         }
       }
@@ -3117,6 +3593,22 @@
         }
       }
     },
+    "拍照识别、AI 估算食物、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。使用前，请先看看会发送哪些内容。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo scanning, AI food estimates, recipe generation and next-meal suggestions are powered by Claude, an AI from Anthropic. Before you use them, here's what gets sent."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍照识别、AI 估算食物、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。使用前，请先看看会发送哪些内容。"
+          }
+        }
+      }
+    },
     "拍照识别、生成食谱和推荐下一餐会用到 AI。关闭后，用到 AI 前会先问你；手动记录不受影响。" : {
       "localizations" : {
         "en" : {
@@ -3129,22 +3621,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拍照识别、生成食谱和推荐下一餐会用到 AI。关闭后，用到 AI 前会先问你；手动记录不受影响。"
-          }
-        }
-      }
-    },
-    "拍照识别、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。第一次使用前，请先看看会发送哪些内容。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo scanning, recipe generation and next-meal suggestions are powered by Claude, an AI from Anthropic. Before you use them for the first time, here's what gets sent."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "拍照识别、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。第一次使用前，请先看看会发送哪些内容。"
           }
         }
       }
@@ -3229,6 +3705,54 @@
         }
       }
     },
+    "按常见做法估算份量和营养…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimating a typical portion and its nutrition…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按常见做法估算份量和营养…"
+          }
+        }
+      }
+    },
+    "按常见做法估算，仅供参考" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated from a typical recipe, for reference only"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按常见做法估算，仅供参考"
+          }
+        }
+      }
+    },
+    "按重量还是容量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By Weight or Volume"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按重量还是容量"
+          }
+        }
+      }
+    },
     "换一个" : {
       "localizations" : {
         "en" : {
@@ -3245,6 +3769,22 @@
         }
       }
     },
+    "换个更具体的叫法试试，或者自己创建这个食物。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try a more specific name, or create the food yourself."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "换个更具体的叫法试试，或者自己创建这个食物。"
+          }
+        }
+      }
+    },
     "换个角度再拍一张" : {
       "localizations" : {
         "en" : {
@@ -3257,6 +3797,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "换个角度再拍一张"
+          }
+        }
+      }
+    },
+    "换个说法" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Another Name"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "换个说法"
+          }
+        }
+      }
+    },
+    "搜索食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search Foods"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索食物"
           }
         }
       }
@@ -3485,6 +4057,22 @@
         }
       }
     },
+    "最近吃过" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recently Eaten"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近吃过"
+          }
+        }
+      }
+    },
     "有严重过敏时，做菜前请再自己核对一遍食材。" : {
       "localizations" : {
         "en" : {
@@ -3661,18 +4249,18 @@
         }
       }
     },
-    "本 App 的服务器不保存照片和你填写的内容。" : {
+    "本 App 的服务器不保存照片和你填写的内容。为了更快返回，同样的食谱和食物估算结果会在服务器内存里暂存一段时间，不和你的设备关联。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This app's server doesn't store your photos or what you typed."
+            "value" : "This app's server doesn't store your photos or what you typed. To respond faster, identical recipe and food estimate results are kept in server memory for a while, not linked to your device."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "本 App 的服务器不保存照片和你填写的内容。"
+            "value" : "本 App 的服务器不保存照片和你填写的内容。为了更快返回，同样的食谱和食物估算结果会在服务器内存里暂存一段时间，不和你的设备关联。"
           }
         }
       }
@@ -3741,6 +4329,22 @@
         }
       }
     },
+    "查看说明" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Details"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看说明"
+          }
+        }
+      }
+    },
     "根据你的资料，建议每天摄入" : {
       "localizations" : {
         "en" : {
@@ -3769,6 +4373,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "欢迎"
+          }
+        }
+      }
+    },
+    "正在估算「%@」" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimating “%@”"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在估算「%@」"
           }
         }
       }
@@ -4073,6 +4693,22 @@
         }
       }
     },
+    "比如「1 份 约 220 克」。不知道重量可以不填，之后按份数记。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For example, “1 serving ≈ 220 g”. If you don't know the weight, leave it blank and log by servings."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比如「1 份 约 220 克」。不知道重量可以不填，之后按份数记。"
+          }
+        }
+      }
+    },
     "比目标多 %@ 千卡" : {
       "localizations" : {
         "en" : {
@@ -4101,6 +4737,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "比目标少 %@ 千卡"
+          }
+        }
+      }
+    },
+    "毫升" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ml"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毫升"
+          }
+        }
+      }
+    },
+    "没找到想要的？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not What You're Looking For?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没找到想要的？"
           }
         }
       }
@@ -4137,6 +4805,38 @@
         }
       }
     },
+    "没有填写蛋白质、碳水和脂肪" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protein, carbs and fat not entered"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有填写蛋白质、碳水和脂肪"
+          }
+        }
+      }
+    },
+    "没有完成估算" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Finish the Estimate"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有完成估算"
+          }
+        }
+      }
+    },
     "没有完成识别" : {
       "localizations" : {
         "en" : {
@@ -4149,6 +4849,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "没有完成识别"
+          }
+        }
+      }
+    },
+    "没有找到完全匹配的结果" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Exact Match"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有找到完全匹配的结果"
           }
         }
       }
@@ -4197,6 +4913,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "没有识别到足够清晰的食物"
+          }
+        }
+      }
+    },
+    "没能估算这个名字" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Estimate This Name"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没能估算这个名字"
           }
         }
       }
@@ -4261,6 +4993,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "清空食谱"
+          }
+        }
+      }
+    },
+    "清除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
           }
         }
       }
@@ -4501,6 +5249,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目标与活动"
+          }
+        }
+      }
+    },
+    "直接填写热量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter Calories Directly"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "直接填写热量"
           }
         }
       }
@@ -4777,6 +5541,22 @@
         }
       }
     },
+    "约" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "约"
+          }
+        }
+      }
+    },
     "约 %@ 克" : {
       "localizations" : {
         "en" : {
@@ -4789,6 +5569,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "约 %@ 克"
+          }
+        }
+      }
+    },
+    "约 %@ 千卡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About %@ kcal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "约 %@ 千卡"
+          }
+        }
+      }
+    },
+    "约 %@ 千卡 / 100 克" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About %@ kcal / 100 g"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "约 %@ 千卡 / 100 克"
+          }
+        }
+      }
+    },
+    "约 %@ 千卡 / 100 毫升" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About %@ kcal / 100 ml"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "约 %@ 千卡 / 100 毫升"
+          }
+        }
+      }
+    },
+    "约 %@ 毫升" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About %@ ml"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "约 %@ 毫升"
           }
         }
       }
@@ -4857,6 +5701,22 @@
         }
       }
     },
+    "编辑我的食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Custom Food"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑我的食物"
+          }
+        }
+      }
+    },
     "编辑资料" : {
       "localizations" : {
         "en" : {
@@ -4869,6 +5729,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "编辑资料"
+          }
+        }
+      }
+    },
+    "编辑这个食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit This Food"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑这个食物"
           }
         }
       }
@@ -5317,6 +6193,22 @@
         }
       }
     },
+    "说明有更新：新增了「AI 估算食物」，只会发送你输入的食物名称。其他内容和之前一样，确认后就能继续使用。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's new: AI food estimates, which send only the food name you type. Everything else is the same as before. Confirm to keep using AI features."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说明有更新：新增了「AI 估算食物」，只会发送你输入的食物名称。其他内容和之前一样，确认后就能继续使用。"
+          }
+        }
+      }
+    },
     "请先了解" : {
       "localizations" : {
         "en" : {
@@ -5425,6 +6317,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请输入"
+          }
+        }
+      }
+    },
+    "请输入份量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a portion"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入份量"
           }
         }
       }
@@ -5861,6 +6769,22 @@
         }
       }
     },
+    "返回" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "返回"
+          }
+        }
+      }
+    },
     "返回照片" : {
       "localizations" : {
         "en" : {
@@ -5969,6 +6893,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这一天的饮食"
+          }
+        }
+      }
+    },
+    "这个功能暂时还不能用，请稍后再试。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This feature isn't available yet. Please try again later."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个功能暂时还不能用，请稍后再试。"
           }
         }
       }
@@ -6101,6 +7041,22 @@
         }
       }
     },
+    "这次没有完成，请再试一次。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That didn't work this time. Please try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这次没有完成，请再试一次。"
+          }
+        }
+      }
+    },
     "这次没有拿到有效的结果，请再试一次。" : {
       "localizations" : {
         "en" : {
@@ -6197,6 +7153,22 @@
         }
       }
     },
+    "选择份量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chooses a portion"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择份量"
+          }
+        }
+      }
+    },
     "选择日期" : {
       "localizations" : {
         "en" : {
@@ -6209,6 +7181,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选择日期"
+          }
+        }
+      }
+    },
+    "选择食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Food"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择食物"
           }
         }
       }
@@ -6369,6 +7357,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隐私政策暂时读不出来，请更新 App 后再试。"
+          }
+        }
+      }
+    },
+    "需要先同意使用 AI" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI Consent Needed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要先同意使用 AI"
           }
         }
       }

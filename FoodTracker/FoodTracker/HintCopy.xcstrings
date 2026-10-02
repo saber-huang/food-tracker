@@ -109,34 +109,50 @@
         }
       }
     },
-    "今天比目标多了约 %@ 千卡。一天的数字有起伏很正常，看的是几周的平均；明天照常吃、照常记录就好。" : {
+    "今天比目标多约 %@ 千卡。偶尔有些波动很正常，%@照常吃、照常记录就好。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You're about %@ kcal above today's target. Daily numbers naturally go up and down; what counts is the average over a few weeks. Eat and log as usual tomorrow."
+            "value" : "You're about %1$@ kcal above today's target. Some ups and downs are normal; have %2$@ and log it as usual."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天比目标多了约 %@ 千卡。一天的数字有起伏很正常，看的是几周的平均；明天照常吃、照常记录就好。"
+            "value" : "今天比目标多约 %@ 千卡。偶尔有些波动很正常，%@照常吃、照常记录就好。"
           }
         }
       }
     },
-    "今天比目标多了约 %@ 千卡。偶尔一天这样很正常，对整体趋势没什么影响；%@照常吃、照常记录就好。" : {
+    "今天比目标多约 %@ 千卡。偶尔有些波动很正常，明天按原计划继续就好。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You're about %1$@ kcal above today's target. A day like this now and then is normal and barely affects your overall trend. Have %2$@ and log it as usual."
+            "value" : "You're about %@ kcal above today's target. Some ups and downs are normal; just carry on with your plan tomorrow."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天比目标多了约 %@ 千卡。偶尔一天这样很正常，对整体趋势没什么影响；%@照常吃、照常记录就好。"
+            "value" : "今天比目标多约 %@ 千卡。偶尔有些波动很正常，明天按原计划继续就好。"
+          }
+        }
+      }
+    },
+    "今天的摄入低于计划。如果还饿，可以正常吃，不需要为了保持数字而忍饿。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's intake is below your plan. If you're still hungry, go ahead and eat normally; there's no need to stay hungry for the numbers."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天的摄入低于计划。如果还饿，可以正常吃，不需要为了保持数字而忍饿。"
           }
         }
       }
@@ -821,6 +837,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "演示：今天比目标多 150 千卡"
+          }
+        }
+      }
+    },
+    "演示：晚上 8 点半，今天只吃了一半" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo: 8:30 PM, Only Half Eaten Today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "演示：晚上 8 点半，今天只吃了一半"
           }
         }
       }
