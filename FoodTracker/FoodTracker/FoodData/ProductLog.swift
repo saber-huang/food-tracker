@@ -23,6 +23,7 @@ nonisolated enum ProductLog {
         case recentFoodSelected = "recent_food_selected"
         case frequentFoodSelected = "frequent_food_selected"
         case foodLogged = "food_logged"
+        case labelScanned = "label_scanned"  // 拍营养成分表：detail 是认出了几项（0 = 没认出来）
     }
 
     /// 记一条。detail 是不含个人信息的补充（单位的 id、来源），name 只在开发时可见

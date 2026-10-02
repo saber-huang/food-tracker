@@ -17,6 +17,8 @@ This app helps you log what you eat and estimate calories and nutrition. This po
 - My Foods: packaged foods you enter from their nutrition labels, and estimates (from AI or from a similar dish) you choose to save (name, serving and nutrition).
 - Settings and preferences: your calorie hint setting, the tastes, allergies, foods to avoid and cooking time you enter, and your most recent recipes.
 
+When you add a packaged food, a photo of its nutrition label is read on your phone only; it is never uploaded or saved.
+
 All of this stays on your phone and is not stored on this app's server. Only when you use an AI feature is part of it sent with the request, as described in the next section. If you use iCloud Backup, it is included in your iPhone backup in your own iCloud account, which we cannot access.
 
 ## Information Sent When You Use AI Features

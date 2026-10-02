@@ -1105,6 +1105,22 @@
         }
       }
     },
+    "从相册选" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose from Photos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从相册选"
+          }
+        }
+      }
+    },
     "从相册选择" : {
       "localizations" : {
         "en" : {
@@ -2753,6 +2769,22 @@
         }
       }
     },
+    "在手机上识别，照片不会上传。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read on your phone; the photo is never uploaded."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在手机上识别，照片不会上传。"
+          }
+        }
+      }
+    },
     "在这一天插入两条示例记录" : {
       "localizations" : {
         "en" : {
@@ -3117,6 +3149,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "岁"
+          }
+        }
+      }
+    },
+    "已从照片填好 %lld 项，请和包装核对一下。" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Filled in %lld item from the photo. Please check it against the package."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Filled in %lld items from the photo. Please check them against the package."
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已从照片填好 %lld 项，请和包装核对一下。"
           }
         }
       }
@@ -3749,6 +3809,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拍照识别：你选的餐食照片（同一餐最多 4 张）。上传前会缩小并重新压缩，不带拍摄地点等信息。"
+          }
+        }
+      }
+    },
+    "拍营养成分表，自动填写" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan the Nutrition Label"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍营养成分表，自动填写"
           }
         }
       }
@@ -4725,6 +4801,22 @@
         }
       }
     },
+    "正在识别营养成分表…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reading the nutrition label…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在识别营养成分表…"
+          }
+        }
+      }
+    },
     "正在识别食物和估算份量…" : {
       "localizations" : {
         "en" : {
@@ -5185,6 +5277,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "没有生成成功"
+          }
+        }
+      }
+    },
+    "没有认出营养成分表。把表拍正、拍清楚一点再试，或者直接填写。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't read a nutrition label. Try a straighter, clearer photo, or enter it yourself."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有认出营养成分表。把表拍正、拍清楚一点再试，或者直接填写。"
           }
         }
       }

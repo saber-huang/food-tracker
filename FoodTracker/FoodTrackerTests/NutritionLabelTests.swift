@@ -236,3 +236,121 @@ struct SimilarDishTests {
         #expect(estimate.foodType == nil && !estimate.isDish)  // 按毫升：不当作菜
     }
 }
+
+// MARK: - 拍营养成分表
+
+@Suite("拍营养成分表：从认出来的字里找数字")
+struct NutritionLabelParserTests {
+    private func parse(_ rows: [String]) -> LabelScanResult { NutritionLabelParser.parse(rows: rows) }
+
+    @Test("中国常见的营养成分表（每 100 克）：跳过 NRV%、饱和脂肪、糖、钠")
+    func chinesePer100() {
+        let result = parse([
+            "营养成分表", "项目 每100克 营养素参考值%", "能量 2010千焦 24%", "蛋白质 6.5克 11%", "脂肪 20.0克 33%",
+            "—饱和脂肪 9.0克 45%", "碳水化合物 68.0克 23%", "—糖 22.0克", "钠 300毫克 15%",
+        ])
+        #expect(result.column == .per100g)
+        #expect(result.energy == 2010 && result.energyUnit == .kilojoule)
+        #expect(result.protein == 6.5 && result.fat == 20 && result.carbs == 68)
+        #expect(result.nutrientCount == 4 && result.packageAmount == nil)
+    }
+
+    @Test("两列的表（每 100 克、每份）：数字按先出现的那一列")
+    func twoColumns() {
+        let result = parse(["项目 每100克 每份(30克) NRV%", "能量 2010千焦 603千焦 24%", "蛋白质 6.5克 2.0克 11%"])
+        #expect(result.column == .per100g && result.energy == 2010 && result.protein == 6.5)
+    }
+
+    @Test("每份的表：每份多少克也认出来")
+    func perServing() {
+        let result = parse(["项目 每份(25克) NRV%", "能量 502kJ 6%", "蛋白质 1.6g 3%", "脂肪 5.0g 8%", "碳水化合物 17.0g 6%"])
+        #expect(result.column == .perServing && result.servingSize == 25 && result.servingUnit == .gram)
+        #expect(result.energy == 502 && result.energyUnit == .kilojoule && result.carbs == 17)
+    }
+
+    @Test("饮料（每 100 毫升）：0 克也算认出来；拍到净含量就填上")
+    func drink() {
+        let result = parse([
+            "项目 每100毫升 NRV%", "能量 180千焦 2%", "蛋白质 0克 0%", "脂肪 0克 0%", "碳水化合物 10.6克 4%", "钠 12毫克 1%",
+            "净含量：330毫升",
+        ])
+        #expect(result.column == .per100ml && result.energy == 180)
+        #expect(result.protein == 0 && result.fat == 0 && result.carbs == 10.6)
+        #expect(result.packageAmount == 330)
+    }
+
+    @Test("美国的 Nutrition Facts：每份（Serving size 的克数）、Calories 是千卡、跳过 Saturated / Trans Fat")
+    func usLabel() {
+        let result = parse([
+            "Nutrition Facts", "8 servings per container", "Serving size 2/3 cup (55g)", "Amount per serving", "Calories 230",
+            "Total Fat 8g 10%", "Saturated Fat 1g 5%", "Trans Fat 0g", "Cholesterol 0mg 0%", "Sodium 160mg 7%",
+            "Total Carbohydrate 37g 13%", "Dietary Fiber 4g 14%", "Total Sugars 12g", "Protein 3g",
+        ])
+        #expect(result.column == .perServing && result.servingSize == 55 && result.servingUnit == .gram)
+        #expect(result.energy == 230 && result.energyUnit == .kilocalorie)
+        #expect(result.fat == 8 && result.carbs == 37 && result.protein == 3)
+    }
+
+    @Test("美国旧包装的「Calories from Fat 70」不当成脂肪")
+    func caloriesFromFat() {
+        let result = parse(["Calories 230 Calories from Fat 70", "Total Fat 8g"])
+        #expect(result.energy == 230 && result.fat == 8)
+    }
+
+    @Test("全角数字、冒号、一行写完的营养成分表、千位逗号、没写单位的能量")
+    func variants() {
+        let fullWidth = parse(["能量：２０１０ｋＪ", "蛋白质：６．５ｇ"])
+        #expect(fullWidth.energy == 2010 && fullWidth.energyUnit == .kilojoule && fullWidth.protein == 6.5)
+        let inline = parse(["每100g含：能量2010kJ，蛋白质6.5g，脂肪20.0g，碳水化合物68.0g"])
+        #expect(inline.column == .per100g && inline.energy == 2010 && inline.protein == 6.5)
+        #expect(inline.fat == 20 && inline.carbs == 68)
+        #expect(parse(["Calories 1,230"]).energy == 1230)
+        let noUnit = parse(["能量(kJ) 2010"])
+        #expect(noUnit.energy == 2010 && noUnit.energyUnit == .kilojoule)
+        let heat = parse(["热量 480千卡"])
+        #expect(heat.energy == 480 && heat.energyUnit == .kilocalorie)
+        #expect(parse(["净含量：1.5千克"]).packageAmount == 1500)
+    }
+
+    @Test("不是营养成分表：什么都不填")
+    func notALabel() {
+        #expect(parse(["今天天气不错", "12345", "钠 300毫克"]).isEmpty)
+        #expect(parse([]).isEmpty)
+    }
+
+    @Test("认出来的一段一段文字按行拼好：同一行从左到右，行从上到下")
+    func rows() {
+        let items = [
+            RecognizedText(text: "6.5克", minX: 0.5, midY: 0.748, height: 0.03),
+            RecognizedText(text: "能量", minX: 0.1, midY: 0.80, height: 0.03),
+            RecognizedText(text: "蛋白质", minX: 0.1, midY: 0.75, height: 0.03),
+            RecognizedText(text: "2010千焦", minX: 0.5, midY: 0.805, height: 0.03),
+        ]
+        #expect(NutritionLabelParser.rows(items) == ["能量 2010千焦", "蛋白质 6.5克"])
+        #expect(NutritionLabelParser.rows([]).isEmpty)
+    }
+
+    @Test("照片拍斜了（转了 5°）：先摆正，同一行的名称和数字还能拼在一起")
+    func tilted() {
+        let angle = 5.0 * .pi / 180
+        func box(_ text: String, x: Double, y: Double, width: Double) -> RawTextBox {
+            func turn(_ px: Double, _ py: Double) -> CGPoint {
+                CGPoint(x: px * cos(angle) - py * sin(angle), y: px * sin(angle) + py * cos(angle))
+            }
+            return RawTextBox(
+                text: text, topLeft: turn(x, y + 15), topRight: turn(x + width, y + 15), bottomLeft: turn(x, y - 15),
+                bottomRight: turn(x + width, y - 15))
+        }
+        let boxes = [
+            box("能量", x: 100, y: 800, width: 100), box("2010千焦", x: 500, y: 800, width: 200),
+            box("蛋白质", x: 100, y: 720, width: 150), box("6.5克", x: 500, y: 720, width: 120),
+        ]
+        let naive = boxes.map { box in
+            RecognizedText(
+                text: box.text, minX: box.topLeft.x,
+                midY: (box.topLeft.y + box.topRight.y + box.bottomLeft.y + box.bottomRight.y) / 4, height: 30)
+        }
+        #expect(NutritionLabelParser.rows(naive) != ["能量 2010千焦", "蛋白质 6.5克"])  // 不摆正会拼错
+        #expect(NutritionLabelParser.rows(NutritionLabelParser.straightened(boxes)) == ["能量 2010千焦", "蛋白质 6.5克"])
+    }
+}

@@ -619,4 +619,14 @@ LOCALIZABLE = {
     "需要在 0～5000 之间": "Must be between 0 and 5,000",
     "选填。填了以后，记录时可以直接选「1 包」「半包」。": "Optional. Fill it in to log “1 pack” or “½ pack” directly.",
     "先填上面「每份」是多少克（毫升），才能按一包记录。": "Fill in the serving size above first to log by package.",
+    # 拍营养成分表，自动填写（在手机上识别文字）
+    "拍营养成分表，自动填写": "Scan the Nutrition Label",
+    "正在识别营养成分表…": "Reading the nutrition label…",
+    "从相册选": "Choose from Photos",
+    "在手机上识别，照片不会上传。": "Read on your phone; the photo is never uploaded.",
+    "已从照片填好 %lld 项，请和包装核对一下。": {
+        "one": "Filled in %lld item from the photo. Please check it against the package.",
+        "other": "Filled in %lld items from the photo. Please check them against the package.",
+    },
+    "没有认出营养成分表。把表拍正、拍清楚一点再试，或者直接填写。": "Couldn't read a nutrition label. Try a straighter, clearer photo, or enter it yourself.",
 }

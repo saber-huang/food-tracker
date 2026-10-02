@@ -329,7 +329,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Kindbite;
-				INFOPLIST_KEY_NSCameraUsageDescription = "拍摄餐食照片，用来识别食物并估算热量和营养。";
+				INFOPLIST_KEY_NSCameraUsageDescription = "拍摄餐食照片或包装上的营养成分表，用来识别食物、估算热量和营养。";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "连接同一 Wi-Fi 下电脑上运行的后端服务（开发测试时使用）。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -367,7 +367,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Kindbite;
-				INFOPLIST_KEY_NSCameraUsageDescription = "拍摄餐食照片，用来识别食物并估算热量和营养。";
+				INFOPLIST_KEY_NSCameraUsageDescription = "拍摄餐食照片或包装上的营养成分表，用来识别食物、估算热量和营养。";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "连接同一 Wi-Fi 下电脑上运行的后端服务（开发测试时使用）。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

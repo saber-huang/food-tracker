@@ -9,9 +9,12 @@
 //  - 能量照抄，单位可以选千焦（中国的包装大多写千焦，App 换算成千卡）或千卡
 //  - 蛋白质、脂肪、碳水化合物（顺序和中国的营养成分表一样，都可以不填）
 //  - 一包有多少（选填）：单位从「包、瓶、盒……」里选，不让随便打字（第一版能打字，打了「1」标题就成了「11大约」）
+//  - 「拍营养成分表，自动填写」：拍照或从相册选，在手机上认出文字后填进表单（NutritionLabelScanner.swift），
+//    照片不上传；认出来的请用户核对，不会自动保存
 //  换算和检查都在 NutritionLabel.swift；保存后打开份量页
 //
 
+import PhotosUI
 import SwiftData
 import SwiftUI
 
@@ -39,8 +42,18 @@ struct CustomFoodEditView: View {
     @State private var saveAttempted = false
     @State private var missingTick = 0  // 每次没保存成功加 1：轻轻震一下
     @State private var confirmingDelete = false
+    @State private var showingCamera = false
+    @State private var showingLibrary = false
+    @State private var libraryItem: PhotosPickerItem?
+    @State private var scan: ScanState = .idle
+    @State private var scanTick = 0  // 认出来了：轻轻震一下
     @FocusState private var focusedField: Field?
     private enum Field { case name, servingSize, energy, protein, fat, carbs, packageAmount }
+
+    /// 拍营养成分表：还没拍 / 正在认 / 填好了几项 / 没认出来
+    private enum ScanState: Equatable {
+        case idle, scanning, filled(Int), failed
+    }
 
     init(seed: CustomFoodSeed?, editing: CustomFood? = nil, onSaved: @escaping (CustomFoodSnapshot) -> Void, onDeleted: (() -> Void)? = nil) {
         self.seed = seed
@@ -114,6 +127,7 @@ struct CustomFoodEditView: View {
                 if saveAttempted, let error = input.nameError { hint(error) }
             }
 
+            scanSection
             labelSection
             packageSection
 
@@ -154,6 +168,98 @@ struct CustomFoodEditView: View {
             Text("只从「我的食物」里删除，已经记过的饮食记录不受影响。")
         }
         .sensoryFeedback(.warning, trigger: missingTick)
+        .sensoryFeedback(.success, trigger: scanTick)
+        // 拍营养成分表：全屏相机，或者系统的相册选择器（不需要相册权限）
+        .fullScreenCover(isPresented: $showingCamera) {
+            CameraPicker { photo in scanLabel(photo) }
+                .ignoresSafeArea()
+        }
+        .photosPicker(isPresented: $showingLibrary, selection: $libraryItem, matching: .images)
+        .onChange(of: libraryItem) { _, item in
+            guard let item else { return }
+            libraryItem = nil
+            Task {
+                if let data = try? await item.loadTransferable(type: Data.self), let photo = UIImage(data: data) {
+                    scanLabel(photo)
+                } else {
+                    scan = .failed
+                }
+            }
+        }
+    }
+
+    /// 「拍营养成分表，自动填写」：拍照或从相册选；下面一行说明或结果
+    private var scanSection: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xs) {
+            Menu {
+                if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                    Button("拍照", systemImage: "camera") { showingCamera = true }
+                }
+                Button("从相册选", systemImage: "photo.on.rectangle") { showingLibrary = true }
+            } label: {
+                HStack(spacing: AppSpacing.xs) {
+                    if scan == .scanning {
+                        AppLoadingIndicator()
+                    } else {
+                        Image(systemName: "text.viewfinder")
+                    }
+                    Text(scan == .scanning ? String(localized: "正在识别营养成分表…") : String(localized: "拍营养成分表，自动填写"))
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .menuStyle(.button)
+            .buttonStyle(.appSecondary)
+            .disabled(scan == .scanning)
+            Text(scanCaption)
+                .font(AppTypography.detail)
+                .foregroundStyle(scanCaptionColor)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, AppSpacing.xxs)
+        }
+    }
+
+    private var scanCaption: String {
+        switch scan {
+        case .idle, .scanning: String(localized: "在手机上识别，照片不会上传。")
+        case .filled(let count): String(localized: "已从照片填好 \(count) 项，请和包装核对一下。")
+        case .failed: String(localized: "没有认出营养成分表。把表拍正、拍清楚一点再试，或者直接填写。")
+        }
+    }
+
+    private var scanCaptionColor: Color {
+        if case .filled = scan { return AppColors.brand }
+        return AppColors.textSecondary
+    }
+
+    /// 认出照片里的营养成分表，填进表单（认出来的才填，没认出来的不动）
+    private func scanLabel(_ photo: UIImage) {
+        focusedField = nil
+        scan = .scanning
+        Task {
+            let rows = (try? await LabelTextRecognizer.recognizeRows(photo)) ?? []
+            let result = NutritionLabelParser.parse(rows: rows)
+            ProductLog.log(.labelScanned, detail: "\(result.nutrientCount)")
+            guard !result.isEmpty else {
+                scan = .failed
+                return
+            }
+            let text: (Double) -> String = { NumberText.text(from: DietLogMath.round1($0)) }
+            if let column = result.column { self.column = column }
+            if let size = result.servingSize {
+                servingSizeText = text(size)
+                if let unit = result.servingUnit { servingUnit = unit }
+            }
+            if let energy = result.energy {
+                energyText = text(energy)
+                if let unit = result.energyUnit { energyUnit = unit }
+            }
+            if let protein = result.protein { proteinText = text(protein) }
+            if let fat = result.fat { fatText = text(fat) }
+            if let carbs = result.carbs { carbsText = text(carbs) }
+            if let amount = result.packageAmount { packageAmountText = text(amount) }
+            scan = .filled(result.nutrientCount)
+            scanTick += 1
+        }
     }
 
     /// 营养成分表：按什么写、能量、三种营养素

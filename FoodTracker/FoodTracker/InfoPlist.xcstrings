@@ -26,13 +26,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take photos of your meals so the app can identify the foods and estimate calories and nutrition."
+            "value" : "Take photos of your meals or of nutrition labels so the app can identify foods and estimate calories and nutrition."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拍摄餐食照片，用来识别食物并估算热量和营养。"
+            "value" : "拍摄餐食照片或包装上的营养成分表，用来识别食物、估算热量和营养。"
           }
         }
       }
