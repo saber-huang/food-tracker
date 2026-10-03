@@ -1,0 +1,52 @@
+{
+  "dataset": "Nutrition5k (cafe 1, official RGB test split, overhead photos)",
+  "date": "2026-10-03",
+  "model": "claude-opus-5-5",
+  "effort": "low",
+  "seed": 42,
+  "dishes_evaluated": 50,
+  "failed_requests": 0,
+  "skipped_no_photo": 16,
+  "metrics": {
+    "calories (kcal)": {
+      "mae": 100.9,
+      "mean_truth": 286.7,
+      "mae_pct_of_mean": 35.2,
+      "median_ape_pct": 42.7,
+      "mean_signed_error": 43.6
+    },
+    "mass (g)": {
+      "mae": 66.8,
+      "mean_truth": 223.5,
+      "mae_pct_of_mean": 29.9,
+      "median_ape_pct": 23.8,
+      "mean_signed_error": 26.4
+    },
+    "fat (g)": {
+      "mae": 7.6,
+      "mean_truth": 13.4,
+      "mae_pct_of_mean": 57.0,
+      "median_ape_pct": 51.9,
+      "mean_signed_error": 2.0
+    },
+    "carbs (g)": {
+      "mae": 9.4,
+      "mean_truth": 19.7,
+      "mae_pct_of_mean": 47.8,
+      "median_ape_pct": 41.0,
+      "mean_signed_error": 8.0
+    },
+    "protein (g)": {
+      "mae": 9.2,
+      "mean_truth": 23.1,
+      "mae_pct_of_mean": 40.1,
+      "median_ape_pct": 37.6,
+      "mean_signed_error": -1.8
+    }
+  },
+  "median_latency_s": 3.7,
+  "input_tokens": 120650,
+  "output_tokens": 11775,
+  "estimated_cost_usd": 0.72,
+  "failures": []
+}

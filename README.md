@@ -58,6 +58,23 @@ Claude API  (vision, structured outputs)
 
 - **Bilingual errors** — the app sends `X-App-Lang`, and user-facing errors come back in English or Chinese.
 
+## Evaluation
+
+Photo recognition was benchmarked on 50 dishes from the public [Nutrition5k](https://github.com/google-research-datasets/Nutrition5k) test split (overhead photos, weighed ground truth). The run used the production prompt and model (`claude-opus-5-5`, effort `low`):
+
+| Metric | Result |
+| --- | --- |
+| Calorie MAE | 101 kcal (35% of the mean) |
+| Median latency | 3.7 s per dish |
+| Calorie density, predicted vs. true | 1.33 vs. 1.30 kcal/g |
+| Correlation of portion error with calorie error | r = 0.72 |
+
+Most of the error comes from estimating portion size, not from identifying the food. Per-dish results are in [`tools/eval/results/`](tools/eval/results/). To reproduce the run (about $0.75 in API usage):
+
+```bash
+backend/.venv/bin/python tools/eval/nutrition5k_eval.py --n 50 --seed 42
+```
+
 ## Tech stack
 
 | Area | Tools |
@@ -75,6 +92,7 @@ Claude API  (vision, structured outputs)
 | `tools/fooddb/` | Source data and validator for the built-in food database |
 | `tools/l10n/` | English translations and string-catalog generator |
 | `tools/icon/` | App icon renderer |
+| `tools/eval/` | Nutrition5k evaluation of photo recognition |
 | `site/` | Support and privacy pages, published with GitHub Pages |
 | `design-system/` | Design guidelines (Chinese) |
 

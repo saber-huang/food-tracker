@@ -1,0 +1,51 @@
+dish_id,model,is_food,items,low_confidence_items,seconds,input_tokens,output_tokens,predicted_foods,true_calories,pred_calories,true_mass,pred_mass,true_fat,pred_fat,true_carbs,pred_carbs,true_protein,pred_protein
+dish_1561577848,claude-opus-5-5,True,1,0,3.71,2413,128,Creamy chicken salad with nuts and arugula,413.3,420.0,254.0,200.0,13.8,28.0,6.0,6.0,63.1,36.0
+dish_1566502573,claude-opus-5-5,True,5,0,5.06,2413,435,Grilled chicken breast with grated cheese; Chickpea salad with tomato and red onion; Fresh spinach salad; Broccoli; Corn on the cob (piece),821.5,673.0,487.0,490.0,43.2,22.2,60.7,58.3,51.2,61.8
+dish_1560368506,claude-opus-5-5,True,3,0,4.3,2413,293,Pan-fried seasoned fish fillet with onions; Sliced roast pork loin; Honeydew melon cubes,462.9,545.0,378.0,430.0,31.3,23.2,22.4,24.0,44.6,59.0
+dish_1558635546,claude-opus-5-5,True,1,0,3.11,2413,111,Apple,60.8,94.0,117.0,180.0,0.2,0.3,16.4,25.0,0.4,0.5
+dish_1565811139,claude-opus-5-5,True,1,0,3.0,2413,149,"Spinach salad with broccoli, carrots, chicken and feta",902.2,330.0,416.0,300.0,62.6,18.0,9.1,16.0,74.7,28.0
+dish_1561739212,claude-opus-5-5,True,3,0,4.13,2413,293,"Scrambled egg whites; Roasted sweet potato cubes; Mixed berries (raspberries, blackberries, blueberry)",134.0,230.0,214.0,290.0,0.3,5.4,23.8,31.0,8.3,15.8
+dish_1564773903,claude-opus-5-5,True,4,0,4.45,2413,353,Pan-seared fish fillet (likely salmon); Steamed broccoli; Cherry tomatoes; Fresh pineapple,316.8,362.0,336.0,450.0,16.1,16.4,25.1,31.8,19.6,25.9
+dish_1558376437,claude-opus-5-5,True,1,0,2.76,2413,123,Cantaloupe melon chunks,13.3,41.0,39.0,120.0,0.1,0.2,3.1,10.0,0.3,1.0
+dish_1563984242,claude-opus-5-5,True,4,0,4.83,2413,344,Scrambled egg whites; Pineapple chunks; Cantaloupe chunks; Roasted potato cubes,402.1,371.0,753.0,500.0,3.3,11.3,36.8,44.5,49.4,24.9
+dish_1562172643,claude-opus-5-5,True,3,0,3.83,2413,268,Scrambled egg whites; Crispy bacon; Home fries (pan-fried potatoes),734.3,485.0,457.0,290.0,42.6,28.0,17.6,24.1,62.9,33.5
+dish_1561662869,claude-opus-5-5,True,4,1,5.62,2413,371,Breaded stuffed chicken breast (pan-fried); Quinoa with sautéed spinach/greens and mushrooms; Roasted carrot; Corn on the cob slice,284.3,506.0,192.0,305.0,9.2,21.8,10.3,33.5,38.8,43.4
+dish_1566414412,claude-opus-5-5,True,4,1,5.05,2413,372,Roasted potatoes; Vegetable couscous with peppers and onion; Breaded chicken or fish with creamy cheese topping; Mixed leaf salad with cherry tomato,920.1,770.0,658.0,520.0,37.8,32.5,57.1,85.0,85.3,34.5
+dish_1558722207,claude-opus-5-5,True,1,0,2.14,2413,108,Apple,83.2,94.0,160.0,180.0,0.3,0.3,22.4,25.0,0.5,0.5
+dish_1560801797,claude-opus-5-5,True,3,1,4.58,2413,293,Roasted sweet potato pieces; Steamed cauliflower florets; Roasted eggplant piece,25.7,107.0,96.0,145.0,0.7,3.0,4.1,18.6,1.3,2.7
+dish_1562009810,claude-opus-5-5,True,1,0,3.41,2413,142,"Brown rice (cooked, lightly seasoned)",119.9,185.0,108.0,150.0,1.0,2.5,24.8,37.0,2.8,4.0
+dish_1565035802,claude-opus-5-5,True,4,0,4.41,2413,354,Cauliflower (blanched); Cherry tomatoes; Green bell pepper; Red onion slices,69.2,73.0,250.0,300.0,0.6,0.7,14.8,16.0,3.7,3.8
+dish_1560456348,claude-opus-5-5,True,3,0,3.85,2413,268,Roasted chicken leg (with skin); Sautéed green beans; Arugula salad (lightly dressed),210.3,410.0,149.0,240.0,7.5,29.0,4.6,7.0,29.9,30.0
+dish_1565020895,claude-opus-5-5,True,7,1,6.27,2413,557,Raspberries; Blackberries; Roasted sweet potato cubes; Bacon strip; Chia seed pudding; Cherries; Soft white cheese (feta or fresh cheese),348.1,418.0,416.0,332.0,10.2,21.7,43.4,41.6,21.0,16.7
+dish_1563909469,claude-opus-5-5,True,1,0,3.06,2413,141,Spinach salad with onion and artichoke,72.4,30.0,64.0,70.0,6.9,0.5,2.2,5.0,1.4,2.0
+dish_1558114209,claude-opus-5-5,True,1,0,3.44,2413,118,Cantaloupe chunks,30.6,51.0,90.0,150.0,0.2,0.3,7.2,12.2,0.7,1.3
+dish_1557936645,claude-opus-5-5,True,1,0,3.73,2413,119,Fresh strawberries (sliced),11.9,13.0,36.0,40.0,0.1,0.1,2.9,3.1,0.3,0.3
+dish_1561578800,claude-opus-5-5,True,3,0,3.35,2413,262,Cheese pizza (rectangular slices); Arugula salad with light dressing; Black olives,338.4,535.0,146.0,228.0,14.5,24.0,38.6,57.5,13.3,21.1
+dish_1558641200,claude-opus-5-5,True,1,0,2.92,2413,111,Boiled carrot slices,3.3,32.0,8.0,90.0,0.0,0.2,0.8,7.4,0.1,0.7
+dish_1565974409,claude-opus-5-5,True,2,0,3.82,2413,207,Crispy fried bacon; Pan-fried pork sausage pieces,688.6,700.0,228.0,180.0,50.0,58.0,5.5,4.0,51.5,40.0
+dish_1562786103,claude-opus-5-5,True,1,1,2.47,2413,147,Noodles in soy sauce broth,93.1,230.0,57.0,250.0,3.4,4.0,14.0,42.0,2.3,7.0
+dish_1560801883,claude-opus-5-5,True,6,1,6.34,2413,502,Breaded baked chicken breast; Roasted butternut squash; Roasted eggplant; Cauliflower (steamed/roasted); Sautéed sausage with arugula; Pepperoni pizza slice,512.1,895.0,315.0,475.0,22.1,52.0,34.6,53.5,42.6,54.9
+dish_1559846688,claude-opus-5-5,True,2,1,4.31,2413,229,"Mixed green salad with roasted squash, beets, chickpeas and dressing; Dollop of yogurt or soft cheese",82.8,200.0,73.0,175.0,7.8,12.0,3.1,17.5,1.3,7.0
+dish_1566838378,claude-opus-5-5,True,5,0,4.78,2413,409,Scrambled eggs; Pineapple chunks; Watermelon chunks; Blackberries; Raspberries,286.2,321.0,482.0,460.0,8.0,13.9,49.1,38.9,9.0,13.8
+dish_1561393741,claude-opus-5-5,True,2,0,3.82,2413,183,Roasted broccoli; Scrambled eggs,188.8,275.0,165.0,230.0,13.0,20.0,5.3,10.0,12.8,14.5
+dish_1561663606,claude-opus-5-5,True,3,0,3.87,2413,292,Seasoned fried rice (soy sauce); Boiled chicken pieces (thigh and drumstick); Corn on the cob slices,474.5,695.0,347.0,430.0,10.8,28.0,40.1,72.0,52.7,38.6
+dish_1560368570,claude-opus-5-5,True,4,2,5.78,2413,390,Sliced roasted chicken/turkey breast; Pan-seared seasoned fish fillet with onions; Spinach and arugula salad with light dressing; Diced cucumber or honeydew melon,555.9,490.0,452.0,380.0,39.2,21.6,27.1,12.0,46.5,61.4
+dish_1565894858,claude-opus-5-5,True,1,0,2.83,2413,122,Double chocolate cookie with white chocolate chips,132.8,195.0,27.0,40.0,6.8,10.0,17.5,25.0,1.4,2.4
+dish_1558641253,claude-opus-5-5,True,1,0,3.62,2413,126,Boiled corn on the cob (2 short pieces),116.7,105.0,110.0,110.0,2.6,1.5,24.2,23.0,3.4,3.7
+dish_1558030289,claude-opus-5-5,True,1,0,3.07,2413,113,Honeydew melon cubes,38.5,54.0,107.0,150.0,0.1,0.2,9.6,13.6,0.5,0.8
+dish_1560801829,claude-opus-5-5,True,3,0,4.36,2413,278,Pepperoni pizza slice; Roasted squash (acorn/sweet potato style); Steamed cauliflower,256.9,373.0,178.0,220.0,10.5,16.6,30.3,42.5,11.2,15.0
+dish_1559844323,claude-opus-5-5,True,2,0,3.16,2413,173,Almonds; Red grapes,518.4,373.0,161.0,170.0,39.8,25.2,32.7,32.5,18.5,11.5
+dish_1557862738,claude-opus-5-5,True,1,0,3.69,2413,125,Pan-seared beef steak pieces,319.8,390.0,118.0,170.0,22.4,23.0,0.0,0.0,29.5,45.0
+dish_1565117429,claude-opus-5-5,True,2,1,3.61,2413,211,"Cheese pizza (3 small pieces); Meat taco (flour tortilla, partially visible)",390.9,730.0,147.0,300.0,13.8,31.0,49.2,77.0,16.5,33.0
+dish_1561577947,claude-opus-5-5,True,3,0,3.19,2413,291,Chicken breast in creamy sauce; Arugula and spinach salad with dressing; Penne pasta with cherry tomatoes,623.2,640.0,424.0,400.0,33.8,27.0,12.9,42.0,67.2,56.0
+dish_1558461607,claude-opus-5-5,True,1,0,2.63,2413,117,Red and green grapes,87.6,104.0,127.0,150.0,0.3,0.2,22.9,27.0,0.9,1.1
+dish_1556575327,claude-opus-5-5,True,3,0,4.3,2413,272,Roasted Brussels sprouts; Kalamata olives; Sliced celery,103.3,193.0,152.0,180.0,6.9,15.6,10.6,11.6,2.9,3.5
+dish_1560456370,claude-opus-5-5,True,4,0,5.21,2413,341,Roasted chicken leg (with skin); Steamed white rice; Sautéed green beans; Arugula salad (lightly dressed),258.4,640.0,186.0,410.0,7.6,31.9,14.9,44.0,30.9,41.6
+dish_1566316681,claude-opus-5-5,True,1,0,2.46,2413,148,Roasted potato cubes,116.8,195.0,122.0,130.0,3.0,8.5,21.4,26.0,1.2,2.8
+dish_1564686966,claude-opus-5-5,True,1,0,3.26,2413,122,Sliced beef steak,153.2,165.0,65.0,70.0,10.1,9.5,2.5,1.5,13.1,18.0
+dish_1566414342,claude-opus-5-5,True,3,1,3.4,2413,275,Roasted potatoes; Couscous with roasted vegetables; Breaded chicken with creamy sauce and grains,846.4,830.0,552.0,520.0,31.6,35.0,53.3,96.0,83.6,34.0
+dish_1564428144,claude-opus-5-5,True,2,0,2.87,2413,217,Breaded pan-fried chicken; Arugula salad with blueberries and vinaigrette,205.2,320.0,171.0,200.0,14.1,19.5,16.7,15.0,5.1,22.5
+dish_1565035830,claude-opus-5-5,True,5,0,4.87,2413,413,Diced grilled chicken breast; Steamed cauliflower; Cherry tomatoes; Green bell pepper; Raw red onion,340.1,372.0,414.0,470.0,6.5,7.7,14.8,15.5,54.7,59.8
+dish_1557862345,claude-opus-5-5,True,1,0,3.26,2413,128,Chopped cooked chicken (with light sauce),103.9,185.0,63.0,100.0,2.3,7.5,0.0,2.0,19.5,27.0
+dish_1565035715,claude-opus-5-5,True,1,0,2.78,2413,117,Raw sliced red onion,15.6,18.0,39.0,45.0,0.0,0.1,3.5,4.2,0.4,0.5
+dish_1558376364,claude-opus-5-5,True,1,0,2.19,2413,114,Grapes (red and green),49.0,55.0,71.0,80.0,0.1,0.1,12.8,14.5,0.5,0.6
