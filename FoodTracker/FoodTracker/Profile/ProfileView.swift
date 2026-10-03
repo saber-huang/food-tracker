@@ -5,9 +5,10 @@
 //  「我的」页面，从上到下：
 //  0. 页面标题「我的」和一句说明（左对齐，和「食谱」一样）
 //  1. 每日目标（主卡片，见 GoalHeroCard），下面一个小链接「这些目标是如何计算的？」
-//  2. 个人资料（性别、年龄、身高、体重），标题右边是「编辑」
-//  3. 目标与活动（活动量、目标）
-//  4. 设置（单位、热量提示）、隐私与 AI（隐私政策、AI 功能、删除所有数据）、关于（意见反馈、健康提示、版本号）
+//  2. 记录习惯（这周记了几天、累计几天、最长连续几天；徽章），点徽章那一行进徽章页（见 HabitViews.swift）
+//  3. 个人资料（性别、年龄、身高、体重），标题右边是「编辑」
+//  4. 目标与活动（活动量、目标）
+//  5. 设置（单位、偏好和忌口、热量提示）、隐私与 AI（隐私政策、AI 功能、删除所有数据）、关于（意见反馈、健康提示、版本号）
 //  每一组是一张卡片，不是一整页的设置列表。这一页只显示当前的值，不放说明文字：
 //  需要解释的设置点进二级页面再说（见 SettingsPages.swift），健康提示点开是一张说明卡片。
 //
@@ -24,6 +25,10 @@ struct ProfileView: View {
     @State private var showsExplanation = false  // 是否打开「这些目标是如何计算的？」
     @State private var confirmErase = false  // 是否弹出「确定删除所有数据？」的确认
     @State private var showsHealthInfo = false  // 是否打开「健康提示」说明卡片
+    @State private var showsPreferences = false  // 是否打开「偏好和忌口」
+    @Environment(\.modelContext) private var modelContext
+    /// 记录习惯的统计和徽章（主界面放进环境里的；预览里没有）
+    @Environment(HabitCenter.self) private var habits: HabitCenter?
     // 同意过第几版 AI 数据说明（0 = 没同意或撤回了）；在别的页面点了同意，这里也会马上变
     @AppStorage(AIConsent.key) private var aiConsentVersion = 0
     // 热量提示的设置，存在手机本地（UserDefaults）；默认全部开启
@@ -68,7 +73,17 @@ struct ProfileView: View {
                 }
 
                 Group {
-                    // 2. 个人资料
+                    // 2. 记录习惯：本周几天、累计几天、最长连续几天 + 一句话；下面一行是徽章，点了进徽章页
+                    if let habits {
+                        Section {
+                            HabitStatsRow(stats: habits.stats)
+                            HabitBadgesRow(ledger: habits.ledger) { habits.showsAchievements = true }
+                        } header: {
+                            AppSectionHeader(title: String(localized: "记录习惯"))
+                        }
+                    }
+
+                    // 3. 个人资料
                     Section {
                         ProfileInfoRow(label: "性别", value: bodyInfo.sex.title)
                         ProfileInfoRow(label: "年龄", value: String(localized: "\(bodyInfo.age) 岁"))
@@ -80,7 +95,7 @@ struct ProfileView: View {
                         }
                     }
 
-                    // 3. 目标与活动：两块并排，名称在上、值在下（不是一行一行的设置）
+                    // 4. 目标与活动：两块并排，名称在上、值在下（不是一行一行的设置）
                     Section {
                         HStack(alignment: .top, spacing: AppSpacing.md) {
                             ProfileValueTile(label: "活动量", value: bodyInfo.activity.title)
@@ -91,12 +106,21 @@ struct ProfileView: View {
                         AppSectionHeader(title: String(localized: "目标与活动"))
                     }
 
-                    // 4. 设置：单位；热量提示（点进去再选，说明文字都在那一页里）
+                    // 5. 设置：单位；偏好和忌口（弹出和食谱页同一个表单）；热量提示（点进去再选，说明文字都在那一页里）
                     Section {
                         Picker("单位", selection: $units) {
                             ForEach(UnitSystem.allCases, id: \.self) { system in
                                 Text(system.title).tag(system)
                             }
+                        }
+                        Button {
+                            showsPreferences = true
+                        } label: {
+                            LabeledContent("偏好和忌口") {
+                                AppChevron()
+                            }
+                            .foregroundStyle(AppColors.textPrimary)
+                            .contentShape(Rectangle())
                         }
                         NavigationLink {
                             HintSettingsView()
@@ -107,7 +131,7 @@ struct ProfileView: View {
                         AppSectionHeader(title: String(localized: "设置"))
                     }
 
-                    // 5. 隐私与 AI：隐私政策、AI 功能（开关和撤回都在下一页）、删除所有数据
+                    // 6. 隐私与 AI：隐私政策、AI 功能（开关和撤回都在下一页）、删除所有数据
                     Section {
                         NavigationLink("隐私政策") {
                             PrivacyPolicyView()
@@ -136,7 +160,7 @@ struct ProfileView: View {
                         AppSectionHeader(title: String(localized: "隐私与 AI"))
                     }
 
-                    // 6. 关于：意见反馈、健康提示（点开是一张说明卡片）、版本号
+                    // 7. 关于：意见反馈、健康提示（点开是一张说明卡片）、版本号
                     Section {
                         // 联系邮箱还没定时不显示（见 SupportInfo.swift）
                         if let feedbackURL = SupportInfo.feedbackURL {
@@ -157,8 +181,17 @@ struct ProfileView: View {
                     }
 
                     #if DEBUG && targetEnvironment(simulator)
-                    // 只在模拟器里出现的开发者工具：一键造出各种热量提示
+                    // 只在模拟器里出现的开发者工具：一键造出各种热量提示；重置徽章
                     DebugHintSection(profile: profile)
+                    if let habits {
+                        Section {
+                            Button {
+                                habits.debugReset(context: modelContext)
+                            } label: {
+                                Text(verbatim: "重置徽章（按现有记录重新提示一次）")
+                            }
+                        }
+                    }
                     #endif
                 }
                 .appCardRow()  // 卡片用暖白，分隔线很淡
@@ -175,9 +208,18 @@ struct ProfileView: View {
             .navigationDestination(isPresented: $showsExplanation) {
                 ExplanationView(bodyInfo: profile.bodyInfo)
             }
+            // 徽章页：点「徽章」那一行，或者新徽章提示里的「查看」
+            .navigationDestination(isPresented: showsAchievements) {
+                AchievementsView()
+            }
             .sheet(isPresented: $isEditing) {
                 ProfileEditView(profile: profile)
             }
+            .sheet(isPresented: $showsPreferences) {
+                RecipePreferencesView()
+            }
+            // 每次打开「我的」都重新统计：删了记录、换了一周，数字也是对的
+            .onAppear { habits?.refresh(context: modelContext) }
             .sheet(isPresented: $showsHealthInfo) {
                 InfoSheet(topic: .health)
             }
@@ -189,6 +231,13 @@ struct ProfileView: View {
                 Text("会删除这台手机上的个人资料、全部饮食记录、我的食物和设置。此操作无法撤销。")
             }
         }
+    }
+}
+
+extension ProfileView {
+    /// 徽章页开着没有（存在 HabitCenter 里：新徽章提示的「查看」在别的标签页也能打开它）
+    private var showsAchievements: Binding<Bool> {
+        Binding(get: { habits?.showsAchievements ?? false }, set: { habits?.showsAchievements = $0 })
     }
 }
 

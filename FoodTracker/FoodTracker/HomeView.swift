@@ -37,9 +37,12 @@ struct HomeView: View {
     @State private var manualEntry: ManualEntryRequest?  // 有值时打开「手动添加」：默认记到哪一餐、哪一天
     @State private var showMonthPicker = false  // 是否打开月历
     @State private var hintSheet: HintSheet?  // 热量提示里的按钮要打开的页面（弹窗挂在一直都在的列表上，提示消失了也不影响）
+    /// 刚走完引导、点了「记录第一餐」：这一页出现后打开「选择食物」（打开一次就清掉）
+    @Binding private var opensFoodSearch: Bool
 
-    init(profile: UserProfile) {
+    init(profile: UserProfile, opensFoodSearch: Binding<Bool> = .constant(false)) {
         self.profile = profile
+        _opensFoodSearch = opensFoodSearch
         // 只读一次时钟：「今天」和「正在看的那天」一定是同一天（分开读的话，恰好跨午夜时会差一天）
         let now = DayMath.startOfDay(.now)
         _today = State(initialValue: now)
@@ -129,6 +132,7 @@ struct HomeView: View {
                 .sheet(item: $manualEntry) { request in
                     FoodSearchSheet(request: request)
                 }
+                .task { await openFoodSearchIfRequested() }
                 // 全屏打开相机；拍好一张（关掉相机之后）打开「确认照片」页
                 .fullScreenCover(isPresented: $showCamera, onDismiss: openPhotoReviewIfNeeded) {
                     CameraPicker { newPhoto in
@@ -256,6 +260,14 @@ struct HomeView: View {
     private func openManualEntry(meal: MealType? = nil) {
         refreshToday(appBecameActive: false)  // 打开前确认一下今天是哪天（可能刚过午夜）
         manualEntry = ManualEntryRequest(meal: meal ?? suggestedMeal, dayKey: DayMath.dayKey(for: selectedDay))
+    }
+
+    /// 引导最后一步点了「记录第一餐」：等主界面出来、切换的动画走完，再打开「选择食物」（只打开一次）
+    private func openFoodSearchIfRequested() async {
+        guard opensFoodSearch else { return }
+        opensFoodSearch = false
+        try? await Task.sleep(for: .milliseconds(450))
+        openManualEntry()
     }
 
     /// 识别时记到哪一天：先确认一下今天是哪天（可能刚过午夜），再取正在看的那天

@@ -6,6 +6,7 @@ This app helps you keep track of what you eat. Snap a photo of a meal and an AI 
 
 - **How accurate are the AI estimates?** Calories and nutrients are AI estimates from your photo, for reference only. You can edit each item before saving, or log it manually instead.
 - **What if I can't find a food?** For a dish, let AI estimate it from a typical recipe, or pick a similar dish (no AI needed); choose Oily if it looks oily. For packaged food, the nutrition label is most accurate: you can scan the label to fill it in (read on your phone, never uploaded), and enter energy in kJ or kcal. Once it's saved to My Foods, it shows up first the next time you search for that name. All of this stays on your phone.
+- **What happens if I miss a few days?** Nothing changes. Profile only shows how many days you logged this week and in total, and your longest streak, so nothing resets when you miss a day. Badges are only about logging, never about how much you eat, and once earned they stay.
 - **Where is my data stored?** Your profile and food log are stored only on your phone. For what's sent when you use AI features, see the [Privacy Policy](privacy-en.html).
 - **How do I delete all my data?** On the Profile tab, tap Delete All Data. After you confirm, your profile, food log, My Foods and settings on this phone are deleted. This can't be undone.
 - **How do I withdraw consent for AI features?** On the Profile tab, tap AI Features and turn off Allow AI Features. You'll be asked again before your next use of an AI feature.

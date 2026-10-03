@@ -10,7 +10,7 @@
 import SwiftUI
 
 /// 偏好在本地存储里用的名字。食谱页和设置页都用这几个名字读同一份数据
-enum RecipePrefKeys {
+nonisolated enum RecipePrefKeys {
     static let preferences = "recipePreferences"
     static let allergies = "recipeAllergies"
     static let dislikes = "recipeDislikes"

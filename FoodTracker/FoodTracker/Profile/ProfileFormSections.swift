@@ -14,6 +14,8 @@ import SwiftUI
 
 struct BasicInfoSection: View {
     @Bindable var draft: ProfileDraft
+    /// 显示「基本信息」这个块标题（引导页上面已经有大标题「你的基本信息」，就不再重复）
+    var showsTitle = true
     /// 身高、体重用哪种单位（和「我的」页的设置是同一个）
     @AppStorage(UnitSystem.key) private var units: UnitSystem = UnitSystem.regionDefault()
 
@@ -22,7 +24,9 @@ struct BasicInfoSection: View {
     private enum Field { case age, height, feet, inches, weight }
 
     var body: some View {
-        AppFormSection(String(localized: "基本信息"), footer: String(localized: "性别只用于计算基础代谢，公式里男女的数值不同。")) {
+        AppFormSection(
+            showsTitle ? String(localized: "基本信息") : nil, footer: String(localized: "性别只用于计算基础代谢，公式里男女的数值不同。")
+        ) {
             AppSegmentedControl(title: String(localized: "性别"), selection: $draft.sex, options: Sex.allCases) { $0.title }
                 .padding(AppSpacing.sm)
                 // 数字键盘没有「完成」键，在键盘上方加一个。

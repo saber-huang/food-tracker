@@ -15,7 +15,7 @@ This app helps you log what you eat and estimate calories and nutrition. This po
 - Profile: sex, age, height, weight, activity level and goal.
 - Food log: the name, weight, calories and nutrients of each food you log.
 - My Foods: packaged foods you enter from their nutrition labels, and estimates (from AI or from a similar dish) you choose to save (name, serving and nutrition).
-- Settings and preferences: your calorie hint setting, the tastes, allergies, foods to avoid and cooking time you enter, and your most recent recipes.
+- Settings and preferences: your calorie hint setting, the tastes, allergies, foods to avoid and cooking time you enter, your most recent recipes, and the badges you've earned (with the dates). If you leave the first-time setup halfway, what you've entered so far is kept on your phone until you finish it.
 
 When you add a packaged food, a photo of its nutrition label is read on your phone only; it is never uploaded or saved.
 

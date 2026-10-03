@@ -34,6 +34,8 @@ struct ResultView: View {
     @State private var editingItem: EditableItem?  // 正在修改的一项，有值时弹出表单
     @State private var isAddingItem = false  // 是否弹出「添加食物」
     @State private var isSaving = false  // 防止快速连点两次「保存」存成两份
+    /// 保存前改过识别结果（改了一项、删了一项或补了一项）：记录习惯里的「亲自校对」徽章
+    @State private var hasAdjustedItems = false
 
     init(result: AnalyzeResult, photos: [UIImage], dayKey: Int, today: Date, onSaved: @escaping () -> Void) {
         self.result = result
@@ -92,6 +94,7 @@ struct ResultView: View {
                         // 向左滑动出现「删除」：只是从这个列表里去掉，保存之前都可以反悔（返回重来）
                         .onDelete { offsets in
                             items.remove(atOffsets: offsets)
+                            hasAdjustedItems = true
                         }
                         Button {
                             isAddingItem = true
@@ -156,11 +159,13 @@ struct ResultView: View {
                 draft: EntryDraft(item: item), title: String(localized: "修改食物"),
                 onSave: { edited in
                     if let index = items.firstIndex(where: { $0.id == edited.id }) {
+                        if items[index] != edited { hasAdjustedItems = true }
                         items[index] = edited
                     }
                 },
                 onDelete: {
                     items.removeAll { $0.id == item.id }
+                    hasAdjustedItems = true
                 })
         }
         // 补一项 AI 没认出来的食物（「最近使用」里点一下就能填好）
@@ -170,6 +175,7 @@ struct ResultView: View {
                 suggestions: RecentFoods.from(recentEntries.map(\.recentFood))
             ) { item in
                 items.append(item)
+                hasAdjustedItems = true
             }
         }
     }
@@ -205,6 +211,8 @@ struct ResultView: View {
         // 按钮变灰要等下一次刷新界面，所以这里再检查一次，连点两下也只存一份
         guard !isSaving else { return }
         isSaving = true
+        // 改过 AI 的结果再保存：先记下来，保存后重新统计记录习惯时就能得到「亲自校对」徽章
+        if hasAdjustedItems { AchievementStore.markAdjustedAI() }
         // 每一项自己记的餐次和日期在这页用不上：以这页选的餐次、打开时定好的日期为准
         FoodEntry.insert(items, meal: meal, dayKey: dayKey, source: .photo, into: modelContext)
         try? modelContext.save()

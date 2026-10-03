@@ -2,7 +2,8 @@
 //  RootView.swift
 //  FoodTracker
 //
-//  App 的最外层：还没有个人资料时显示引导流程，有了就显示主界面。
+//  App 的最外层：还没有个人资料时显示引导流程，有了就显示主界面（已经有资料的老用户不会再看到引导）。
+//  引导最后一步点「记录第一餐」的话，主界面出来后直接打开「选择食物」。
 //  「删除所有数据」也在这里做：先离开主界面，再删（见 eraseAllData）。
 //
 
@@ -16,6 +17,8 @@ struct RootView: View {
     /// 正在「删除所有数据」：先换成等待画面，主界面的各个页面都关掉了再动手删
     @State private var isErasing = false
     @State private var eraseFailed = false
+    /// 引导最后一步点了「记录第一餐」：主界面出来后打开「选择食物」（打开一次就清掉）
+    @State private var opensFoodSearch = false
 
     var body: some View {
         Group {
@@ -24,9 +27,9 @@ struct RootView: View {
                 ProgressView("正在删除…")
                     .task { eraseAllData() }
             } else if let profile = profiles.first {
-                MainTabView(profile: profile) { isErasing = true }
+                MainTabView(profile: profile, opensFoodSearch: $opensFoodSearch) { isErasing = true }
             } else {
-                OnboardingView()
+                OnboardingView { logFirstMeal in opensFoodSearch = logFirstMeal }
             }
         }
         // 以前只能用公制：已经有资料的人继续用公制（只在第一次运行这个版本时判断一次）
@@ -58,7 +61,14 @@ struct RootView: View {
 /// 进到二级页面（食谱详情、识别结果、设置的下一页……）时标签栏藏起来，回到一级页面再出现（见 TabBarVisibility）
 struct MainTabView: View {
     let profile: UserProfile
+    /// 刚走完引导、点了「记录第一餐」：「今日」页一出现就打开「选择食物」
+    @Binding var opensFoodSearch: Bool
     let onEraseAll: () -> Void  // 「我的」页确认「删除所有数据」后调用
+
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
+    /// 最新的一条记录：它变了（记了新的一餐、删了最新的一条）就重新统计记录习惯
+    @Query(FoodEntry.latestDescriptor) private var latestEntries: [FoodEntry]
 
     @State private var selection: AppTab = {
         #if DEBUG && targetEnvironment(simulator)
@@ -71,11 +81,12 @@ struct MainTabView: View {
     }()
     @State private var tabBar = TabBarVisibility()
     @State private var toasts = ToastCenter()  // 轻提示（「已记录到午餐」「已删除 撤销」），所有页面共用一个
+    @State private var habits = HabitCenter()  // 记录习惯：统计和徽章（「我的」页读它）
 
     var body: some View {
         VStack(spacing: 0) {
             TabView(selection: $selection) {
-                HomeView(profile: profile)
+                HomeView(profile: profile, opensFoodSearch: $opensFoodSearch)
                     .tag(AppTab.today)
                     .toolbar(.hidden, for: .tabBar)
 
@@ -97,8 +108,24 @@ struct MainTabView: View {
         }
         .animation(.easeOut(duration: 0.2), value: tabBar.isHidden)
         .environment(toasts)
+        .environment(habits)
         .background { AppBackground(glow: false) }
         // 一进主界面就悄悄叫醒云端服务器（免费服务器闲置会休眠），用户点识别时就不用等
         .task { await APIClient.warmUp() }
+        // 记录习惯：进主界面时统计一次（老用户第一次只悄悄记下已经有的徽章），之后有新记录、回到 App 时再统计
+        .task {
+            habits.toasts = toasts
+            habits.refresh(context: modelContext)
+        }
+        .onChange(of: latestEntries.first?.persistentModelID) {
+            habits.refresh(context: modelContext)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { habits.refresh(context: modelContext) }
+        }
+        // 新徽章提示里点了「查看」：切到「我的」，由「我的」页打开徽章页
+        .onChange(of: habits.showsAchievements) { _, shows in
+            if shows { selection = .profile }
+        }
     }
 }

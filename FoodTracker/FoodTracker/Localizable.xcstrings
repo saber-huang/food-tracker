@@ -269,6 +269,22 @@
         }
       }
     },
+    "%@，已获得，%@。%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, earned %2$@. %3$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@，已获得，%@。%@"
+          }
+        }
+      }
+    },
     "%@，还没有记录" : {
       "localizations" : {
         "en" : {
@@ -297,6 +313,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld 分钟"
+          }
+        }
+      }
+    },
+    "%lld 天" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 天"
           }
         }
       }
@@ -377,6 +421,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld 英尺 %lld 英寸"
+          }
+        }
+      }
+    },
+    "%lld/7 天" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld/7 days"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld/7 days"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld/7 天"
           }
         }
       }
@@ -573,22 +645,6 @@
         }
       }
     },
-    "App 给出的热量和营养目标是根据公式估算的参考值，不是医疗建议。本 App 适用于 18 岁以上的成年人。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The calorie and nutrition targets are formula-based estimates, not medical advice. This app is for adults 18 and older. If you have a health condition (especially kidney disease or diabetes), are pregnant or breastfeeding, or have a history of eating disorders, please talk to a doctor or registered dietitian first."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App 给出的热量和营养目标是根据公式估算的参考值，不是医疗建议。本 App 适用于 18 岁以上的成年人。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。"
-          }
-        }
-      }
-    },
     "BMI 低于 %lld 时，公式算出的目标不一定适合你，建议请医生或注册营养师帮你确定每天吃多少。在那之前，可以把每日目标当作每天至少要吃到的量。如果吃饭或体重让你感到有压力，也可以找心理咨询师聊聊。" : {
       "localizations" : {
         "en" : {
@@ -637,6 +693,38 @@
         }
       }
     },
+    "一共记录了 10 餐。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've logged 10 meals."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一共记录了 10 餐。"
+          }
+        }
+      }
+    },
+    "一共记录了 30 餐。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've logged 30 meals."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一共记录了 30 餐。"
+          }
+        }
+      }
+    },
     "一包有多少" : {
       "localizations" : {
         "en" : {
@@ -669,6 +757,22 @@
         }
       }
     },
+    "一周五天" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Five Days in a Week"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一周五天"
+          }
+        }
+      }
+    },
     "一拍即食 反馈（%@）" : {
       "localizations" : {
         "en" : {
@@ -681,6 +785,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "一拍即食 反馈（%@）"
+          }
+        }
+      }
+    },
+    "三十餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 Meals"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三十餐"
           }
         }
       }
@@ -733,22 +853,6 @@
         }
       }
     },
-    "下一步" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "下一步"
-          }
-        }
-      }
-    },
     "下面用你自己的数据，一步步演示每日目标是怎么算出来的。" : {
       "localizations" : {
         "en" : {
@@ -781,6 +885,38 @@
         }
       }
     },
+    "不填饮食偏好，直接看每日目标" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skips food preferences and shows your daily targets"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不填饮食偏好，直接看每日目标"
+          }
+        }
+      }
+    },
+    "不确定的话选低一档。用 2～3 周后，可以按体重的变化再调整。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you're unsure, pick the lower level. After 2–3 weeks, you can adjust it based on how your weight changes."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不确定的话选低一档。用 2～3 周后，可以按体重的变化再调整。"
+          }
+        }
+      }
+    },
     "个人资料" : {
       "localizations" : {
         "en" : {
@@ -809,6 +945,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "中度活动"
+          }
+        }
+      }
+    },
+    "中式为主" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostly Chinese"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中式为主"
           }
         }
       }
@@ -905,6 +1057,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "久坐"
+          }
+        }
+      }
+    },
+    "之后随时可以在「我的」里修改。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can change this anytime in Profile."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "之后随时可以在「我的」里修改。"
+          }
+        }
+      }
+    },
+    "亲自校对" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked by You"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "亲自校对"
           }
         }
       }
@@ -1441,6 +1625,22 @@
         }
       }
     },
+    "你现在的目标是？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's Your Goal?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你现在的目标是？"
+          }
+        }
+      }
+    },
     "你的 BMI 约为 %@，低于 %@，属于偏轻范围，所以这里不提供减脂目标。可以选择「维持」或「增肌」；如果对体重有顾虑，建议咨询医生或营养师。" : {
       "localizations" : {
         "en" : {
@@ -1457,7 +1657,23 @@
         }
       }
     },
-    "你的每日目标" : {
+    "你的基本信息" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About You"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的基本信息"
+          }
+        }
+      }
+    },
+    "你的每日参考目标" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1468,7 +1684,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "你的每日目标"
+            "value" : "你的每日参考目标"
           }
         }
       }
@@ -1533,6 +1749,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你的目标是维持：吃进去的和消耗的差不多就好："
+          }
+        }
+      }
+    },
+    "你的资料和饮食记录只保存在这台手机上" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your profile and food log are stored only on this phone"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的资料和饮食记录只保存在这台手机上"
           }
         }
       }
@@ -1649,6 +1881,22 @@
         }
       }
     },
+    "保存前修改过 AI 的识别结果。你最清楚自己吃了什么。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You edited an AI result before saving. You know best what you ate."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存前修改过 AI 的识别结果。你最清楚自己吃了什么。"
+          }
+        }
+      }
+    },
     "保存后的每日目标" : {
       "localizations" : {
         "en" : {
@@ -1693,6 +1941,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保持现在的体重"
+          }
+        }
+      }
+    },
+    "保持现在的状态" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stay where you are now"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保持现在的状态"
           }
         }
       }
@@ -1869,22 +2133,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "先填份量、再填热量，之后改份量时，热量和三大营养素会按比例一起变；直接改某一项，就只改那一项。"
-          }
-        }
-      }
-    },
-    "先花 1 分钟填写基本资料，App 会算出适合你的每日热量和三大营养素目标。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Take a minute to enter some basic info, and the app will work out daily calorie, protein, carb and fat targets that fit you."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "先花 1 分钟填写基本资料，App 会算出适合你的每日热量和三大营养素目标。"
           }
         }
       }
@@ -2369,6 +2617,38 @@
         }
       }
     },
+    "十种食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 Foods"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "十种食物"
+          }
+        }
+      }
+    },
+    "十餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 Meals"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "十餐"
+          }
+        }
+      }
+    },
     "千卡" : {
       "localizations" : {
         "en" : {
@@ -2673,6 +2953,54 @@
         }
       }
     },
+    "吃饭不需要每次都称重" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Need to Weigh Every Meal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃饭不需要每次都称重"
+          }
+        }
+      }
+    },
+    "同一周里有 5 天做了记录。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You logged on 5 days in the same week."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一周里有 5 天做了记录。"
+          }
+        }
+      }
+    },
+    "同一周里有 5 天做记录" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log on 5 days in the same week"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一周里有 5 天做记录"
+          }
+        }
+      }
+    },
     "同意并继续" : {
       "localizations" : {
         "en" : {
@@ -2877,6 +3205,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "填写蛋白质、碳水、脂肪"
+          }
+        }
+      }
+    },
+    "增加体重和肌肉" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gain weight and muscle"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "增加体重和肌肉"
           }
         }
       }
@@ -3121,6 +3465,22 @@
         }
       }
     },
+    "尚未解锁：%@。%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not yet earned: %1$@. %2$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未解锁：%@。%@"
+          }
+        }
+      }
+    },
     "展开查看每一条" : {
       "localizations" : {
         "en" : {
@@ -3349,6 +3709,22 @@
         }
       }
     },
+    "平时的活动量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Usual Activity"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平时的活动量"
+          }
+        }
+      }
+    },
     "年龄" : {
       "localizations" : {
         "en" : {
@@ -3397,7 +3773,7 @@
         }
       }
     },
-    "开始使用" : {
+    "开始" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3408,7 +3784,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "开始使用"
+            "value" : "开始"
           }
         }
       }
@@ -3445,6 +3821,54 @@
         }
       }
     },
+    "徽章" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badges"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "徽章"
+          }
+        }
+      }
+    },
+    "徽章只和记录有关，和吃多吃少无关。获得以后会一直保留。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badges are only about logging, never about how much you eat. Once earned, they stay."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "徽章只和记录有关，和吃多吃少无关。获得以后会一直保留。"
+          }
+        }
+      }
+    },
+    "徽章，已获得 %lld 个，共 %lld 个" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badges, %1$lld of %2$lld earned"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "徽章，已获得 %lld 个，共 %lld 个"
+          }
+        }
+      }
+    },
     "必填" : {
       "localizations" : {
         "en" : {
@@ -3473,6 +3897,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "忌口"
+          }
+        }
+      }
+    },
+    "忌口可以稍后在「我的」→「偏好和忌口」里填写。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can add foods you avoid later in Profile → Tastes and Restrictions."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忌口可以稍后在「我的」→「偏好和忌口」里填写。"
           }
         }
       }
@@ -3585,22 +4025,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "意见反馈"
-          }
-        }
-      }
-    },
-    "我已了解以上说明" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I Understand"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "我已了解以上说明"
           }
         }
       }
@@ -3749,6 +4173,38 @@
         }
       }
     },
+    "拍一拍" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap and Log"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍一拍"
+          }
+        }
+      }
+    },
+    "拍一拍、选一选，就能更轻松地了解每天吃了多少。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap a photo or pick a food, and get an easy sense of how much you eat each day."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍一拍、选一选，就能更轻松地了解每天吃了多少。"
+          }
+        }
+      }
+    },
     "拍照" : {
       "localizations" : {
         "en" : {
@@ -3793,6 +4249,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拍照识别、生成食谱和推荐下一餐会用到 AI。关闭后，用到 AI 前会先问你；手动记录不受影响。"
+          }
+        }
+      }
+    },
+    "拍照识别后，保存前修改一次结果" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit a photo result before saving it"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍照识别后，保存前修改一次结果"
           }
         }
       }
@@ -3905,6 +4377,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "按你的目标搭配三餐…"
+          }
+        }
+      }
+    },
+    "按大多数星期的实际情况选就好。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose what fits most of your weeks."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按大多数星期的实际情况选就好。"
           }
         }
       }
@@ -4053,6 +4541,22 @@
         }
       }
     },
+    "推荐食谱时会参考。可以多选，也可以跳过。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Used when suggesting recipes. Pick any, or skip."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推荐食谱时会参考。可以多选，也可以跳过。"
+          }
+        }
+      }
+    },
     "搜索食物" : {
       "localizations" : {
         "en" : {
@@ -4181,6 +4685,22 @@
         }
       }
     },
+    "新徽章：%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New badge: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新徽章：%@"
+          }
+        }
+      }
+    },
     "无" : {
       "localizations" : {
         "en" : {
@@ -4193,6 +4713,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无"
+          }
+        }
+      }
+    },
+    "无特别偏好" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Preference"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无特别偏好"
           }
         }
       }
@@ -4293,6 +4829,22 @@
         }
       }
     },
+    "最好的一周" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best Week"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最好的一周"
+          }
+        }
+      }
+    },
     "最近两周每天插入示例记录" : {
       "localizations" : {
         "en" : {
@@ -4337,6 +4889,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最近吃过"
+          }
+        }
+      }
+    },
+    "最长连续" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longest Streak"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最长连续"
           }
         }
       }
@@ -4501,6 +5069,22 @@
         }
       }
     },
+    "未获得" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未获得"
+          }
+        }
+      }
+    },
     "本 App 不提供医疗建议。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。" : {
       "localizations" : {
         "en" : {
@@ -4533,6 +5117,22 @@
         }
       }
     },
+    "本周" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Week"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本周"
+          }
+        }
+      }
+    },
     "来自食谱" : {
       "localizations" : {
         "en" : {
@@ -4549,6 +5149,22 @@
         }
       }
     },
+    "查看" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看"
+          }
+        }
+      }
+    },
     "查看做法" : {
       "localizations" : {
         "en" : {
@@ -4561,6 +5177,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "查看做法"
+          }
+        }
+      }
+    },
+    "查看全部徽章" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows all badges"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看全部徽章"
           }
         }
       }
@@ -4613,34 +5245,18 @@
         }
       }
     },
-    "根据你的资料，建议每天摄入" : {
+    "根据你填写的资料，这里先按「维持」计算。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Based on your info, aim for each day"
+            "value" : "Based on your details, these targets use Maintain for now. "
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "根据你的资料，建议每天摄入"
-          }
-        }
-      }
-    },
-    "欢迎" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Welcome"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "欢迎"
+            "value" : "根据你填写的资料，这里先按「维持」计算。"
           }
         }
       }
@@ -4977,6 +5593,22 @@
         }
       }
     },
+    "每日参考目标" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Targets"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每日参考目标"
+          }
+        }
+      }
+    },
     "每日热量下限：Harvard Health" : {
       "localizations" : {
         "en" : {
@@ -5021,6 +5653,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每日目标是怎么算的？"
+          }
+        }
+      }
+    },
+    "每日目标是根据公式估算的参考值，不是医疗建议。本 App 适用于 18 岁以上的成年人。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily targets are formula-based estimates, not medical advice. This app is for adults 18 and older. If you have a health condition (especially kidney disease or diabetes), are pregnant or breastfeeding, or have a history of eating disorders, please talk to a doctor or registered dietitian first."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每日目标是根据公式估算的参考值，不是医疗建议。本 App 适用于 18 岁以上的成年人。如有疾病（尤其是肾病、糖尿病）、处于孕期或哺乳期，或有饮食失调史，请先咨询医生或注册营养师。"
           }
         }
       }
@@ -5393,6 +6041,22 @@
         }
       }
     },
+    "添加过敏食材" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Allergies"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加过敏食材"
+          }
+        }
+      }
+    },
     "添加食物" : {
       "localizations" : {
         "en" : {
@@ -5405,6 +6069,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "添加食物"
+          }
+        }
+      }
+    },
+    "清淡少油" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light and Low Oil"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清淡少油"
           }
         }
       }
@@ -5597,6 +6277,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "生成食谱和推荐下一餐：你的目标（减脂、维持或增肌），热量和三大营养素目标，以及你填写的口味偏好、过敏、不吃的食物和做饭时间。"
+          }
+        }
+      }
+    },
+    "用拍照记录一餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log a meal with a photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用拍照记录一餐"
+          }
+        }
+      }
+    },
+    "用来估算你每天大约需要多少热量。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Used to estimate roughly how many calories you need each day."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用来估算你每天大约需要多少热量。"
           }
         }
       }
@@ -5873,6 +6585,38 @@
         }
       }
     },
+    "稍后再说" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maybe Later"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "稍后再说"
+          }
+        }
+      }
+    },
+    "稳定的一个月" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Steady Month"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "稳定的一个月"
+          }
+        }
+      }
+    },
     "第 %lld 张照片" : {
       "localizations" : {
         "en" : {
@@ -5901,6 +6645,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "第 %lld 张，共 %lld 张"
+          }
+        }
+      }
+    },
+    "第 %lld 步，共 %lld 步" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step %1$lld of %2$lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 步，共 %lld 步"
           }
         }
       }
@@ -5985,6 +6745,38 @@
         }
       }
     },
+    "第一次用拍照记录了一餐。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You logged a meal with a photo for the first time."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第一次用拍照记录了一餐。"
+          }
+        }
+      }
+    },
+    "第一餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First Meal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第一餐"
+          }
+        }
+      }
+    },
     "等待超时。检查网络后再试一次。" : {
       "localizations" : {
         "en" : {
@@ -6033,6 +6825,22 @@
         }
       }
     },
+    "简单快手" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick and Easy"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "简单快手"
+          }
+        }
+      }
+    },
     "管理你的目标与个人信息" : {
       "localizations" : {
         "en" : {
@@ -6045,6 +6853,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "管理你的目标与个人信息"
+          }
+        }
+      }
+    },
+    "素食" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vegetarian"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "素食"
+          }
+        }
+      }
+    },
+    "累计记录" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Days Logged"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "累计记录"
+          }
+        }
+      }
+    },
+    "累计记录 10 餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log 10 meals"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "累计记录 10 餐"
+          }
+        }
+      }
+    },
+    "累计记录 30 餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log 30 meals"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "累计记录 30 餐"
           }
         }
       }
@@ -6173,6 +7045,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "约 %lld 分钟 · %lld 种食材"
+          }
+        }
+      }
+    },
+    "继续" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续"
           }
         }
       }
@@ -6417,6 +7305,34 @@
         }
       }
     },
+    "获得了 %lld 个新徽章" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You earned %lld new badge"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You earned %lld new badges"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "获得了 %lld 个新徽章"
+          }
+        }
+      }
+    },
     "菜可以让 AI 按常见做法估算，也可以选一道差不多的菜。" : {
       "localizations" : {
         "en" : {
@@ -6609,18 +7525,18 @@
         }
       }
     },
-    "计算方法公开透明，随时可以查看" : {
+    "记下了第一餐。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "See exactly how everything is calculated"
+            "value" : "You logged your first meal."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "计算方法公开透明，随时可以查看"
+            "value" : "记下了第一餐。"
           }
         }
       }
@@ -6657,6 +7573,54 @@
         }
       }
     },
+    "记录 10 种不同的食物" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log 10 different foods"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录 10 种不同的食物"
+          }
+        }
+      }
+    },
+    "记录一餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log one meal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录一餐"
+          }
+        }
+      }
+    },
+    "记录习惯" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logging Habits"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录习惯"
+          }
+        }
+      }
+    },
     "记录到" : {
       "localizations" : {
         "en" : {
@@ -6685,6 +7649,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "记录日期"
+          }
+        }
+      }
+    },
+    "记录第一餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log Your First Meal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录第一餐"
+          }
+        }
+      }
+    },
+    "记录过 10 种不同的食物。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've logged 10 different foods."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录过 10 种不同的食物。"
           }
         }
       }
@@ -6793,22 +7789,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "说明有更新：新增了「AI 估算食物」，只会发送你输入的食物名称。其他内容和之前一样，确认后就能继续使用。"
-          }
-        }
-      }
-    },
-    "请先了解" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Before You Start"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请先了解"
           }
         }
       }
@@ -7133,34 +8113,18 @@
         }
       }
     },
-    "资料只保存在你的手机上" : {
+    "跳过" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your info stays on your phone"
+            "value" : "Skip"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "资料只保存在你的手机上"
-          }
-        }
-      }
-    },
-    "资料可以随时修改，目标会自动更新" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change your info anytime and your targets update automatically"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "资料可以随时修改，目标会自动更新"
+            "value" : "跳过"
           }
         }
       }
@@ -7613,6 +8577,94 @@
         }
       }
     },
+    "这周每天都有记录。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You logged every day this week."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这周每天都有记录。"
+          }
+        }
+      }
+    },
+    "这周记录了 %lld 天。按自己的节奏来就好。" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You logged on %lld day this week. Go at your own pace."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You logged on %lld days this week. Go at your own pace."
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这周记录了 %lld 天。按自己的节奏来就好。"
+          }
+        }
+      }
+    },
+    "这周记录了 %lld 天，节奏很稳。" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You logged on %lld day this week. A steady rhythm."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You logged on %lld days this week. A steady rhythm."
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这周记录了 %lld 天，节奏很稳。"
+          }
+        }
+      }
+    },
+    "这周还没有记录。想记的时候随时开始就好。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing logged this week yet. Start whenever you like."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这周还没有记录。想记的时候随时开始就好。"
+          }
+        }
+      }
+    },
     "这张照片里的食物不够清晰，可以换个角度再试一次。" : {
       "localizations" : {
         "en" : {
@@ -7629,18 +8681,18 @@
         }
       }
     },
-    "这是估算的起点，之后可以在「我的」页面修改资料，目标会自动重新计算。" : {
+    "这是一个参考起点，不需要每天都精确做到。记录几天以后，你会更了解自己的饮食。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This is a starting estimate. You can update your info on the Profile tab anytime, and your targets will be recalculated."
+            "value" : "This is a starting point. You don't need to hit it exactly every day. After a few days of logging, you'll know your eating habits better."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这是估算的起点，之后可以在「我的」页面修改资料，目标会自动重新计算。"
+            "value" : "这是一个参考起点，不需要每天都精确做到。记录几天以后，你会更了解自己的饮食。"
           }
         }
       }
@@ -7705,6 +8757,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "连不上电脑上的后端，请确认它正在运行。"
+          }
+        }
+      }
+    },
+    "连续 4 周，每周记录 4 天以上" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log on 4 or more days a week, 4 weeks in a row"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连续 4 周，每周记录 4 天以上"
+          }
+        }
+      }
+    },
+    "连续 4 周，每周都有 4 天以上的记录。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 weeks in a row with 4 or more days logged each week."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连续 4 周，每周都有 4 天以上的记录。"
           }
         }
       }
@@ -7833,6 +8917,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选择食物"
+          }
+        }
+      }
+    },
+    "逐步降低体脂和体重" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gradually lower body fat and weight"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "逐步降低体脂和体重"
           }
         }
       }
@@ -8153,6 +9253,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高度活动"
+          }
+        }
+      }
+    },
+    "高蛋白" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High Protein"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高蛋白"
           }
         }
       }

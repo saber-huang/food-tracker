@@ -51,6 +51,22 @@ final class ProfileDraft {
         fillWeight(kg: body.weightKg)
     }
 
+    /// 引导页填到一半退出、再打开时：把上次填的放回来（没填的保持空白）
+    init(snapshot: ProfileDraftSnapshot, units: UnitSystem = .metric) {
+        self.units = units
+        sex = snapshot.sex
+        ageText = snapshot.ageText
+        activity = snapshot.activity
+        goal = snapshot.goal
+        if let cm = snapshot.heightCm { fillHeight(cm: cm) }
+        if let kg = snapshot.weightKg { fillWeight(kg: kg) }
+    }
+
+    /// 现在填了什么（引导页存进度用）。身高、体重存成厘米和公斤：下次打开换了单位也能填回去
+    var snapshot: ProfileDraftSnapshot {
+        ProfileDraftSnapshot(sex: sex, ageText: ageText, heightCm: heightCm, weightKg: weightKg, activity: activity, goal: goal)
+    }
+
     /// 换一种单位：已经填好的身高、体重换算过去（填错或没填的就清空）
     func switchUnits(to newUnits: UnitSystem) {
         guard newUnits != units else { return }
@@ -156,4 +172,14 @@ final class ProfileDraft {
         if goal == .loseFat && fatLossRestriction != nil { return nil }
         return BodyInfo(sex: sex, age: age, heightCm: heightCm, weightKg: weightKg, activity: activity, goal: goal)
     }
+}
+
+/// 草稿里填了什么（引导页的进度存档用，见 OnboardingProgress.swift）。还没填、或者填的不是数字的是 nil
+nonisolated struct ProfileDraftSnapshot: Codable, Equatable {
+    var sex: Sex = .male
+    var ageText = ""
+    var heightCm: Double?
+    var weightKg: Double?
+    var activity: ActivityLevel?
+    var goal: Goal?
 }
