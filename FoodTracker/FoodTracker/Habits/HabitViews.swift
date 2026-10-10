@@ -4,8 +4,10 @@
 //
 //  记录习惯的界面：
 //  - HabitStatsRow、HabitBadgesRow：「我的」页「记录习惯」卡片的两行（本周几天、累计几天、最长连续几天 + 一句平静的话；徽章）
-//  - AchievementsView：徽章页（从卡片、或新徽章提示里的「查看」进来）
-//  - BadgeMark：一个徽章的圆形图标。还没获得的是虚线圈 + 浅色图标（不只靠颜色区分），旁白读「尚未解锁」
+//  - AchievementsView：徽章页（从卡片、或新徽章卡片上的「查看全部徽章」进来）
+//  - BadgeMedal：一枚徽章。获得了是一枚花边奖章（外圈一圈圆齿，中间是图标），三档颜色越来越深：
+//    燕麦色（起步）→ 鼠尾草绿（稳定）→ 橄榄绿（长久，多一道内圈）。
+//    还没获得的是虚线圈 + 浅色图标（不只靠颜色区分），旁白读「尚未解锁」
 //  说的话只描述记录了几天，不催、不比较、不提「断了」：漏记一天什么都不会变
 //
 
@@ -122,7 +124,7 @@ struct HabitBadgesRow: View {
                 if !dynamicTypeSize.isAccessibilitySize {
                     HStack(spacing: AppSpacing.xxs) {
                         ForEach(unlocked.suffix(Self.maxShown), id: \.self) { achievement in
-                            BadgeMark(achievement: achievement, isUnlocked: true, size: 28)
+                            BadgeMedal(achievement: achievement, isUnlocked: true, size: 30)
                         }
                     }
                 }
@@ -136,33 +138,119 @@ struct HabitBadgesRow: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(String(localized: "徽章，已获得 \(unlocked.count) 个，共 \(Achievement.allCases.count) 个"))
-        .accessibilityHint(String(localized: "查看全部徽章"))
+        .accessibilityHint(String(localized: "打开徽章页"))
         .accessibilityAddTraits(.isButton)
     }
 }
 
 // MARK: - 徽章图标
 
-/// 圆形的徽章：获得了是品牌浅绿底 + 橄榄绿图标；还没获得是虚线圈 + 浅色图标
-struct BadgeMark: View {
+/// 一档徽章的颜色：外圈（圆齿，飘带也用它）、中间的底色、图标。存数值，测试可以直接算对比度
+nonisolated struct BadgePalette {
+    let ring: ColorPair
+    let fill: ColorPair
+    let icon: ColorPair
+
+    static func of(_ tier: AchievementTier) -> BadgePalette {
+        switch tier {
+        case .starter: BadgePalette(ring: AppColors.Pair.oatRim, fill: AppColors.Pair.oatEmpty, icon: AppColors.Pair.iconSecondary)
+        case .steady: BadgePalette(ring: AppColors.Pair.protein, fill: AppColors.Pair.brandSoft, icon: AppColors.Pair.brand)
+        case .devoted: BadgePalette(ring: AppColors.Pair.brand, fill: AppColors.Pair.brandSoft, icon: AppColors.Pair.brandDeep)
+        }
+    }
+}
+
+/// 一枚徽章：获得了是花边奖章（外圈圆齿 + 中间的图标，中间一圈卡片色的细线把两部分隔开）；
+/// 还没获得是虚线圈 + 浅色图标。showsRibbon：下面两条飘带（只在新徽章卡片上的大徽章用）
+struct BadgeMedal: View {
     let achievement: Achievement
     let isUnlocked: Bool
     var size: CGFloat = 44
+    var showsRibbon = false
 
     var body: some View {
+        let palette = BadgePalette.of(achievement.tier)
         ZStack {
             if isUnlocked {
-                Circle().fill(AppColors.brandSoft)
+                if showsRibbon {
+                    ribbons(color: Color(palette.ring))
+                }
+                RosetteShape(scallops: 14, depth: 0.08)
+                    .fill(Color(palette.ring))
+                Circle()
+                    .fill(Color(palette.fill))
+                    .padding(size * 0.15)
+                Circle()
+                    .strokeBorder(AppColors.surfacePrimary, lineWidth: max(1, size * 0.03))
+                    .padding(size * 0.15)
+                // 最难得到的一档：多一道细细的内圈
+                if achievement.tier == .devoted {
+                    Circle()
+                        .strokeBorder(Color(palette.ring).opacity(0.45), lineWidth: max(0.75, size * 0.014))
+                        .padding(size * 0.22)
+                }
             } else {
                 Circle()
                     .strokeBorder(AppColors.textTertiary, style: StrokeStyle(lineWidth: 1.2, dash: [3, 3]))
+                    .padding(size * 0.08)
             }
             Image(systemName: achievement.systemImage)
-                .font(.system(size: size * 0.4, weight: .medium))
-                .foregroundStyle(isUnlocked ? AppColors.brand : AppColors.textTertiary)
+                .font(.system(size: size * (isUnlocked ? 0.3 : 0.36), weight: .semibold))
+                .foregroundStyle(isUnlocked ? Color(palette.icon) : AppColors.textTertiary)
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)
+    }
+
+    /// 两条飘带：从奖章后面往左下、右下垂下去，末端剪成燕尾
+    private func ribbons(color: Color) -> some View {
+        HStack(spacing: size * 0.04) {
+            RibbonTail()
+                .fill(color.opacity(0.7))
+                .frame(width: size * 0.2, height: size * 0.46)
+                .rotationEffect(.degrees(16), anchor: .top)
+            RibbonTail()
+                .fill(color.opacity(0.7))
+                .frame(width: size * 0.2, height: size * 0.46)
+                .rotationEffect(.degrees(-16), anchor: .top)
+        }
+        .offset(y: size * 0.5)
+    }
+}
+
+/// 花边奖章的外圈：一圈圆圆的齿（齿尖是圆的，齿缝是尖的）
+struct RosetteShape: Shape {
+    var scallops = 14  // 几个齿
+    var depth = 0.08  // 齿有多深（占半径的比例）
+
+    func path(in rect: CGRect) -> Path {
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let radius = min(rect.width, rect.height) / 2
+        let steps = scallops * 24
+        var path = Path()
+        for step in 0...steps {
+            let angle = Double(step) / Double(steps) * 2 * .pi
+            // |cos| 在齿缝处是一个尖角，在齿尖处是圆的
+            let r = radius * (1 - depth * (1 - abs(cos(Double(scallops) * angle / 2))))
+            let point = CGPoint(x: center.x + r * sin(angle), y: center.y - r * cos(angle))
+            if step == 0 { path.move(to: point) } else { path.addLine(to: point) }
+        }
+        path.closeSubpath()
+        return path
+    }
+}
+
+/// 一条飘带：长方形，末端剪成燕尾（中间凹进去）
+struct RibbonTail: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY - rect.width * 0.55))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }
 
@@ -226,7 +314,7 @@ private struct AchievementRow: View {
     var body: some View {
         let isUnlocked = unlockedDate != nil
         HStack(alignment: dynamicTypeSize.isAccessibilitySize ? .top : .center, spacing: AppSpacing.sm) {
-            BadgeMark(achievement: achievement, isUnlocked: isUnlocked)
+            BadgeMedal(achievement: achievement, isUnlocked: isUnlocked, size: 48)
             VStack(alignment: .leading, spacing: 2) {
                 Text(achievement.title)
                     .font(.body.weight(.medium))

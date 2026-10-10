@@ -2,7 +2,8 @@
 //  APIClient.swift
 //  FoodTracker
 //
-//  负责和后端通信：上传一餐的照片识别（/analyze，1～4 张）、生成食谱（/recipes）、查询剩余次数（/quota）。
+//  负责和后端通信：上传一餐的照片识别（/analyze，1～4 张）、饭后拍剩下的（/leftovers）、生成食谱（/recipes）、
+//  AI 估算一种食物（/estimate）、查询剩余次数（/quota）。
 //
 
 import Foundation
@@ -55,6 +56,19 @@ enum APIClient {
         var request = makeRequest(path: "analyze", method: "POST", timeout: 120)
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.httpBody = multipartBody(jpegs: jpegs, lang: lang, boundary: boundary)
+        return try await send(request)
+    }
+
+    /// 一餐最多带几样去估算剩下多少（和后端 leftovers_ai.MAX_ITEMS 一致）
+    static let maxLeftoverItems = 20
+
+    /// 饭后拍剩下的：发一张剩下的照片 + 这一餐原来的清单（名字和大约多少克），返回每样吃掉了几成（和清单一一对应）。
+    /// 只发名字和克数，不发热量和别的记录。和拍照识别共用每天的次数
+    static func leftovers(jpeg: Data, items: [LeftoverServedItem], lang: String) async throws -> LeftoversResponse {
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var request = makeRequest(path: "leftovers", method: "POST", timeout: 120)
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.httpBody = leftoversBody(jpeg: jpeg, items: items, lang: lang, boundary: boundary)
         return try await send(request)
     }
 
@@ -150,22 +164,48 @@ enum APIClient {
     /// 第一张照片放在 photo 字段（只有一张时和以前的请求完全一样，旧的后端也能用），
     /// 其余的放在 more_photos 字段（可以重复多次）。字段名要和后端 main.py 里的参数名一致
     static func multipartBody(jpegs: [Data], lang: String, boundary: String) -> Data {
+        // 文件字段：photo（第一张），more_photos（其余几张）
+        let files = jpegs.enumerated().map { index, jpeg in
+            MultipartFile(
+                field: index == 0 ? "photo" : "more_photos", fileName: index == 0 ? "meal.jpg" : "meal-\(index + 1).jpg",
+                jpeg: jpeg)
+        }
+        return multipartBody(fields: [("lang", lang)], files: files, boundary: boundary)
+    }
+
+    /// /leftovers 的请求内容：lang、items（清单的 JSON 文字）两个普通字段 + 一张照片（photo 字段）
+    static func leftoversBody(jpeg: Data, items: [LeftoverServedItem], lang: String, boundary: String) -> Data {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase  // weightG → weight_g
+        let itemsJSON = (try? encoder.encode(items)).map { String(decoding: $0, as: UTF8.self) } ?? "[]"
+        return multipartBody(
+            fields: [("lang", lang), ("items", itemsJSON)],
+            files: [MultipartFile(field: "photo", fileName: "leftovers.jpg", jpeg: jpeg)], boundary: boundary)
+    }
+
+    /// multipart 里的一个文件
+    struct MultipartFile {
+        let field: String
+        let fileName: String
+        let jpeg: Data
+    }
+
+    /// 先放普通字段，再放文件，最后是结束标记
+    private static func multipartBody(fields: [(name: String, value: String)], files: [MultipartFile], boundary: String) -> Data {
         var body = Data()
         func append(_ text: String) { body.append(Data(text.utf8)) }
 
-        // 普通字段：lang
-        append("--\(boundary)\r\n")
-        append("Content-Disposition: form-data; name=\"lang\"\r\n\r\n")
-        append("\(lang)\r\n")
-
-        // 文件字段：photo（第一张），more_photos（其余几张）
-        for (index, jpeg) in jpegs.enumerated() {
-            let field = index == 0 ? "photo" : "more_photos"
-            let fileName = index == 0 ? "meal.jpg" : "meal-\(index + 1).jpg"
+        for field in fields {
             append("--\(boundary)\r\n")
-            append("Content-Disposition: form-data; name=\"\(field)\"; filename=\"\(fileName)\"\r\n")
+            append("Content-Disposition: form-data; name=\"\(field.name)\"\r\n\r\n")
+            append("\(field.value)\r\n")
+        }
+
+        for file in files {
+            append("--\(boundary)\r\n")
+            append("Content-Disposition: form-data; name=\"\(file.field)\"; filename=\"\(file.fileName)\"\r\n")
             append("Content-Type: image/jpeg\r\n\r\n")
-            body.append(jpeg)
+            body.append(file.jpeg)
             append("\r\n")
         }
 

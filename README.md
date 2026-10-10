@@ -7,13 +7,14 @@ Kindbite (一拍即食) is a bilingual (English / Simplified Chinese) iOS app th
 ## Features
 
 - **Photo logging** — analyze 1–4 photos of the same meal in one request. Foods that appear in several photos are merged, every item gets a confidence level, and you can edit the results before saving.
+- **Leftovers** — didn't finish? Mark how much of each food you ate (all, ¾, half, ¼ or none), or snap the leftovers and the AI compares them with what you logged. Only the eaten share counts, and switching back restores the original numbers exactly.
 - **Choose Food** — search a built-in, bilingual database of 121 foods with natural serving units, save your own foods, or ask the AI to estimate a food the database doesn't have.
 - **Nutrition-label scanning** — packaged foods are read from their nutrition label **on the device** with Apple Vision. The photo is never uploaded.
 - **Daily targets** — calorie and macro targets come from your profile and goal (lose fat, maintain, build muscle). Below a BMI of 16, targets are treated as a minimum and the app recommends having a doctor or registered dietitian set them.
 - **Today view** — a bowl-shaped progress gauge, meal cards, a week strip, and a month calendar.
 - **Gentle guidance** — optional calorie hints, a weekly summary, and next-meal suggestions.
 - **AI recipes** — a one-day meal plan that fits your targets and never uses your listed allergies or disliked foods.
-- **Habits** — eight badges that reward logging, never eating less.
+- **Habits** — eight badges in three tiers that reward logging, never eating less. Each new badge appears in a small celebration card (it only fades in when Reduce Motion is on).
 - **Privacy** — no account, data stays on the phone (SwiftData), consent is asked before the first AI request, and Delete All Data erases everything on the phone.
 - **Accessibility** — supports Dynamic Type and VoiceOver; heights and weights in metric or ft / in / lb.
 

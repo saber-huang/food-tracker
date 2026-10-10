@@ -7,6 +7,7 @@
 //  获得了就一直在：删掉记录也不会收回。
 //  第一次统计时（新装好、或者老用户刚更新到这个版本）只悄悄记下已经达到的，不连着弹一串提示；
 //  之后每个徽章只提示一次（见 AchievementLedger）。
+//  徽章分三档（AchievementTier），越难得到颜色越深：燕麦色 → 鼠尾草绿 → 橄榄绿（见 BadgeMedal）。
 //  只做数据和规则，不涉及界面，可以单独写单元测试（FoodTrackerTests/HabitTests.swift）
 //
 
@@ -71,6 +72,15 @@ nonisolated enum Achievement: String, CaseIterable, Codable {
         }
     }
 
+    /// 第几档：决定徽章的颜色
+    var tier: AchievementTier {
+        switch self {
+        case .firstMeal, .firstPhoto, .adjustedAI: .starter
+        case .tenMeals, .tenFoods, .fiveDaysInWeek: .steady
+        case .thirtyMeals, .fourSteadyWeeks: .devoted
+        }
+    }
+
     /// 达到了没有。只看记录本身（统计里本来就没有热量）
     func isEarned(by stats: HabitStats, adjustedAI: Bool) -> Bool {
         switch self {
@@ -89,6 +99,13 @@ nonisolated enum Achievement: String, CaseIterable, Codable {
     static func earned(by stats: HabitStats, adjustedAI: Bool) -> Set<Achievement> {
         Set(allCases.filter { $0.isEarned(by: stats, adjustedAI: adjustedAI) })
     }
+}
+
+/// 徽章的三档：起步（第一次做到）、稳定（做了一阵子）、长久（坚持了很久）。只是颜色不同，规则都一样
+nonisolated enum AchievementTier: Int, CaseIterable, Comparable {
+    case starter, steady, devoted
+
+    static func < (a: AchievementTier, b: AchievementTier) -> Bool { a.rawValue < b.rawValue }
 }
 
 /// 获得过哪些徽章、什么时候获得的。存在手机本地（见 AchievementStore）

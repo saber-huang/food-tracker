@@ -120,6 +120,28 @@ struct DesignSystemColorTests {
         }
     }
 
+    @Test("徽章：每一档的图标在中间的底色上至少 3:1（图形）；新徽章卡片的小标题在卡片上看得清", arguments: AchievementTier.allCases)
+    func badgeContrast(tier: AchievementTier) {
+        let palette = BadgePalette.of(tier)
+        #expect(contrast(palette.icon.light, palette.fill.light) >= 3)
+        #expect(contrast(palette.icon.dark, palette.fill.dark) >= 3)
+        // 「获得新徽章」「查看全部徽章」是橄榄绿字，放在暖白卡片上
+        #expect(contrast(P.brand.light, P.surfacePrimary.light) >= 4.5)
+        #expect(contrast(P.brand.dark, P.surfacePrimary.dark) >= 4.5)
+    }
+
+    @Test("没吃完：「没吃完？」小按钮、每一样的选择按钮（包括砖红的「没吃」）的字至少 4.5:1")
+    func leftoversContrast() {
+        // 一餐卡片底部的「没吃完？」：深橄榄字在浅绿底上
+        #expect(contrast(P.brandDeep.light, P.brandSoft.light) >= 4.5)
+        #expect(contrast(P.brandDeep.dark, P.brandSoft.dark) >= 4.5)
+        // 「这餐吃了多少」里每一样的按钮：深橄榄字、砖红字在燕麦色胶囊上
+        for text in [P.brandDeep, P.destructive] {
+            #expect(contrast(text.light, P.surfaceSecondary.light) >= 4.5)
+            #expect(contrast(text.dark, P.surfaceSecondary.dark) >= 4.5)
+        }
+    }
+
     @Test("可信度小标签：字放在 12% 的同色底上 >= 4.5:1", arguments: [P.confidenceHigh, P.confidenceMedium, P.confidenceLow])
     func confidenceBadges(_ pair: ColorPair) {
         let lightBackground = blend(pair.light, over: P.surfacePrimary.light, opacity: AppColors.badgeOpacity)

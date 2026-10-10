@@ -5,7 +5,8 @@
 //  轻提示：屏幕下方出现一个小胶囊，1～1.5 秒后自己消失，不打断用户（不弹「保存成功」的大警告框）。
 //  - 保存一餐后：「已记录到午餐」「已记录 3 项食物」，同时轻轻震一下
 //  - 删除一条记录后：「已删除「米饭」  撤销」，停 5 秒，点「撤销」就恢复
-//  - 获得新徽章：「新徽章：第一餐  查看」，停 4 秒（见 HabitCenter）
+//  - 改了一餐吃了多少后：「午餐已更新为 430 千卡  撤销」，停 5 秒
+//  获得新徽章不用轻提示，用屏幕中间的徽章卡片（见 BadgeUnlockOverlay）
 //  用法：页面里写 @Environment(ToastCenter.self) private var toasts: ToastCenter?，然后 toasts?.show(...)。
 //  ToastCenter 由主界面（MainTabView）创建、放进环境；胶囊也由主界面统一显示（见 toastHost()）
 //
@@ -16,7 +17,7 @@ import SwiftUI
 @Observable
 final class ToastCenter {
     struct Toast: Identifiable {
-        enum Kind { case success, deletion, milestone }
+        enum Kind { case success, deletion, change }
 
         let id = UUID()
         let message: String
@@ -41,16 +42,14 @@ final class ToastCenter {
             seconds: 5)
     }
 
-    /// 获得了新徽章：「新徽章：第一餐」+「查看」。停 4 秒。
-    /// 正在显示「已删除 撤销」时不打断它（撤销更要紧；徽章在「我的」里随时看得到）
-    func milestone(_ message: String, view: @escaping () -> Void) {
-        guard current?.kind != .deletion else { return }
+    /// 改了东西、可以反悔：「午餐已更新为 430 千卡」+「撤销」。停 5 秒
+    func changed(_ message: String, undo: @escaping () -> Void) {
         show(
-            Toast(message: message, systemImage: "rosette", kind: .milestone, actionTitle: String(localized: "查看"), action: view),
-            seconds: 4)
+            Toast(message: message, systemImage: "checkmark.circle", kind: .change, actionTitle: String(localized: "撤销"), action: undo),
+            seconds: 5)
     }
 
-    /// 点了「撤销」（或「查看」）：先关掉提示再执行，不会执行两次
+    /// 点了「撤销」：先关掉提示再执行，不会执行两次
     func performAction() {
         guard let action = current?.action else { return }
         dismiss()
@@ -113,7 +112,7 @@ private struct ToastView: View {
 }
 
 extension View {
-    /// 在这个视图底部显示轻提示（主界面用一次就够了）。出现时轻轻震一下：保存成功是「成功」，删除、新徽章是轻轻一下
+    /// 在这个视图底部显示轻提示（主界面用一次就够了）。出现时轻轻震一下：保存、更新成功是「成功」，删除是轻轻一下
     func toastHost(_ center: ToastCenter) -> some View {
         overlay(alignment: .bottom) {
             if let toast = center.current {
@@ -125,7 +124,7 @@ extension View {
         }
         .sensoryFeedback(trigger: center.current?.id) { _, newID in
             guard newID != nil, let kind = center.current?.kind else { return nil }
-            return kind == .success ? .success : .impact(weight: .light)
+            return kind == .deletion ? .impact(weight: .light) : .success
         }
     }
 }

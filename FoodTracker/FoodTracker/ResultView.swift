@@ -3,7 +3,8 @@
 //  FoodTracker
 //
 //  识别结果（保存前的确认页）：从上到下是这一餐的照片（1～4 张）和 AI 的一句话总结、识别到的每种食物
-//  （点一项可以修改份量和数字，向左滑可以删掉，也能补一项 AI 没认出来的）、整餐合计（旁边是「AI 估算 ⓘ」）、
+//  （点一项可以修改份量和数字，向左滑可以删掉，也能补一项 AI 没认出来的）、整餐合计（旁边是「AI 估算 ⓘ」）
+//  和「这餐吃了多少」（全部 / ¾ / 一半 / ¼：知道吃不完时直接选，合计按吃了的算）、
 //  记到哪一天哪一餐；最下面固定着「保存这餐」。识别后不会自动保存，一定要用户点了才存。
 //  不显示 AI 内部的把握程度；只有份量需要确认的那一项写「份量不确定 · 调整份量」，点一下就能改。
 //  没认出食物时不给出任何热量：写「没有识别到足够清晰的食物」和几条拍照建议，可以「重新拍摄」或「手动添加」。
@@ -36,6 +37,8 @@ struct ResultView: View {
     @State private var isSaving = false  // 防止快速连点两次「保存」存成两份
     /// 保存前改过识别结果（改了一项、删了一项或补了一项）：记录习惯里的「亲自校对」徽章
     @State private var hasAdjustedItems = false
+    /// 这餐吃了多少：1 = 全部（一般拍照时还没吃，默认全部；吃完以后可以在「今日」里再调）
+    @State private var eatenFraction = 1.0
 
     init(result: AnalyzeResult, photos: [UIImage], dayKey: Int, today: Date, onSaved: @escaping () -> Void) {
         self.result = result
@@ -106,7 +109,16 @@ struct ResultView: View {
                     }
 
                     Section {
-                        TotalView(items: items)
+                        TotalView(items: items, eatenFraction: eatenFraction)
+                        VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                            Text("这餐吃了多少")
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.textSecondary)
+                            AppSegmentedControl(
+                                title: String(localized: "这餐吃了多少"), selection: $eatenFraction, options: EatenPortion.mealOptions,
+                                label: EatenPortion.mealLabel, accessibilityLabel: EatenPortion.spokenMealLabel)
+                        }
+                        .padding(.vertical, AppSpacing.xxs)
                     } header: {
                         HStack(alignment: .center) {
                             Text("整餐合计")
@@ -117,6 +129,10 @@ struct ResultView: View {
                                 .padding(.vertical, -AppSpacing.sm)
                         }
                         .textCase(nil)
+                    } footer: {
+                        Text("吃完以后也可以在「今日」里调整，还能拍一张剩下的让 AI 估算。")
+                            .font(AppTypography.detail)
+                            .foregroundStyle(AppColors.textSecondary)
                     }
 
                     // 记到哪一天（打开这页时就定好了，这里只显示）、哪一餐；紧挨着下面的保存按钮，保存前最后看一眼
@@ -213,8 +229,9 @@ struct ResultView: View {
         isSaving = true
         // 改过 AI 的结果再保存：先记下来，保存后重新统计记录习惯时就能得到「亲自校对」徽章
         if hasAdjustedItems { AchievementStore.markAdjustedAI() }
-        // 每一项自己记的餐次和日期在这页用不上：以这页选的餐次、打开时定好的日期为准
-        FoodEntry.insert(items, meal: meal, dayKey: dayKey, source: .photo, into: modelContext)
+        // 每一项自己记的餐次和日期在这页用不上：以这页选的餐次、打开时定好的日期为准。
+        // 选了「这餐吃了多少」：每一样按同样的比例记（原来的份量也记住，之后在「今日」里还能改回全部）
+        FoodEntry.insert(items, meal: meal, dayKey: dayKey, source: .photo, into: modelContext, eatenFraction: eatenFraction)
         try? modelContext.save()
         // 回到「今日」页，下方轻提示一下，同时轻轻震一下（不弹「保存成功」的大框）
         toasts?.success(String(localized: "已记录 \(items.count) 项食物"))
@@ -290,19 +307,24 @@ private struct LowConfidenceBadge: View {
     }
 }
 
-/// 整餐合计：大号的总热量，下面是三大营养素。按现在列表里的几项算，改了、删了都会跟着变
+/// 整餐合计：大号的总热量，下面是三大营养素。按现在列表里的几项算，改了、删了都会跟着变。
+/// 选了「这餐吃了多少」时按吃了的算（和保存后记录里的数字一样：每一样先取整再乘比例），下面一行「原来 620 千卡」
 private struct TotalView: View {
     let items: [EditableItem]
+    let eatenFraction: Double
 
     @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 36
 
     var body: some View {
-        let total = DietLogMath.total(of: items.map(\.values))
+        let served = DietLogMath.total(of: items.map(\.values))
+        let total = DietLogMath.total(
+            of: items.map { EatenPortion.eatenValues(served: DietLogMath.rounded($0.values), fraction: eatenFraction) })
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
                 Text(total.caloriesKcal.noDecimal)
                     .font(AppTypography.heroNumber(size: numberSize))  // 和首页的大数字同一种字，跟着系统字号变大
                     .foregroundStyle(AppColors.textPrimary)
+                    .contentTransition(.numericText())
                 Text("千卡")
                     .font(AppTypography.heroCaption)
                     .foregroundStyle(AppColors.textSecondary)
@@ -312,9 +334,15 @@ private struct TotalView: View {
                     Text("部分未填份量")
                         .foregroundStyle(AppColors.textSecondary)
                 } else {
-                    Text("共约 \(items.compactMap(\.weightG).reduce(0, +).noDecimal) 克")
+                    Text("共约 \((items.compactMap(\.weightG).reduce(0, +) * eatenFraction).noDecimal) 克")
                         .foregroundStyle(AppColors.textSecondary)
                 }
+            }
+            if eatenFraction < 1 {
+                Text("原来 \(served.caloriesKcal.noDecimal) 千卡，按「\(EatenPortion.itemLabel(eatenFraction))」算")
+                    .font(AppTypography.detail)
+                    .foregroundStyle(AppColors.textSecondary)
+                    .monospacedDigit()
             }
             HStack {
                 NutrientColumn(name: String(localized: "蛋白质"), value: total.proteinG.oneDecimal, color: AppColors.protein)
@@ -323,6 +351,7 @@ private struct TotalView: View {
             }
         }
         .padding(.vertical, 4)
+        .animation(.easeOut(duration: 0.15), value: eatenFraction)
     }
 }
 

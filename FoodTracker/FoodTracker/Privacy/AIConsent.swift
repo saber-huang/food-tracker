@@ -2,7 +2,8 @@
 //  AIConsent.swift
 //  FoodTracker
 //
-//  用 AI 之前先征得同意。拍照识别、生成食谱、推荐下一餐会把照片或饮食目标发给 Anthropic 公司的 Claude；
+//  用 AI 之前先征得同意。拍照识别、拍一张剩下的、AI 估算食物、生成食谱、推荐下一餐会把照片、食物名称或饮食目标
+//  发给 Anthropic 公司的 Claude；
 //  苹果审核指南 5.1.2(i) 要求：把个人数据发给第三方（包括第三方 AI）之前，先说清楚发什么、发给谁，并取得明确同意。
 //
 //  用法（需要 AI 的按钮都这样写）：
@@ -18,8 +19,9 @@ nonisolated enum AIConsent {
     /// 存在 UserDefaults 里的名字：记的是「同意过第几版说明」，没有 = 没同意过或撤回了
     static let key = "aiConsentVersion"
     /// 说明的内容有重要变化（比如多发了一种数据）时加 1：以前同意过的人会被重新询问一次。
-    /// 第 2 版（2026-10-02）：多了「AI 估算食物」，会发送用户输入的食物名称
-    static let currentVersion = 2
+    /// 第 2 版（2026-10-02）：多了「AI 估算食物」，会发送用户输入的食物名称。
+    /// 第 3 版（2026-10-09）：多了「拍一张剩下的」，会发送剩菜照片和这一餐原来记的食物名称、克数
+    static let currentVersion = 3
 
     /// 按存下来的版本号判断（「我的」页用 @AppStorage 读到的数字直接传进来）
     static func isGranted(version: Int) -> Bool {

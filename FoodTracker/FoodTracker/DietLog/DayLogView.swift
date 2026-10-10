@@ -11,6 +11,7 @@
 //     一整天都没有记录时，不放四条空的餐，只放一个安静的空状态（快速记录就在上面）
 //  点一条记录可以修改（包括改到别的餐、别的日期）或删除；向左滑也能删除。删除后下方出现「已删除「米饭」 撤销」，
 //  几秒内点「撤销」就原样放回去（不弹「确定删除吗」）。
+//  每张卡片底部的「没吃完？」打开「这餐吃了多少」（LeftoversSheet）：选每样吃了几成，或者拍一张剩下的让 AI 估算。
 //  「今日」页用它显示今天；翻看往日也用它。
 //
 
@@ -31,6 +32,7 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
     @State private var editingEntry: FoodEntry?  // 正在修改的记录，有值时弹出表单
     @State private var expandedGroups: Set<PersistentIdentifier> = []  // 展开了的合并行（用这一组第一条记录的编号记）
     @State private var showsExplanation = false  // 是否打开「每日目标是怎么算的」
+    @State private var leftoversMeal: MealType?  // 点了哪一餐的「没吃完？」，有值时弹出「这餐吃了多少」
 
     init(
         day: Date, today: Date, bodyInfo: BodyInfo, onAddToMeal: @escaping (MealType) -> Void,
@@ -95,8 +97,8 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
             EntryEditView(
                 draft: EntryDraft(item: EditableItem(entry: entry)), title: String(localized: "修改记录"), showsMealPicker: true,
                 showsDate: true,
-                // 从食谱记的一餐：份量是食材生重加起来的，提醒一下（改份量时数字会按比例换算）
-                note: entry.source == .recipe ? String(localized: "份量按食材生重合计。") : nil,
+                // 从食谱记的一餐：份量是食材生重加起来的，提醒一下（改份量时数字会按比例换算）；没吃完的也提醒一下
+                note: editNote(for: entry),
                 onSave: { item in
                     // 改到别的餐或别的日期也在这里：这条记录会从这一天消失，出现在新的那天
                     entry.apply(item)
@@ -107,6 +109,20 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
                     delete([entry])
                 })
         }
+        // 「这餐吃了多少」：也是整个列表只挂一个
+        .sheet(item: $leftoversMeal) { meal in
+            LeftoversSheet(meal: meal, entries: entries(for: meal))
+        }
+    }
+
+    /// 修改表单上面的灰色小字：从食谱记的提醒份量怎么算的；没吃完的提醒改了数字就按新填的算
+    private func editNote(for entry: FoodEntry) -> String? {
+        var notes: [String] = []
+        if entry.source == .recipe { notes.append(String(localized: "份量按食材生重合计。")) }
+        if let eaten = entry.eatenLabel {
+            notes.append(String(localized: "这条按「\(eaten)」记的。改了份量或数字，就按新填的算。"))
+        }
+        return notes.isEmpty ? nil : notes.joined(separator: " ")
     }
 
     /// 今日饮食：记过的一餐是一张完整的卡片（标题、每一条记录、营养素）；还没记的一餐是最轻的一条。
@@ -166,7 +182,7 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
             .listRowBackground(Color.clear)
         } else {
             let mealTotal = DietLogMath.total(of: mealEntries.map(\.values))
-            // 三种营养素都是 0（只填了热量）时没有最后那一行营养素，最后一行下面多留一点
+            // 三种营养素都是 0（只填了热量）时，最后一行只有「没吃完？」
             let showsMacros = mealTotal.proteinG > 0 || mealTotal.carbsG > 0 || mealTotal.fatG > 0
             let rows = rows(for: mealEntries)
             MealCardHeader(meal: meal, kcal: mealTotal.caloriesKcal)
@@ -179,8 +195,7 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
                     // 往右缩进，和这一餐的标题文字对齐（图标 36 + 间距 12）；展开后的每一条再缩进一点
                     .listRowInsets(
                         EdgeInsets(
-                            top: 0, leading: AppSpacing.cardPadding + (row.isMember ? 60 : 48),
-                            bottom: !showsMacros && row.id == rows.last?.id ? 12 : 0,
+                            top: 0, leading: AppSpacing.cardPadding + (row.isMember ? 60 : 48), bottom: 0,
                             trailing: AppSpacing.cardPadding))
                     .listRowSeparator(.hidden)
                     .listRowBackground(AppColors.surfaceMeal)
@@ -190,12 +205,15 @@ struct DayLogView<QuickLog: View, Hints: View>: View {
                 delete(offsets.flatMap { rows[$0].entries })
             }
 
-            if showsMacros {
-                MealMacroFooter(total: mealTotal)
-                    .listRowInsets(EdgeInsets(top: 2, leading: AppSpacing.cardPadding + 48, bottom: 16, trailing: AppSpacing.cardPadding))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(AppColors.surfaceMeal)
+            // 最后一行：营养素 +「没吃完？」（按钮的点击范围是 44pt 高，上下已经有留白，所以这一行的边距小一点）
+            MealCardFooter(
+                total: showsMacros ? mealTotal : nil, isAdjusted: mealEntries.contains { $0.eatenFraction != nil }
+            ) {
+                leftoversMeal = meal
             }
+            .listRowInsets(EdgeInsets(top: 0, leading: AppSpacing.cardPadding + 48, bottom: 8, trailing: AppSpacing.cardPadding - 4))
+            .listRowSeparator(.hidden)
+            .listRowBackground(AppColors.surfaceMeal)
         }
     }
 

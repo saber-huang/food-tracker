@@ -1,13 +1,13 @@
 # Privacy Policy
 
-Last updated: October 2, 2026
+Last updated: October 9, 2026
 
 This app helps you log what you eat and estimate calories and nutrition. This policy explains what information the app handles, why, who receives it, and how you can delete it.
 
 ## The Short Version
 
 - Your profile and food log are stored only on your phone.
-- Photos, nutrition targets or a food name you type are sent online only when you use an AI feature, and the app asks for your consent before the first time.
+- Photos, nutrition targets or food names are sent online only when you use an AI feature, and the app asks for your consent before the first time.
 - No account is needed. There are no ads, no tracking, and your data is never sold.
 
 ## Information Stored on Your Phone
@@ -23,14 +23,15 @@ All of this stays on your phone and is not stored on this app's server. Only whe
 
 ## Information Sent When You Use AI Features
 
-Photo scanning, AI food estimates, recipe generation and next-meal suggestions are powered by Claude, an AI from Anthropic. Before you use these features for the first time, the app explains this and asks for your consent. Once you agree, each use sends:
+Photo scanning, leftover photos, AI food estimates, recipe generation and next-meal suggestions are powered by Claude, an AI from Anthropic. Before you use these features for the first time, the app explains this and asks for your consent. Once you agree, each use sends:
 
 - Photo scan: the meal photos you choose (up to 4 for one meal). They are resized and re-compressed before upload, without the location or other photo details.
+- Leftover photo: when you don't finish a meal, one photo of what's left (also resized and re-compressed), plus the name and approximate weight in grams of each food you logged for that meal, to estimate how much of each you ate. Calories and your other meals are not sent.
 - Recipe generation: your goal (lose fat, maintain or build muscle), your daily calorie, protein, carb and fat targets, and the tastes, allergies, foods to avoid and cooking time you entered.
 - Next-meal suggestion: the same as recipe generation, except the targets are scaled to that one meal based on what's left of today's calories.
 - AI food estimate: the food name you typed in Choose Food when it isn't in the built-in food list or My Foods (for example, "Shanxi stir-fried pork"). Only that name is sent.
 
-Not sent: your age, height, weight or the food log itself, and nothing that identifies you, such as your name, phone number or location.
+Not sent: your age, height, weight, or any of your food log beyond the food names and weights of that one meal for a leftover photo, and nothing that identifies you, such as your name, phone number or location.
 
 This information goes to this app's server (hosted on Render), which passes it to Anthropic for processing. Results are returned only to your phone.
 

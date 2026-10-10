@@ -81,7 +81,7 @@ struct MainTabView: View {
     }()
     @State private var tabBar = TabBarVisibility()
     @State private var toasts = ToastCenter()  // 轻提示（「已记录到午餐」「已删除 撤销」），所有页面共用一个
-    @State private var habits = HabitCenter()  // 记录习惯：统计和徽章（「我的」页读它）
+    @State private var habits = HabitCenter()  // 记录习惯：统计和徽章（「我的」页读它；新徽章由这里弹出来）
 
     var body: some View {
         VStack(spacing: 0) {
@@ -110,12 +110,30 @@ struct MainTabView: View {
         .environment(toasts)
         .environment(habits)
         .background { AppBackground(glow: false) }
+        // 获得新徽章：屏幕中间弹出徽章卡片，盖住整个主界面（包括标签栏）；一次得到好几个时一个一个弹
+        .overlay {
+            if let achievement = habits.celebrations.first {
+                BadgeUnlockOverlay(
+                    achievement: achievement, unlockedCount: habits.ledger.unlockedCount,
+                    remainingCount: habits.celebrations.count - 1,
+                    onDone: { habits.finishCelebration() },
+                    onViewAll: { habits.viewAllAchievements() }
+                )
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeOut(duration: 0.2), value: habits.celebrations.first)
         // 一进主界面就悄悄叫醒云端服务器（免费服务器闲置会休眠），用户点识别时就不用等
         .task { await APIClient.warmUp() }
         // 记录习惯：进主界面时统计一次（老用户第一次只悄悄记下已经有的徽章），之后有新记录、回到 App 时再统计
         .task {
-            habits.toasts = toasts
             habits.refresh(context: modelContext)
+            #if DEBUG && targetEnvironment(simulator)
+            // 只在模拟器里：用启动参数 -debugCelebrate firstMeal,tenMeals 直接弹出徽章卡片（截图检查用，不改获得记录）
+            if let raw = UserDefaults.standard.string(forKey: "debugCelebrate") {
+                habits.enqueue(raw.split(separator: ",").compactMap { Achievement(rawValue: String($0)) })
+            }
+            #endif
         }
         .onChange(of: latestEntries.first?.persistentModelID) {
             habits.refresh(context: modelContext)
@@ -123,7 +141,7 @@ struct MainTabView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { habits.refresh(context: modelContext) }
         }
-        // 新徽章提示里点了「查看」：切到「我的」，由「我的」页打开徽章页
+        // 徽章卡片上点了「查看全部徽章」：切到「我的」，由「我的」页打开徽章页
         .onChange(of: habits.showsAchievements) { _, shows in
             if shows { selection = .profile }
         }

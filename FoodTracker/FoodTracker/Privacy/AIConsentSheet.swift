@@ -12,8 +12,9 @@ import SwiftUI
 /// 第一次用 AI 功能时弹出。onDecision(true) = 同意并继续，false = 暂不使用
 struct AIConsentSheet: View {
     let onDecision: (Bool) -> Void
-    /// 以前同意过旧版说明：顶部先说一句改了什么
-    private let isUpdate = AIConsent.isUpdate(version: UserDefaults.standard.integer(forKey: AIConsent.key))
+    /// 以前同意的是第几版说明（0 = 没同意过）：同意过旧版时，顶部先说一句改了什么
+    private let previousVersion = UserDefaults.standard.integer(forKey: AIConsent.key)
+    private var isUpdate: Bool { AIConsent.isUpdate(version: previousVersion) }
 
     var body: some View {
         NavigationStack {
@@ -40,15 +41,19 @@ struct AIConsentSheet: View {
         .appSheet()
     }
 
-    /// 「说明有更新」：这一版多了什么（第 2 版：AI 估算食物）
+    /// 「说明有更新」：比上次同意的那一版多了什么（第 2 版：AI 估算食物；第 3 版：拍一张剩下的）
     private var updateNote: some View {
         HStack(alignment: .firstTextBaseline, spacing: AppSpacing.sm) {
             Image(systemName: "sparkles")
                 .foregroundStyle(AppColors.brand)
                 .accessibilityHidden(true)
-            Text("说明有更新：新增了「AI 估算食物」，只会发送你输入的食物名称。其他内容和之前一样，确认后就能继续使用。")
-                .foregroundStyle(AppColors.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
+            Text(
+                previousVersion < 2
+                    ? String(localized: "说明有更新：新增了「AI 估算食物」（只发送你输入的食物名称）和「拍一张剩下的」（发送剩菜照片，以及这一餐原来记的食物名称和克数）。其他内容和之前一样，确认后就能继续使用。")
+                    : String(localized: "说明有更新：新增了「拍一张剩下的」，会发送剩菜照片，以及这一餐原来记的食物名称和克数。其他内容和之前一样，确认后就能继续使用。")
+            )
+            .foregroundStyle(AppColors.textPrimary)
+            .fixedSize(horizontal: false, vertical: true)
         }
         .padding(AppSpacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -86,7 +91,7 @@ private struct PrivacyPolicyLinkSection: View {
 /// 说明的正文，两个页面共用（放在 AppForm 里：一段开头的话，后面几块）
 struct AIDataDisclosure: View {
     var body: some View {
-        Text("拍照识别、AI 估算食物、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。使用前，请先看看会发送哪些内容。")
+        Text("拍照识别、拍一张剩下的、AI 估算食物、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。使用前，请先看看会发送哪些内容。")
             .font(.callout)
             .foregroundStyle(AppColors.textSecondary)
             .fixedSize(horizontal: false, vertical: true)
@@ -95,13 +100,15 @@ struct AIDataDisclosure: View {
         AppFormSection(String(localized: "会发送什么")) {
             item("photo", "拍照识别：你选的餐食照片（同一餐最多 4 张）。上传前会缩小并重新压缩，不带拍摄地点等信息。")
             AppFormDivider()
+            item("camera.viewfinder", "拍一张剩下的：吃完以后拍的剩菜照片（同样先缩小、压缩），以及这一餐原来记的食物名称和大约多少克。")
+            AppFormDivider()
             item("fork.knife", "生成食谱和推荐下一餐：你的目标（减脂、维持或增肌），热量和三大营养素目标，以及你填写的口味偏好、过敏、不吃的食物和做饭时间。")
             AppFormDivider()
             item("text.magnifyingglass", "AI 估算食物：你输入、但食物库里没有的那个食物名称（比如「山西过油肉」），只发这个名称。")
         }
 
         AppFormSection(String(localized: "不会发送什么")) {
-            item("hand.raised", "年龄、身高、体重和饮食记录本身；也没有姓名、电话、位置这类身份信息。")
+            item("hand.raised", "年龄、身高、体重，以及其他的饮食记录（热量、别的餐）；也没有姓名、电话、位置这类身份信息。")
         }
 
         AppFormSection(String(localized: "发给谁、怎么处理")) {

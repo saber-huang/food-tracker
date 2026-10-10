@@ -230,6 +230,66 @@ struct HabitTests {
         #expect(reopened.ledger.unlockedCount == 5)
     }
 
+    // MARK: - 新徽章卡片
+
+    @Test("徽章分三档：第一次做到的是起步，做了一阵子是稳定，坚持很久是长久（颜色的对比度见 DesignSystemTests）")
+    func tiers() {
+        #expect(Achievement.firstMeal.tier == .starter)
+        #expect(Achievement.firstPhoto.tier == .starter)
+        #expect(Achievement.adjustedAI.tier == .starter)
+        #expect(Achievement.tenMeals.tier == .steady)
+        #expect(Achievement.tenFoods.tier == .steady)
+        #expect(Achievement.fiveDaysInWeek.tier == .steady)
+        #expect(Achievement.thirtyMeals.tier == .devoted)
+        #expect(Achievement.fourSteadyWeeks.tier == .devoted)
+        for tier in AchievementTier.allCases {
+            #expect(Achievement.allCases.contains { $0.tier == tier })
+        }
+        #expect(AchievementTier.starter < .steady && AchievementTier.steady < .devoted)
+    }
+
+    @Test("新徽章排队：一个一个弹；已经在队里的不会再排一次；「好」关掉一个，「查看全部徽章」清空并打开徽章页")
+    func celebrationQueue() throws {
+        let defaults = try #require(UserDefaults(suiteName: "HabitTests-\(UUID().uuidString)"))
+        let center = HabitCenter(defaults: defaults, celebrationDelay: .zero)
+        center.enqueue([.firstMeal, .firstPhoto])
+        center.enqueue([.firstPhoto, .tenMeals])
+        #expect(center.celebrations == [.firstMeal, .firstPhoto, .tenMeals])
+        center.finishCelebration()
+        #expect(center.celebrations == [.firstPhoto, .tenMeals])
+        center.viewAllAchievements()
+        #expect(center.celebrations.isEmpty)
+        #expect(center.showsAchievements)
+        center.finishCelebration()  // 队里空了再点也不会出错
+        #expect(center.celebrations.isEmpty)
+    }
+
+    @Test("统计出新徽章后会弹出来（稍等一下）；第一次统计悄悄记下的不弹；同一个徽章只弹一次")
+    func refreshQueuesCelebrations() async throws {
+        let container = try ModelContainer(
+            for: Schema(AppModels.all), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = container.mainContext
+        context.insert(
+            FoodEntry(dayKey: 20261001, meal: .lunch, name: "米饭", weightG: 150, values: NutrientValues(caloriesKcal: 174), source: .manual))
+        try context.save()
+        let defaults = try #require(UserDefaults(suiteName: "HabitTests-\(UUID().uuidString)"))
+        let center = HabitCenter(defaults: defaults, celebrationDelay: .zero)
+
+        // 第一次统计：老用户已经有的「第一餐」悄悄记下，不弹
+        center.refresh(context: context, now: day(20261001))
+        try await Task.sleep(for: .milliseconds(100))
+        #expect(center.celebrations.isEmpty)
+
+        // 拍照记了一餐：弹出「拍一拍」；再统计几次也只弹这一次
+        context.insert(
+            FoodEntry(dayKey: 20261002, meal: .dinner, name: "番茄炒蛋", weightG: 200, values: NutrientValues(caloriesKcal: 180), source: .photo))
+        try context.save()
+        center.refresh(context: context, now: day(20261002))
+        center.refresh(context: context, now: day(20261002))
+        try await Task.sleep(for: .milliseconds(100))
+        #expect(center.celebrations == [.firstPhoto])
+    }
+
     @Test("每个徽章都有名字、说明、获得方法和图标")
     func achievementCopy() {
         #expect(Achievement.allCases.count == 8)

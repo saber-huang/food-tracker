@@ -6,9 +6,13 @@
 
 | 文件 | 作用 |
 | --- | --- |
-| `main.py` | 网页接口：`POST /analyze`、`POST /recipes`、`GET /quota`、`GET /health`，以及各种防护 |
+| `main.py` | 网页接口：`POST /analyze`、`POST /leftovers`、`POST /estimate`、`POST /recipes`、`GET /quota`、`GET /health`，以及各种防护 |
 | `food_ai.py` | 识别逻辑：整理照片、调用 Claude（识别和食谱共用 `call_claude`）、检查结果、计算合计；几张照片时提示词里加「同一份食物只算一次」的规则（`MULTI_PHOTO_RULE`） |
 | `recipes_ai.py` | 食谱逻辑：拆分每餐目标、组织提示词、检查忌口 |
+| `leftovers_ai.py` | 饭后拍剩下的：对照这一餐原来的清单（名字和克数），估算每样吃掉了几成；只返回比例，营养由 App 乘出来 |
+| `estimate_ai.py` | AI 估算一种食物：只发食物名称，按常见做法估算营养 |
+| `messages.py` | 给用户看的出错说明（中文、英文） |
+| `offline_checks.py` | 不调用 AI 的自检：`uv run --no-sync python offline_checks.py` |
 | `limits.py` | 防护工具：次数限制、并发闸门、食谱缓存 |
 | `.env` | 本地配置，放 API Key（不会上传到 GitHub） |
 | `.env.example` | 配置模板 |

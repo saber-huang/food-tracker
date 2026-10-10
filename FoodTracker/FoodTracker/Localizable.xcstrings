@@ -33,6 +33,22 @@
         }
       }
     },
+    "%@ → %@ 千卡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ → %2$@ kcal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ → %@ 千卡"
+          }
+        }
+      }
+    },
     "%@ 克" : {
       "localizations" : {
         "en" : {
@@ -173,6 +189,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 磅"
+          }
+        }
+      }
+    },
+    "%@吃了多少" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much of %@ you ate"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@吃了多少"
+          }
+        }
+      }
+    },
+    "%@已更新为 %@ 千卡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ updated to %2$@ kcal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@已更新为 %@ 千卡"
           }
         }
       }
@@ -629,6 +677,22 @@
         }
       }
     },
+    "AI 对照这餐原来的食物，估算每样吃了多少。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI compares it with what you logged and estimates how much of each food you ate."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 对照这餐原来的食物，估算每样吃了多少。"
+          }
+        }
+      }
+    },
     "Anthropic 按商业服务条款处理：默认不用来训练模型，一般在 30 天内删除。" : {
       "localizations" : {
         "en" : {
@@ -657,6 +721,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "BMI 低于 %lld 时，公式算出的目标不一定适合你，建议请医生或注册营养师帮你确定每天吃多少。在那之前，可以把每日目标当作每天至少要吃到的量。如果吃饭或体重让你感到有压力，也可以找心理咨询师聊聊。"
+          }
+        }
+      }
+    },
+    "¼" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¼"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¼"
+          }
+        }
+      }
+    },
+    "¾" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¾"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¾"
           }
         }
       }
@@ -757,6 +853,22 @@
         }
       }
     },
+    "一半" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Half"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一半"
+          }
+        }
+      }
+    },
     "一周五天" : {
       "localizations" : {
         "en" : {
@@ -833,6 +945,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上一步"
+          }
+        }
+      }
+    },
+    "下一个" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一个"
           }
         }
       }
@@ -1121,6 +1249,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今天的识别次数用完了，可以先手动添加"
+          }
+        }
+      }
+    },
+    "今天的识别次数用完了，可以直接在下面选。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've used today's photo recognitions. You can still choose below."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天的识别次数用完了，可以直接在下面选。"
           }
         }
       }
@@ -1461,6 +1605,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "会发送什么"
+          }
+        }
+      }
+    },
+    "会用掉 1 次识别" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uses 1 photo recognition"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会用掉 1 次识别"
           }
         }
       }
@@ -1929,6 +2089,22 @@
         }
       }
     },
+    "保存时删掉" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removed when you save"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存时删掉"
+          }
+        }
+      }
+    },
     "保持现在的体重" : {
       "localizations" : {
         "en" : {
@@ -2149,6 +2325,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "克"
+          }
+        }
+      }
+    },
+    "全部" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部"
+          }
+        }
+      }
+    },
+    "全部吃完" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ate all"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部吃完"
           }
         }
       }
@@ -2809,6 +3017,38 @@
         }
       }
     },
+    "原来 %@ 千卡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Originally %@ kcal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原来 %@ 千卡"
+          }
+        }
+      }
+    },
+    "原来 %@ 千卡，按「%@」算" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Originally %1$@ kcal, counted as “%2$@”"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原来 %@ 千卡，按「%@」算"
+          }
+        }
+      }
+    },
     "参考体重 %@" : {
       "localizations" : {
         "en" : {
@@ -2953,6 +3193,134 @@
         }
       }
     },
+    "吃了 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ate %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃了 %@"
+          }
+        }
+      }
+    },
+    "吃了¼" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ate ¼"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃了¼"
+          }
+        }
+      }
+    },
+    "吃了¾" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ate ¾"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃了¾"
+          }
+        }
+      }
+    },
+    "吃了一半" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ate half"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃了一半"
+          }
+        }
+      }
+    },
+    "吃了四分之一" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ate a quarter"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃了四分之一"
+          }
+        }
+      }
+    },
+    "吃了四分之三" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ate three quarters"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃了四分之三"
+          }
+        }
+      }
+    },
+    "吃了多少" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount eaten"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃了多少"
+          }
+        }
+      }
+    },
+    "吃完以后也可以在「今日」里调整，还能拍一张剩下的让 AI 估算。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After eating, you can adjust this on Today, or snap your leftovers for an AI estimate."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吃完以后也可以在「今日」里调整，还能拍一张剩下的让 AI 估算。"
+          }
+        }
+      }
+    },
     "吃饭不需要每次都称重" : {
       "localizations" : {
         "en" : {
@@ -3061,6 +3429,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "名称最多 %lld 个字"
+          }
+        }
+      }
+    },
+    "和拍照识别共用次数，今天还可以识别 %lld 次。" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Shares the photo recognition limit. %lld recognition left today."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Shares the photo recognition limit. %lld recognitions left today."
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和拍照识别共用次数，今天还可以识别 %lld 次。"
+          }
+        }
+      }
+    },
+    "四分之一" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One quarter"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四分之一"
+          }
+        }
+      }
+    },
+    "四分之三" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three quarters"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四分之三"
           }
         }
       }
@@ -3569,6 +3997,34 @@
         }
       }
     },
+    "已删除%@的 %lld 项" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Removed %2$lld item from %1$@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Removed %2$lld items from %1$@"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已删除%@的 %lld 项"
+          }
+        }
+      }
+    },
     "已删除「%@」" : {
       "localizations" : {
         "en" : {
@@ -3613,6 +4069,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已摄入"
+          }
+        }
+      }
+    },
+    "已经按估算填好，可以再调整。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filled in from the estimate. You can still adjust it."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已经按估算填好，可以再调整。"
+          }
+        }
+      }
+    },
+    "已获得 %lld 个徽章，共 %lld 个" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld badges earned"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已获得 %lld 个徽章，共 %lld 个"
           }
         }
       }
@@ -3741,18 +4229,18 @@
         }
       }
     },
-    "年龄、身高、体重和饮食记录本身；也没有姓名、电话、位置这类身份信息。" : {
+    "年龄、身高、体重，以及其他的饮食记录（热量、别的餐）；也没有姓名、电话、位置这类身份信息。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your age, height, weight and food log itself, and nothing that identifies you, such as your name, phone number or location."
+            "value" : "Your age, height, weight and the rest of your food log (calories, other meals), and nothing that identifies you, such as your name, phone number or location."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "年龄、身高、体重和饮食记录本身；也没有姓名、电话、位置这类身份信息。"
+            "value" : "年龄、身高、体重，以及其他的饮食记录（热量、别的餐）；也没有姓名、电话、位置这类身份信息。"
           }
         }
       }
@@ -3785,6 +4273,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "开始"
+          }
+        }
+      }
+    },
+    "开始估算" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Estimate"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始估算"
           }
         }
       }
@@ -4141,6 +4645,22 @@
         }
       }
     },
+    "打开徽章页" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the badge page"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开徽章页"
+          }
+        }
+      }
+    },
     "打开月历，选择日期" : {
       "localizations" : {
         "en" : {
@@ -4153,6 +4673,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打开月历，选择日期"
+          }
+        }
+      }
+    },
+    "拍一张剩下的" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap Your Leftovers"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍一张剩下的"
+          }
+        }
+      }
+    },
+    "拍一张剩下的：吃完以后拍的剩菜照片（同样先缩小、压缩），以及这一餐原来记的食物名称和大约多少克。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftover photo: a photo of what's left after eating (also resized and compressed), plus the names and approximate weights in grams of the foods you logged for that meal."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍一张剩下的：吃完以后拍的剩菜照片（同样先缩小、压缩），以及这一餐原来记的食物名称和大约多少克。"
           }
         }
       }
@@ -4221,18 +4773,18 @@
         }
       }
     },
-    "拍照识别、AI 估算食物、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。使用前，请先看看会发送哪些内容。" : {
+    "拍照识别、拍一张剩下的、AI 估算食物、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。使用前，请先看看会发送哪些内容。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Photo scanning, AI food estimates, recipe generation and next-meal suggestions are powered by Claude, an AI from Anthropic. Before you use them, here's what gets sent."
+            "value" : "Photo scanning, leftover photos, AI food estimates, recipe generation and next-meal suggestions are powered by Claude, an AI from Anthropic. Before you use them, here's what gets sent."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拍照识别、AI 估算食物、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。使用前，请先看看会发送哪些内容。"
+            "value" : "拍照识别、拍一张剩下的、AI 估算食物、生成食谱和推荐下一餐，是由 Anthropic 公司的 Claude AI 完成的。使用前，请先看看会发送哪些内容。"
           }
         }
       }
@@ -4493,6 +5045,22 @@
         }
       }
     },
+    "换一张" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Another Photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "换一张"
+          }
+        }
+      }
+    },
     "换个更具体的叫法试试。" : {
       "localizations" : {
         "en" : {
@@ -4669,6 +5237,38 @@
         }
       }
     },
+    "整餐" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Whole Meal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整餐"
+          }
+        }
+      }
+    },
+    "整餐吃了多少" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much of the meal you ate"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整餐吃了多少"
+          }
+        }
+      }
+    },
     "整餐合计" : {
       "localizations" : {
         "en" : {
@@ -4681,22 +5281,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "整餐合计"
-          }
-        }
-      }
-    },
-    "新徽章：%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New badge: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新徽章：%@"
           }
         }
       }
@@ -5149,22 +5733,6 @@
         }
       }
     },
-    "查看" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "查看"
-          }
-        }
-      }
-    },
     "查看做法" : {
       "localizations" : {
         "en" : {
@@ -5186,7 +5754,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shows all badges"
+            "value" : "View All Badges"
           }
         },
         "zh-Hans" : {
@@ -5273,6 +5841,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在估算「%@」"
+          }
+        }
+      }
+    },
+    "正在估算吃了多少…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimating how much you ate…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在估算吃了多少…"
           }
         }
       }
@@ -5509,6 +6093,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每 100 毫升"
+          }
+        }
+      }
+    },
+    "每一样" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each Food"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每一样"
           }
         }
       }
@@ -5765,6 +6365,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "毫升"
+          }
+        }
+      }
+    },
+    "没吃" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Didn't eat"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没吃"
+          }
+        }
+      }
+    },
+    "没吃完？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Didn't finish?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没吃完？"
+          }
+        }
+      }
+    },
+    "没吃完？记录吃了多少" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Didn't finish? Log how much you ate"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没吃完？记录吃了多少"
           }
         }
       }
@@ -6181,6 +6829,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "热量需要在 0～5000 千卡之间"
+          }
+        }
+      }
+    },
+    "照片准备好了。估算会用掉 1 次识别。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo ready. Estimating uses 1 photo recognition."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "照片准备好了。估算会用掉 1 次识别。"
           }
         }
       }
@@ -7305,30 +7969,34 @@
         }
       }
     },
-    "获得了 %lld 个新徽章" : {
+    "获得新徽章" : {
       "localizations" : {
         "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "You earned %lld new badge"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "You earned %lld new badges"
-                }
-              }
-            }
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Badge"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "获得了 %lld 个新徽章"
+            "value" : "获得新徽章"
+          }
+        }
+      }
+    },
+    "获得新徽章：%@。%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New badge: %1$@. %2$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "获得新徽章：%@。%@"
           }
         }
       }
@@ -7777,18 +8445,34 @@
         }
       }
     },
-    "说明有更新：新增了「AI 估算食物」，只会发送你输入的食物名称。其他内容和之前一样，确认后就能继续使用。" : {
+    "说明有更新：新增了「AI 估算食物」（只发送你输入的食物名称）和「拍一张剩下的」（发送剩菜照片，以及这一餐原来记的食物名称和克数）。其他内容和之前一样，确认后就能继续使用。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "What's new: AI food estimates, which send only the food name you type. Everything else is the same as before. Confirm to keep using AI features."
+            "value" : "What's new: AI food estimates (only the food name you type is sent) and leftover photos (a photo of what's left, plus the names and weights of the foods you logged for that meal). Everything else is the same as before. Confirm to keep using AI features."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "说明有更新：新增了「AI 估算食物」，只会发送你输入的食物名称。其他内容和之前一样，确认后就能继续使用。"
+            "value" : "说明有更新：新增了「AI 估算食物」（只发送你输入的食物名称）和「拍一张剩下的」（发送剩菜照片，以及这一餐原来记的食物名称和克数）。其他内容和之前一样，确认后就能继续使用。"
+          }
+        }
+      }
+    },
+    "说明有更新：新增了「拍一张剩下的」，会发送剩菜照片，以及这一餐原来记的食物名称和克数。其他内容和之前一样，确认后就能继续使用。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's new: leftover photos, which send a photo of what's left plus the names and weights of the foods you logged for that meal. Everything else is the same as before. Confirm to keep using AI features."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说明有更新：新增了「拍一张剩下的」，会发送剩菜照片，以及这一餐原来记的食物名称和克数。其他内容和之前一样，确认后就能继续使用。"
           }
         }
       }
@@ -8665,6 +9349,54 @@
         }
       }
     },
+    "这张照片处理不了，请换一张试试。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This photo can't be processed. Try another one."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这张照片处理不了，请换一张试试。"
+          }
+        }
+      }
+    },
+    "这张照片读不出来，请换一张试试。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This photo couldn't be read. Try another one."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这张照片读不出来，请换一张试试。"
+          }
+        }
+      }
+    },
+    "这张照片里没看到这一餐剩下的饭菜，换一张试试。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No leftovers from this meal were found in the photo. Try another one."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这张照片里没看到这一餐剩下的饭菜，换一张试试。"
+          }
+        }
+      }
+    },
     "这张照片里的食物不够清晰，可以换个角度再试一次。" : {
       "localizations" : {
         "en" : {
@@ -8697,6 +9429,22 @@
         }
       }
     },
+    "这条按「%@」记的。改了份量或数字，就按新填的算。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This entry is logged as “%@”. If you change the amount or numbers, the new values are used."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这条按「%@」记的。改了份量或数字，就按新填的算。"
+          }
+        }
+      }
+    },
     "这次没有完成，请再试一次。" : {
       "localizations" : {
         "en" : {
@@ -8725,6 +9473,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这次没有拿到有效的结果，请再试一次。"
+          }
+        }
+      }
+    },
+    "这餐吃了多少" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How Much You Ate"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这餐吃了多少"
+          }
+        }
+      }
+    },
+    "这餐合计" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meal Total"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这餐合计"
           }
         }
       }
@@ -8837,6 +9617,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选一道差不多的菜"
+          }
+        }
+      }
+    },
+    "选了「没吃」的，保存时会从这一餐里删掉。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foods marked “Didn't eat” are removed from this meal when you save."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选了「没吃」的，保存时会从这一餐里删掉。"
           }
         }
       }
