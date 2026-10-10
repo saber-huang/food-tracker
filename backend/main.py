@@ -10,6 +10,8 @@
     GET  /quota     查询这台设备今天还能识别几次、生成几次食谱
     POST /analyze   上传同一餐的 1～4 张照片，识别食物和营养（几张照片合并成一份结果）
     POST /recipes   根据目标和忌口生成一日三餐
+    POST /estimate  按名称估算一种食物的营养
+    POST /leftovers 饭后拍一张剩下的：对照这餐原来的清单，估算每样吃掉了几成（和拍照识别共用次数）
 
 防护（后端放到公网后，任何人都能访问这个地址，所以要防止被人刷爆账单）：
     1. 门卫（limits.Gatekeeper）：只看请求头就先挡掉两类请求，不读请求体、不占内存
@@ -34,6 +36,7 @@ import messages
 from limits import Busy, Gate, Gatekeeper, Guard, LimitExceeded, ResultCache, Ticket
 from messages import Lang
 from estimate_ai import EstimateRequest, EstimateResult, estimate_food
+from leftovers_ai import LeftoversResult, estimate_leftovers, parse_served_items
 from recipes_ai import RecipeRequest, RecipesResult, generate_recipes
 
 # 让各模块的日志（用时、token 用量）显示在终端里
@@ -105,7 +108,8 @@ app = FastAPI(
 app.add_middleware(
     Gatekeeper,
     secret=APP_SHARED_SECRET,
-    body_limits={"/analyze": MAX_UPLOAD_BYTES + 64 * 1024},  # 所有照片加起来 + multipart 格式本身的少量开销
+    # 所有照片加起来 + multipart 格式本身的少量开销；拍剩下的只有一张照片和一份很短的清单
+    body_limits={"/analyze": MAX_UPLOAD_BYTES + 64 * 1024, "/leftovers": MAX_UPLOAD_BYTES + 64 * 1024},
     default_body_limit=32 * 1024,  # 其他接口的请求都很小
     open_paths=("/", "/health"),  # 不需要密钥的路径（Render 用 /health 做健康检查）
 )
@@ -315,3 +319,34 @@ def estimate(body: EstimateRequest, request: Request, device_id: DeviceID = None
     estimate_cache.set(cache_key, result)
     return result
 
+
+@app.post("/leftovers", response_model=LeftoversResult)
+def leftovers(
+    request: Request,
+    photo: Annotated[UploadFile, File(description="吃完以后剩下的照片（JPG、PNG 或 HEIC）")],
+    items: Annotated[str, Form(description='这一餐原来记的食物，JSON 数组，例如 [{"name": "米饭", "weight_g": 150}]')],
+    lang: Annotated[Literal["zh", "en"], Form(description="说明用的语言：zh 中文，en 英文")] = "zh",
+    device_id: DeviceID = None,
+):
+    """饭后拍一张剩下的：对照这一餐原来的清单，估算每一样吃掉了几成。
+    只返回比例（和清单一一对应），营养由 App 按原来记的数乘上比例。和拍照识别共用每天的次数。"""
+    # 清单不对在扣次数之前就拒绝：不调用 AI，也不占次数
+    try:
+        served = parse_served_items(items)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=messages.text("leftovers_bad_items", request_lang(request)))
+    device_key, ip_key = keys_for(request, device_id)
+    ticket = acquire(analyze_guard, request, device_id, "analyze")
+
+    def work():
+        # 和识别一样，读照片放在闸门里做；读不到合格的照片就把次数还回去
+        data = photo.file.read(MAX_UPLOAD_BYTES + 1)
+        if not data:
+            raise AIError(400, "no_photo", billed=False)
+        if len(data) > MAX_UPLOAD_BYTES:
+            raise AIError(413, "photo_too_big", billed=False, mb=MAX_UPLOAD_BYTES // 1024 // 1024)
+        return estimate_leftovers(data, served, lang)
+
+    result = run_ai(analyze_guard, [ticket], work, request_lang(request))
+    result.remaining_today = analyze_guard.remaining(device_key, ip_key)
+    return result

@@ -10,6 +10,8 @@
 5. 次数用完（每分钟限制）的说明文字、门卫（密钥不对）的说明文字也跟着语言走
 6. AI 估算一种食物（同样把调用 Claude 的那一步换成假的）：名字检查、数字整理、菜 / 包装食品的判断、同一个名字用缓存不再问 AI、
    不是食物时营养都是 0、/quota 里有估算次数
+7. 饭后拍剩下的（同样换成假的）：清单检查（不对的在扣次数之前拒绝）、发给 AI 的清单和份量、
+   比例整理（限制在 0～1、取到 0.05、没提到的按吃完算）、照片不对时不改任何比例、和拍照识别共用次数
 """
 
 import os
@@ -239,6 +241,72 @@ try:
     check(tidy.name == "奇怪的东西" and tidy.serving_name == "份" and tidy.serving_amount == 1, "空名字、空单位用默认值")
 finally:
     estimate_ai.call_claude = real_estimate_call
+
+# ---------- 7. 饭后拍剩下的（不调用 AI：把 leftovers_ai 里调用 Claude 的那一步换成假的）----------
+# 注意：识别的每分钟限制按地址算（前面已经用了 5 次，上限 6 次），这一段只能再有 1 个请求真正扣次数
+import json  # noqa: E402
+
+import leftovers_ai  # noqa: E402
+
+served = leftovers_ai.parse_served_items(json.dumps([{"name": " 米饭 ", "weight_g": 150}, {"name": "宫保鸡丁"}]))
+check([i.name for i in served] == ["米饭", "宫保鸡丁"] and served[1].weight_g is None, "清单：名字去掉多余空格，份量可以不填")
+for bad, why in [("[]", "空清单"), ("不是 JSON", "不是 JSON"), (json.dumps([{"name": "  "}]), "空名字"),
+                 (json.dumps([{"name": "米饭", "weight_g": -5}]), "负的份量"), (json.dumps([{"name": "米饭"}] * 21), "超过 20 样")]:
+    try:
+        leftovers_ai.parse_served_items(bad)
+        check(False, f"清单：{why}应该被拒绝")
+    except ValueError:
+        check(True, f"清单：{why}被拒绝")
+
+prompt = leftovers_ai.build_system_prompt(served, "en")
+check("1. 米饭，约 150 克" in prompt and "2. 宫保鸡丁\n" in prompt, "发给 AI 的清单里有序号、名字和份量（没填份量的不写克数）")
+check("English" in prompt and "按吃完算" in prompt, "说明里有结果语言和「看不到的按吃完算」")
+
+ai = leftovers_ai.LeftoverAIResult(is_leftover_photo=True, message=" 菜剩了一点 ", items=[
+    leftovers_ai.LeftoverItem(index=2, eaten_fraction=0.62),
+    leftovers_ai.LeftoverItem(index=1, eaten_fraction=1.3),
+    leftovers_ai.LeftoverItem(index=9, eaten_fraction=0.1),
+])
+tidy = leftovers_ai.build_result(ai, 3, "fake")
+check(tidy.eaten == [1.0, 0.6, 1.0] and tidy.message == "菜剩了一点", f"比例：限制在 0～1、取到 0.05、没提到的按吃完、多出来的序号不管（{tidy.eaten}）")
+low = leftovers_ai.build_result(leftovers_ai.LeftoverAIResult(is_leftover_photo=True, message="", items=[
+    leftovers_ai.LeftoverItem(index=1, eaten_fraction=-0.2)]), 1, "fake", "en")
+check(low.eaten == [0.0] and low.message == "Done. Please check the amounts.", f"负数当作没吃；没写总结用默认文字（{low}）")
+nope = leftovers_ai.build_result(leftovers_ai.LeftoverAIResult(is_leftover_photo=False, message="", items=[]), 2, "fake")
+check(not nope.is_leftover_photo and nope.eaten == [] and "不是吃剩的" in nope.message, "照片不对：不给比例，说明原因")
+
+leftover_calls: list[dict] = []
+
+
+def fake_leftovers(*, system, content, output_format, max_tokens, feature):
+    leftover_calls.append({"system": system, "content": content, "feature": feature})
+    return leftovers_ai.LeftoverAIResult(is_leftover_photo=True, message="米饭吃完了，菜剩了一半", items=[
+        leftovers_ai.LeftoverItem(index=1, eaten_fraction=1), leftovers_ai.LeftoverItem(index=2, eaten_fraction=0.5)]), "fake-model"
+
+
+def post_leftovers(items_json: str, device: str, lang: str = "zh"):
+    headers = {**key, "X-Device-ID": device, "X-App-Lang": lang}
+    files = [("photo", ("left.jpg", tiny_jpeg((210, 200, 190)), "image/jpeg"))]
+    return client.post("/leftovers", headers=headers, files=files, data={"items": items_json, "lang": lang})
+
+
+real_leftovers_call = leftovers_ai.call_claude
+leftovers_ai.call_claude = fake_leftovers
+try:
+    r = post_leftovers("[]", "OFFLINE-CHECK-LEFTOVERS-BAD")
+    check(r.status_code == 400 and "清单不对" in r.json()["detail"], f"清单不对 → 400 中文说明（{r.json()}）")
+    check(not leftover_calls and used_today("OFFLINE-CHECK-LEFTOVERS-BAD") == 0, "清单不对：没有调用 AI，也没有扣次数")
+    items_json = json.dumps([{"name": "米饭", "weight_g": 150}, {"name": "宫保鸡丁", "weight_g": 200}], ensure_ascii=False)
+    r = post_leftovers(items_json, "OFFLINE-CHECK-LEFTOVERS")
+    body = r.json()
+    check(r.status_code == 200 and body["eaten"] == [1.0, 0.5] and body["is_leftover_photo"], f"返回每样吃掉的比例（{body}）")
+    check(isinstance(body["remaining_today"], int), "返回今天还能识别几次")
+    call = leftover_calls[0]
+    check(call["feature"] == "leftovers" and sum(b["type"] == "image" for b in call["content"]) == 1, "发给 AI 的是 1 张照片")
+    check("2. 宫保鸡丁，约 200 克" in call["system"], "发给 AI 的说明里有原来的清单")
+    check(used_today("OFFLINE-CHECK-LEFTOVERS") == 1, "和拍照识别共用次数：用了 1 次")
+finally:
+    leftovers_ai.call_claude = real_leftovers_call
 
 # ---------- 5. 每分钟限制、门卫 ----------
 # 每分钟限制：同一个地址连发，超过之后是 429，说明按语言

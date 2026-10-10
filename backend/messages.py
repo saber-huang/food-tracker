@@ -17,6 +17,7 @@ FEATURES: dict[str, dict[str, str]] = {
     "analyze": {"zh": "拍照识别", "en": "photo scans"},
     "recipes": {"zh": "食谱推荐", "en": "recipe generations"},
     "estimate": {"zh": "AI 估算", "en": "AI estimates"},
+    "leftovers": {"zh": "估算剩下多少", "en": "leftover estimates"},
 }
 
 # 动作名：拼进「AI 识别超时」里（英文句子里不需要）
@@ -24,6 +25,7 @@ ACTIONS: dict[str, dict[str, str]] = {
     "analyze": {"zh": "识别", "en": ""},
     "recipes": {"zh": "生成食谱", "en": ""},
     "estimate": {"zh": "估算", "en": ""},
+    "leftovers": {"zh": "估算剩下多少", "en": ""},
 }
 
 MESSAGES: dict[str, dict[str, str]] = {
@@ -109,6 +111,16 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "Couldn't make out specific foods. Try another photo from a different angle.",
     },
     "result_done": {"zh": "识别完成", "en": "Analysis complete."},
+    # ---------- 饭后拍剩下的（leftovers_ai）----------
+    "leftovers_bad_items": {
+        "zh": "这一餐的食物清单不对，请更新 App 后再试",
+        "en": "The list of foods for this meal isn't valid. Please update the app and try again.",
+    },
+    "leftovers_not_photo": {
+        "zh": "这张照片里好像不是吃剩的饭菜，换一张试试",
+        "en": "This photo doesn't seem to show leftovers from the meal. Try another photo.",
+    },
+    "leftovers_done": {"zh": "估算好了，请核对一下", "en": "Done. Please check the amounts."},
     # ---------- AI 估算（estimate_ai.tidy）----------
     "estimate_not_food": {
         "zh": "这个名字看起来不是一种食物，换个说法试试",
